@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { MapPin, Phone, Mail, Car, Sparkles, CreditCard } from "lucide-react";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
 import { localized } from "@/lib/i18n";
@@ -29,135 +28,126 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
   const hours = parseOpeningHours(settings.openingHours);
   const tel = settings.phone.replace(/\s/g, "");
 
-  const infoCards = [
+  const notes = [
     localized(settings, "parkingNote", locale)
-      ? { icon: Car, title: t("contact.parking"), body: localized(settings, "parkingNote", locale) }
+      ? { title: t("contact.parking"), body: localized(settings, "parkingNote", locale) }
       : null,
     localized(settings, "servicesNote", locale)
-      ? { icon: Sparkles, title: t("contact.services"), body: localized(settings, "servicesNote", locale) }
+      ? { title: t("contact.services"), body: localized(settings, "servicesNote", locale) }
       : null,
     localized(settings, "paymentNote", locale)
-      ? { icon: CreditCard, title: t("contact.payment"), body: localized(settings, "paymentNote", locale) }
+      ? { title: t("contact.payment"), body: localized(settings, "paymentNote", locale) }
       : null,
-  ].filter((x): x is { icon: typeof Car; title: string; body: string } => x !== null);
+  ].filter((x): x is { title: string; body: string } => x !== null);
 
   return (
     <div className="bg-cream-50">
-      {/* En-tête */}
-      <section className="border-b border-ink-900/10 bg-cream-100 py-20 sm:py-24">
-        <div className="container max-w-3xl">
-          <p className="eyebrow">{t("nav.contact")}</p>
-          <h1 className="mt-4 font-display text-4xl text-ink-900 sm:text-5xl">{t("contact.title")}</h1>
+      {/* En-tête minimal */}
+      <section className="py-28 text-center sm:py-36">
+        <div className="container max-w-xl">
+          <Reveal>
+            <p className="kicker">{t("nav.contact")}</p>
+          </Reveal>
+          <Reveal delay={80}>
+            <h1 className="mt-5 font-display text-4xl font-light tracking-tight text-ink-900 sm:text-5xl">
+              {t("contact.title")}
+            </h1>
+          </Reveal>
         </div>
       </section>
 
-      {/* Coordonnées + plan + horaires */}
-      <section className="py-16 sm:py-20">
-        <div className="container">
-          <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
-            <Reveal>
-              <div className="flex h-full flex-col">
-                <p className="eyebrow">{t("contact.howToCome")}</p>
-                <address className="mt-5 space-y-4 not-italic">
-                  <p className="flex items-start gap-3 text-ink-800">
-                    <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-gold-600" aria-hidden />
-                    <span className="text-base leading-relaxed">
-                      {settings.addressLine}
-                      <br />
-                      {settings.postalCode} {settings.city}
-                    </span>
+      {/* Coordonnées + plan */}
+      <section>
+        <div className="grid lg:grid-cols-2">
+          <Reveal>
+            <div className="flex items-center px-6 py-10 sm:px-12 lg:py-20">
+              <div className="mx-auto w-full max-w-sm">
+                <p className="kicker">{t("contact.howToCome")}</p>
+                <address className="mt-6 not-italic">
+                  <p className="font-display text-2xl font-light leading-snug text-ink-900">
+                    {settings.addressLine}
+                    <br />
+                    {settings.postalCode} {settings.city}
                   </p>
-                  {settings.phone ? (
-                    <p className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 shrink-0 text-gold-600" aria-hidden />
-                      <a href={`tel:${tel}`} className="link-sweep text-base text-wine-700">
+                  <div className="mt-6 flex flex-col gap-1.5 text-sm">
+                    {settings.phone ? (
+                      <a href={`tel:${tel}`} className="link-sweep w-fit text-wine-700">
                         {settings.phone}
                       </a>
-                    </p>
-                  ) : null}
-                  {settings.email ? (
-                    <p className="flex items-center gap-3">
-                      <Mail className="h-5 w-5 shrink-0 text-gold-600" aria-hidden />
-                      <a href={`mailto:${settings.email}`} className="link-sweep text-base text-wine-700">
+                    ) : null}
+                    {settings.email ? (
+                      <a href={`mailto:${settings.email}`} className="link-sweep w-fit text-wine-700">
                         {settings.email}
                       </a>
-                    </p>
-                  ) : null}
+                    ) : null}
+                    {settings.googleMapsUrl ? (
+                      <a
+                        href={settings.googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="link-sweep mt-2 w-fit text-[11px] uppercase tracking-[0.15em] text-ink-500"
+                      >
+                        Google Maps
+                      </a>
+                    ) : null}
+                  </div>
                 </address>
-                {settings.googleMapsUrl ? (
-                  <a
-                    href={settings.googleMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-sm border border-ink-900/15 px-4 py-2 text-sm text-ink-800 transition-colors hover:border-wine-600 hover:text-wine-700"
-                  >
-                    Ouvrir dans Google Maps
-                  </a>
-                ) : null}
 
-                <div className="mt-10 rounded-lg border border-ink-900/10 bg-white p-6">
-                  <p className="eyebrow">{t("common.openingHours")}</p>
-                  <div className="mt-4">
+                <div className="mt-10 border-t border-ink-900/10 pt-8">
+                  <p className="kicker">{t("common.openingHours")}</p>
+                  <div className="mt-5 text-ink-800">
                     <OpeningHours hours={hours} />
                   </div>
                 </div>
               </div>
-            </Reveal>
+            </div>
+          </Reveal>
 
-            <Reveal delay={120}>
-              {settings.mapEmbedUrl ? (
-                <div className="h-full min-h-[360px] overflow-hidden rounded-lg shadow-card">
-                  <iframe
-                    src={settings.mapEmbedUrl}
-                    title={settings.siteName}
-                    className="h-full min-h-[360px] w-full border-0"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-              ) : null}
-            </Reveal>
-          </div>
+          <Reveal delay={120}>
+            {settings.mapEmbedUrl ? (
+              <div className="min-h-[380px] lg:h-full">
+                <iframe
+                  src={settings.mapEmbedUrl}
+                  title={settings.siteName}
+                  className="h-full min-h-[380px] w-full border-0 grayscale-[35%]"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            ) : null}
+          </Reveal>
         </div>
       </section>
 
-      {/* Infos pratiques — cartes séparées */}
-      {infoCards.length > 0 ? (
-        <section className="border-t border-ink-900/10 bg-cream-100 py-16">
-          <div className="container">
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {infoCards.map((card) => {
-                const Icon = card.icon;
-                return (
-                  <Reveal key={card.title}>
-                    <div className="h-full rounded-lg border border-ink-900/10 bg-white p-6">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-400/15 text-gold-600">
-                        <Icon className="h-5 w-5" aria-hidden />
-                      </span>
-                      <p className="mt-4 font-display text-lg text-ink-900">{card.title}</p>
-                      <p className="mt-2 text-sm leading-relaxed text-ink-600">{card.body}</p>
-                    </div>
-                  </Reveal>
-                );
-              })}
-            </div>
+      {/* Infos pratiques — liste filaire */}
+      {notes.length > 0 ? (
+        <section className="border-y border-ink-900/10 bg-cream-100 py-16 sm:py-20">
+          <div className="container max-w-3xl divide-y divide-ink-900/10">
+            {notes.map((note) => (
+              <Reveal key={note.title}>
+                <div className="grid gap-2 py-6 sm:grid-cols-[180px_1fr] sm:gap-8">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-gold-600">{note.title}</p>
+                  <p className="text-sm leading-relaxed text-ink-700">{note.body}</p>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </section>
       ) : null}
 
       {/* Formulaire */}
-      <section className="border-t border-ink-900/10 py-16 sm:py-20">
-        <div className="container max-w-2xl">
+      <section className="py-24 sm:py-32">
+        <div className="container max-w-xl">
           <Reveal>
             <div className="text-center">
-              <p className="eyebrow justify-center">{t("contact.formTitle")}</p>
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-ink-600">
+              <p className="kicker">{t("contact.formTitle")}</p>
+              <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-ink-600">
                 {t("contact.formIntro")}
               </p>
             </div>
           </Reveal>
           <Reveal delay={100}>
-            <div className="mt-10 rounded-lg border border-ink-900/10 bg-white p-6 shadow-card sm:p-8">
+            <div className="mt-12">
               <ContactForm />
             </div>
           </Reveal>
