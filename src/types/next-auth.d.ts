@@ -7,12 +7,10 @@ declare module "next-auth" {
       email: string;
       name: string;
       role: Role;
-      restaurantId: string | null;
     };
   }
   interface User {
     role: Role;
-    restaurantId?: string | null;
   }
 }
 
@@ -20,6 +18,5 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: Role;
-    restaurantId: string | null;
   }
 }

@@ -14,10 +14,10 @@ function randomSegment(length: number): string {
   return out;
 }
 
-/** Génère un code de bon cadeau unique, ex. "19BT-7F3K-QX9M". */
+/** Génère un code de bon cadeau unique, ex. "LINS-7F3K-QX9M". */
 export async function generateUniqueVoucherCode(): Promise<string> {
   for (let attempt = 0; attempt < 10; attempt++) {
-    const candidate = `19BT-${randomSegment(4)}-${randomSegment(4)}`;
+    const candidate = `LINS-${randomSegment(4)}-${randomSegment(4)}`;
     const existing = await prisma.giftVoucher.findUnique({ where: { code: candidate }, select: { id: true } });
     if (!existing) return candidate;
   }

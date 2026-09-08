@@ -148,7 +148,7 @@ export async function generateVoucherPdf(params: {
   contactEmail?: string | null;
 }): Promise<Buffer> {
   const { amountLabel, code, expiryLabel, buyerName, recipientName, logoUrl } = params;
-  const siteName = params.siteName ?? "19 Bonnes Tables Sarthoises";
+  const siteName = params.siteName ?? "L'Insouciant";
   const contactEmail = params.contactEmail ?? null;
 
   const [qrBuffer, logoBuffer, fonts] = await Promise.all([
@@ -188,10 +188,9 @@ export async function generateVoucherPdf(params: {
     doc.rect(14, 14, LEFT_WIDTH - 14 - 12, PAGE_HEIGHT - 28).lineWidth(1).strokeColor(COLORS.creamBorder).stroke();
     doc.rect(19, 19, LEFT_WIDTH - 19 - 17, PAGE_HEIGHT - 38).lineWidth(1.5).strokeColor(COLORS.creamBorderSoft).stroke();
 
-    // ---- En-tête : nom de l'association + sceau ----
-    eyebrow(doc, "Association des", MARGIN, 44);
-    doc.font(serif.semibold).fontSize(36).fillColor(COLORS.ink).text("19 Bonnes Tables", MARGIN, 56, { lineBreak: false });
-    doc.fillColor(COLORS.gold).text("Sarthoises", MARGIN, 96, { lineBreak: false });
+    // ---- En-tête : nom du restaurant + sceau ----
+    eyebrow(doc, "Restaurant", MARGIN, 44);
+    doc.font(serif.semibold).fontSize(40).fillColor(COLORS.ink).text(siteName, MARGIN, 58, { lineBreak: false });
 
     const sealCx = 572;
     const sealCy = 100;
@@ -214,7 +213,7 @@ export async function generateVoucherPdf(params: {
     const dividerY = 152;
     dashedLine(doc, MARGIN, dividerY, MARGIN + 34, dividerY, COLORS.goldLight);
     diamond(doc, MARGIN + 42, dividerY, 5, COLORS.goldLight);
-    eyebrow(doc, "Depuis 1969 · Sarthe", MARGIN + 52, dividerY - 4, { size: 8 });
+    eyebrow(doc, "Le Mans · Gastronomie décomplexée", MARGIN + 52, dividerY - 4, { size: 8 });
 
     // ---- Ligne pointillée pleine largeur ----
     dashedLine(doc, MARGIN, 176, CONTENT_RIGHT, 176, COLORS.creamBorder);
@@ -244,7 +243,7 @@ export async function generateVoucherPdf(params: {
     const valueTextHeight = doc.heightOfString(valueText, { width: valueBoxW, align: "center" });
     doc.text(valueText, valueBoxX, valueBoxY + 1 + (valueBoxH - valueTextHeight) / 2, { width: valueBoxW, align: "center" });
 
-    eyebrow(doc, "À valoir dans l'un des restaurants de l'association", MARGIN, 284, {
+    eyebrow(doc, "À valoir au restaurant, sur réservation", MARGIN, 284, {
       size: 8,
       width: valueBoxX - 24 - MARGIN,
     });
@@ -268,7 +267,7 @@ export async function generateVoucherPdf(params: {
       .fontSize(9)
       .fillColor(COLORS.inkSoft)
       .text("Sur réservation · Non remboursable · Non fractionnable", MARGIN, 448, { lineBreak: false });
-    doc.font("Helvetica-Bold").fillColor(COLORS.goldMuted).text("19bonnes-tables-sarthoises.fr", MARGIN, 462, { lineBreak: false });
+    doc.font("Helvetica-Bold").fillColor(COLORS.goldMuted).text("restaurant-linsouciant.fr", MARGIN, 462, { lineBreak: false });
 
     if (expiryLabel) {
       eyebrow(doc, "Valable jusqu'au", valueBoxX, 446, { size: 8, width: valueBoxW, align: "right" });
@@ -351,7 +350,7 @@ export async function generateVoucherPdf(params: {
       .fillColor("#f7f1e2")
       .fillOpacity(0.4)
       .text(
-        "LES 19 BONNES TABLES SARTHOISES · LES 19 BONNES TABLES SARTHOISES · LES 19 BONNES TABLES SARTHOISES",
+        `${siteName.toUpperCase()} · ${siteName.toUpperCase()} · ${siteName.toUpperCase()} · ${siteName.toUpperCase()}`,
         RIGHT_X + 14,
         PAGE_HEIGHT - 24,
         { characterSpacing: 1.5, lineBreak: false }
@@ -376,7 +375,7 @@ export async function generateVoucherPdf(params: {
       ],
       [
         "Utilisation",
-        `Il est utilisable dans n'importe lequel des restaurants membres de l'association ${siteName}, sur présentation du code ou du QR code figurant en page 1, de préférence sur réservation préalable auprès de l'établissement choisi.`,
+        `Il est utilisable au restaurant ${siteName}, sur présentation du code ou du QR code figurant en page 1, de préférence sur réservation préalable.`,
       ],
       [
         "Montant et fractionnement",
@@ -384,7 +383,7 @@ export async function generateVoucherPdf(params: {
       ],
       [
         "Perte, vol ou usage frauduleux",
-        `Le code de ce bon cadeau fait office de titre : en cas de perte, de vol ou d'utilisation par un tiers non autorisé, l'association ne pourra être tenue responsable et aucun duplicata ne pourra être garanti.`,
+        `Le code de ce bon cadeau fait office de titre : en cas de perte, de vol ou d'utilisation par un tiers non autorisé, le restaurant ne pourra être tenu responsable et aucun duplicata ne pourra être garanti.`,
       ],
       [
         "Droit de rétractation",
@@ -396,7 +395,7 @@ export async function generateVoucherPdf(params: {
         "Contact",
         `Pour toute question relative à ce bon cadeau, ${
           contactEmail ? `écrivez à ${contactEmail} ou ` : ""
-        }rendez-vous sur 19bonnes-tables-sarthoises.fr.`,
+        }rendez-vous sur restaurant-linsouciant.fr.`,
       ],
     ];
 

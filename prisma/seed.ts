@@ -1,44 +1,31 @@
 /**
- * Seed basé sur l'audit du site B12 existant (19bonnes-tables-sarthoises.fr).
- * Toutes les données ci-dessous sont reprises verbatim du site actuel ou de
- * ses métadonnées ; rien n'a été inventé. Quand une information n'était pas
- * disponible (ex. horaires précis, coordonnées de l'Hôtel La Renaissance),
- * le champ est laissé vide/null plutôt que complété arbitrairement — voir
- * les commentaires "TODO audit" pour la liste de ce qu'il reste à compléter
- * manuellement depuis /admin après le premier déploiement.
- *
- * Les photos ne sont PAS migrées automatiquement par ce script (elles vivent
- * sur cdn.b12.io, propriété de B12) : les albums et fiches restaurants sont
- * créés sans image, à compléter via /admin en uploadant les photos
- * récupérées manuellement avant la coupure de B12.
+ * Seed du site L'Insouciant (Le Mans). Toutes les données sont reprises du
+ * site d'origine restaurant-linsouciant.fr (menus, horaires, coordonnées,
+ * mentions légales) ; rien n'est inventé. Les photos ne sont pas migrées
+ * automatiquement (hébergées sur le CDN Zenchef) : les albums sont créés
+ * vides, à compléter depuis /admin/photos.
  */
-import { PrismaClient, type Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { CGV_CONTENT } from "../scripts/cgv-content";
 
 const prisma = new PrismaClient();
 
-type Day = "lundi" | "mardi" | "mercredi" | "jeudi" | "vendredi" | "samedi" | "dimanche";
 type Slot = { start: string; end: string };
-type OpeningHours = { day: Day; closed: boolean; slots: Slot[] }[];
+const DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"] as const;
 
-const ALL_DAYS: Day[] = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
-
-function hours(open: Partial<Record<Day, Slot[]>>): OpeningHours {
-  return ALL_DAYS.map((day) => ({
-    day,
-    closed: !open[day] || open[day]!.length === 0,
-    slots: open[day] ?? [],
-  }));
+function hours(open: Partial<Record<(typeof DAYS)[number], Slot[]>>) {
+  return DAYS.map((day) => ({ day, closed: !open[day], slots: open[day] ?? [] }));
 }
 
-async function main() {
-  // ---------------------------------------------------------------------
-  // Compte super-administrateur initial
-  // ---------------------------------------------------------------------
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@19bonnes-tables-sarthoises.fr";
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "changeme-au-premier-lancement";
+const LUNCH: Slot = { start: "12:00", end: "14:00" };
+const DINNER: Slot = { start: "19:00", end: "21:30" };
 
+async function main() {
+  // -------------------------------------------------------------------------
+  // Compte administrateur initial
+  // -------------------------------------------------------------------------
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@restaurant-linsouciant.fr";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMoiAuPremierLancement1";
   await prisma.user.upsert({
     where: { email: adminEmail },
     update: {},
@@ -49,416 +36,342 @@ async function main() {
       role: "SUPER_ADMIN",
     },
   });
-  console.log(`✔ Compte SUPER_ADMIN prêt : ${adminEmail}`);
+  console.log(`✔ Compte SUPER_ADMIN : ${adminEmail}`);
 
-  // ---------------------------------------------------------------------
-  // Paramètres du site
-  // ---------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Réglages du site
+  // -------------------------------------------------------------------------
   await prisma.siteSetting.upsert({
     where: { id: "singleton" },
     update: {},
     create: {
       id: "singleton",
-      siteName: "19 Bonnes Tables Sarthoises",
-      siteDescription:
-        "Association d'hommes et de femmes de métiers. Le savoir-faire pour mieux vous servir.",
-      contactEmail: "contact@19bonnes-tables-sarthoises.fr",
-      // TODO audit : téléphone et adresse de l'association absents de l'ancien site.
-      seoDefaultTitle: "19 Bonnes Tables Sarthoises",
+      siteName: "L'Insouciant",
+      tagline: "Gastronomie décomplexée",
+      taglineEn: "Unpretentious gastronomy",
+      intro:
+        "Le chef Corentin Courtien et son équipe placent le respect de la nature et des saisons au cœur de leur cuisine. Les produits sont sourcés en direct, avec le moins d'intermédiaires possible, pour des saveurs marquées, aromatiques, délicates et surprenantes.\n\nEn salle, un esprit épuré et chaleureux, un service attentif et rigoureux : tout est pensé pour que le repas soit une véritable succession de surprises gustatives.",
+      introEn:
+        "Chef Corentin Courtien and his team put respect for nature and the seasons at the heart of their cooking. Ingredients are sourced directly, with as few intermediaries as possible, for bold, aromatic, delicate and surprising flavours.\n\nIn the dining room, a refined and welcoming atmosphere and attentive, meticulous service: everything is designed to make the meal a true succession of gustatory surprises.",
+      addressLine: "6-8 rue de la Mission",
+      postalCode: "72000",
+      city: "Le Mans",
+      phone: "02 43 40 00 58",
+      email: "restaurant-linsouciant@orange.fr",
+      openingHours: hours({
+        mardi: [LUNCH],
+        mercredi: [LUNCH, DINNER],
+        jeudi: [LUNCH, DINNER],
+        vendredi: [LUNCH, DINNER],
+        samedi: [LUNCH, DINNER],
+      }),
+      parkingNote: "Parking Place Washington, à quelques pas du restaurant.",
+      parkingNoteEn: "Place Washington car park, a short walk from the restaurant.",
+      servicesNote:
+        "Climatisation · Privatisation possible · Accès PMR · Wi-Fi · Bons cadeaux",
+      servicesNoteEn:
+        "Air conditioning · Private hire available · Wheelchair access · Wi-Fi · Gift vouchers",
+      paymentNote:
+        "Carte bancaire, American Express, Apple Pay, paiement sans contact, Visa, Mastercard, espèces, chèques.",
+      paymentNoteEn:
+        "Credit card, American Express, Apple Pay, contactless, Visa, Mastercard, cash, cheques.",
+      zenchefBookingUrl: "https://bookings.zenchef.com/results?rid=354419",
+      zenchefNewsletterUrl: "https://nl.zenchef.com/optin-form.php?rpid=rpid_328VF84X",
+      zenchefRestaurantId: "354419",
+      facebookUrl: "https://www.facebook.com/restaurant.linsouciant",
+      instagramUrl: "https://www.instagram.com/restaurant.linsouciant/",
+      googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=L%27Insouciant+6+rue+de+la+Mission+72000+Le+Mans",
+      mapEmbedUrl:
+        "https://www.google.com/maps?q=6%20rue%20de%20la%20Mission%2072000%20Le%20Mans&output=embed",
+      legalCompanyName: "MCOCOTIER",
+      legalCapital: "5 000 €",
+      legalSiret: "88788251200015",
+      legalRcsCity: "Le Mans",
+      legalHost: "Railway Corporation, 80 Broad Street, 5th Floor, New York, NY 10004, États-Unis — railway.com",
+      seoDefaultTitle: "L'Insouciant · Restaurant gastronomique au Mans",
       seoDefaultDescription:
-        "L'association des 19 Bonnes Tables Sarthoises, plus vieille association culinaire de France, réunit des restaurateurs passionnés en Sarthe.",
-      footerText: null,
+        "Restaurant L'Insouciant au Mans — cuisine créative et gourmande du chef Corentin Courtien, produits frais et de saison. Réservation en ligne.",
     },
   });
-  console.log("✔ Paramètres du site créés");
+  console.log("✔ Réglages du site");
 
-  // ---------------------------------------------------------------------
-  // Page d'accueil (hero + section "à propos")
-  // ---------------------------------------------------------------------
-  await prisma.page.upsert({
-    where: { slug: "accueil" },
+  // -------------------------------------------------------------------------
+  // Menu « Premier Pas »
+  // -------------------------------------------------------------------------
+  await prisma.menu.upsert({
+    where: { slug: "menu-premier-pas" },
     update: {},
     create: {
-      slug: "accueil",
-      title: "19 Bonnes Tables Sarthoises",
-      excerpt: "Association d'hommes et de femmes de métiers. Le savoir-faire pour mieux vous servir.",
-      content:
-        "<p>L'association des 19 Bonnes Tables Sarthoises, plus vieille association culinaire de France, réunit des restaurateurs passionnés qui s'engagent à offrir une cuisine authentique et savoureuse, mettant en valeur les produits frais et locaux de la région pour garantir la meilleure expérience culinaire à leurs clients.</p>",
+      slug: "menu-premier-pas",
+      name: "Menu Premier Pas",
+      nameEn: "« Premier Pas » menu",
+      order: 0,
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      availabilityNote: "Du mardi au vendredi, le midi (hors jours fériés)",
+      availabilityNoteEn: "Tuesday to Friday, lunch only (excluding public holidays)",
+      description:
+        "Une première approche de la cuisine de L'Insouciant, au déjeuner en semaine.",
+      descriptionEn: "A first taste of L'Insouciant's cooking, for weekday lunch.",
+      prices: {
+        create: [
+          { kind: "FORMULA", label: "Entrée + Plat", labelEn: "Starter + Main", priceCents: 3200, order: 0 },
+          { kind: "FORMULA", label: "Plat + Dessert", labelEn: "Main + Dessert", priceCents: 3200, order: 1 },
+          { kind: "FORMULA", label: "Entrée + Plat + Dessert", labelEn: "Starter + Main + Dessert", priceCents: 3800, order: 2 },
+        ],
+      },
+      sections: {
+        create: [
+          {
+            title: "Entrées",
+            titleEn: "Starters",
+            order: 0,
+            dishes: {
+              create: [
+                { name: "Côté Terre", nameEn: "From the land", order: 0 },
+                { name: "Côté Mer", nameEn: "From the sea", order: 1 },
+              ],
+            },
+          },
+          {
+            title: "Plats",
+            titleEn: "Mains",
+            order: 1,
+            dishes: {
+              create: [
+                { name: "Sélection carnée", nameEn: "Meat selection", order: 0 },
+                { name: "Retour de la criée", nameEn: "Catch of the day", order: 1 },
+              ],
+            },
+          },
+          {
+            title: "Dessert",
+            titleEn: "Dessert",
+            order: 2,
+            dishes: { create: [{ name: "Le délice", nameEn: "The delight", order: 0 }] },
+          },
+        ],
+      },
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // Menus « Plaisir »
+  // -------------------------------------------------------------------------
+  await prisma.menu.upsert({
+    where: { slug: "menus-plaisir" },
+    update: {},
+    create: {
+      slug: "menus-plaisir",
+      name: "Menus Plaisir",
+      nameEn: "« Plaisir » menus",
+      order: 1,
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      availabilityNote: "Du mercredi au samedi, midi et soir (jours fériés inclus)",
+      availabilityNoteEn: "Wednesday to Saturday, lunch and dinner (public holidays included)",
+      description:
+        "Le menu dégustation de L'Insouciant, ponctué de petits amuse-bouches entre les plats — une vraie succession de surprises gustatives. Les plats ci-dessous sont donnés à titre d'exemple et évoluent au fil des saisons.",
+      descriptionEn:
+        "L'Insouciant's tasting menu, punctuated with small amuse-bouches between courses — a real succession of surprises. The dishes below are given as an example and change with the seasons.",
+      prices: {
+        create: [
+          { kind: "FORMULA", label: "Balade de saison — 4 plats (entrée, poisson, viande, dessert)", labelEn: "Seasonal stroll — 4 courses", priceCents: 7500, order: 0 },
+          { kind: "FORMULA", label: "Invitation au voyage — 6 plats (2 entrées, poisson, granité, viande, pré-desserts, dessert)", labelEn: "Invitation to travel — 6 courses", priceCents: 9800, order: 1 },
+          { kind: "WINE_PAIRING", label: "Accord mets & vins — 3 verres", labelEn: "Wine pairing — 3 glasses", priceCents: 3000, order: 2 },
+          { kind: "WINE_PAIRING", label: "Accord mets & vins — 4 verres", labelEn: "Wine pairing — 4 glasses", priceCents: 3600, order: 3 },
+          { kind: "WINE_PAIRING", label: "Accord mets & vins dégustation — 5 verres", labelEn: "Tasting wine pairing — 5 glasses", priceCents: 4200, order: 4 },
+        ],
+      },
+      sections: {
+        create: [
+          {
+            title: "Entrées",
+            titleEn: "Starters",
+            order: 0,
+            dishes: {
+              create: [
+                {
+                  name: "La fève edamame",
+                  order: 0,
+                  description:
+                    "Façon risotto, œufs de saumon, pain bao aux algues et sésame.",
+                },
+                {
+                  name: "La crevette impériale de Charente",
+                  order: 1,
+                  description:
+                    "Bavaroise de bisque safranée, condiment passion, céleri et amande.",
+                },
+              ],
+            },
+          },
+          {
+            title: "Plats",
+            titleEn: "Mains",
+            order: 1,
+            dishes: {
+              create: [
+                {
+                  name: "Le lieu jaune de ligne",
+                  order: 0,
+                  description: "Cappelletti de légumes, écume à l'estragon.",
+                },
+                {
+                  name: "Le taureau de Camargue",
+                  order: 1,
+                  description:
+                    "Bœuf fumé au pin, haricots à l'huile de persil, béarnaise au poivre de Belém.",
+                },
+              ],
+            },
+          },
+          {
+            title: "Desserts",
+            titleEn: "Desserts",
+            order: 2,
+            dishes: {
+              create: [
+                {
+                  name: "L'or jaune de Lorraine",
+                  order: 0,
+                  description:
+                    "Mirabelles rôties à l'amaretto, crème vanille de Madagascar, sorbet œillet d'Inde.",
+                },
+                {
+                  name: "Nuit pourpre",
+                  order: 1,
+                  description:
+                    "Ganache chocolat « Chanco », marmelade mûre-cerise au gingembre, éclats de brioche.",
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  });
+  console.log("✔ Menus");
+
+  // -------------------------------------------------------------------------
+  // Albums photos (vides — à compléter depuis /admin/photos)
+  // -------------------------------------------------------------------------
+  for (const [i, album] of [
+    { slug: "le-restaurant", title: "Le Restaurant", titleEn: "The restaurant" },
+    { slug: "les-plats", title: "Les Plats", titleEn: "The dishes" },
+  ].entries()) {
+    await prisma.galleryAlbum.upsert({
+      where: { slug: album.slug },
+      update: {},
+      create: { ...album, order: i },
+    });
+  }
+  console.log("✔ Albums photos (vides)");
+
+  // -------------------------------------------------------------------------
+  // Pages légales
+  // -------------------------------------------------------------------------
+  await prisma.page.upsert({
+    where: { slug: "mentions-legales" },
+    update: {},
+    create: {
+      slug: "mentions-legales",
+      title: "Mentions légales",
+      titleEn: "Legal notice",
       status: "PUBLISHED",
       publishedAt: new Date(),
       isSystem: true,
+      content: `
+        <h2>Éditeur</h2>
+        <p>Restaurant L'Insouciant — MCOCOTIER, société au capital de 5 000 €.<br />
+        Siège : 6-8 rue de la Mission, 72000 Le Mans.<br />
+        SIRET : 88788251200015 — RCS Le Mans.</p>
+        <h2>Directeur de la publication</h2>
+        <p><em>À compléter depuis l'administration.</em></p>
+        <h2>Hébergement</h2>
+        <p>Railway Corporation, 80 Broad Street, 5th Floor, New York, NY 10004, États-Unis — railway.com.</p>
+        <h2>Contact</h2>
+        <p>02 43 40 00 58 — restaurant-linsouciant@orange.fr</p>
+      `,
+      contentEn: `
+        <h2>Publisher</h2>
+        <p>Restaurant L'Insouciant — MCOCOTIER, share capital €5,000.<br />
+        Registered office: 6-8 rue de la Mission, 72000 Le Mans, France.<br />
+        SIRET: 88788251200015 — Le Mans Trade Register.</p>
+        <h2>Publication director</h2>
+        <p><em>To be completed from the admin panel.</em></p>
+        <h2>Hosting</h2>
+        <p>Railway Corporation, 80 Broad Street, 5th Floor, New York, NY 10004, USA — railway.com.</p>
+        <h2>Contact</h2>
+        <p>+33 2 43 40 00 58 — restaurant-linsouciant@orange.fr</p>
+      `,
     },
   });
 
-  // Pages légales — contenu à rédiger et publier depuis /admin (voir audit,
-  // section 11 : ces pages n'existaient pas du tout sur l'ancien site).
-  for (const legal of [
-    { slug: "mentions-legales", title: "Mentions légales" },
-    { slug: "politique-de-confidentialite", title: "Politique de confidentialité" },
+  for (const page of [
+    {
+      slug: "politique-de-confidentialite",
+      title: "Politique de confidentialité",
+      titleEn: "Privacy policy",
+    },
+    { slug: "politique-cookies", title: "Politique cookies", titleEn: "Cookie policy" },
+    { slug: "accessibilite", title: "Accessibilité", titleEn: "Accessibility" },
   ]) {
     await prisma.page.upsert({
-      where: { slug: legal.slug },
+      where: { slug: page.slug },
       update: {},
       create: {
-        slug: legal.slug,
-        title: legal.title,
-        content: `<p><em>Contenu à compléter depuis /admin/pages avant la mise en production (forme juridique de l'association, SIRET, hébergeur, responsable de publication, politique de cookies, etc.).</em></p>`,
+        ...page,
         status: "DRAFT",
         isSystem: true,
+        content:
+          "<p><em>Contenu à rédiger et publier depuis /admin/pages avant la mise en production.</em></p>",
+        contentEn: "<p><em>Content to be written and published from /admin/pages before going live.</em></p>",
       },
     });
   }
 
-  // Conditions générales de vente — contenu réel dès la création (contrairement
-  // aux deux pages ci-dessus) : les CGV encadrent la vente des bons cadeaux,
-  // déjà en production, donc pas de placeholder.
   await prisma.page.upsert({
     where: { slug: "cgv" },
     update: {},
     create: {
       slug: "cgv",
-      title: "Conditions générales de vente",
-      excerpt: "Conditions générales de vente des bons cadeaux 19 Bonnes Tables Sarthoises.",
-      content: CGV_CONTENT,
+      title: "Conditions générales de vente — Bons cadeaux",
+      titleEn: "Gift voucher terms and conditions",
       status: "PUBLISHED",
       publishedAt: new Date(),
       isSystem: true,
-    },
-  });
-
-  await prisma.page.upsert({
-    where: { slug: "bon-cadeaux" },
-    update: {},
-    create: {
-      slug: "bon-cadeaux",
-      title: "Bons cadeaux",
       content: `
-        <p><strong>Pensez aux chèques cadeaux pour toutes vos occasions ! 🎁</strong></p>
-        <p>Vous manquez d'idées pour un cadeau ? Simplifiez-vous la vie et faites plaisir à coup sûr avec nos chèques cadeaux !</p>
-        <ul>
-          <li>Polyvalents : ils conviennent à toutes les occasions – anniversaires, mariages, fêtes, ou juste pour dire merci.</li>
-          <li>Liberté de choix : offrez à vos proches la possibilité de choisir le restaurant qui leur fera vraiment plaisir ! (Bons cadeaux valables dans tous les restaurants membres)</li>
-          <li>Rapides et pratiques : une solution simple pour ne jamais être à court d'inspiration.</li>
-        </ul>
-        <h3>Comment l'obtenir ?</h3>
-        <p>En contactant l'association directement depuis notre site dans la rubrique "Contactez-nous" ou bien par téléphone au 02 43 40 42 08 sur les horaires d'ouverture (Restaurant "Le Cheval Blanc").</p>
+        <p>Les présentes conditions encadrent la vente en ligne de bons cadeaux du restaurant L'Insouciant.</p>
+        <h2>Validité</h2>
+        <p>Chaque bon cadeau est valable 12 mois à compter de la date d'achat, non prorogeable.</p>
+        <h2>Utilisation</h2>
+        <p>Le bon est utilisable au restaurant L'Insouciant, 6-8 rue de la Mission, 72000 Le Mans, de préférence sur réservation, sur présentation du code ou du QR code figurant sur le bon.</p>
+        <h2>Montant</h2>
+        <p>Le bon n'est ni remboursable, ni échangeable contre des espèces, et n'est pas fractionnable. Si l'addition dépasse la valeur du bon, la différence reste à la charge du client ; si elle est inférieure, aucun rendu de monnaie n'est effectué.</p>
+        <h2>Droit de rétractation</h2>
+        <p>Conformément aux articles L221-18 et suivants du Code de la consommation, l'acheteur dispose de 14 jours à compter de l'achat pour se rétracter, sauf si le bon a déjà été utilisé.</p>
+        <h2>Contact</h2>
+        <p>Pour toute question : 02 43 40 00 58 — restaurant-linsouciant@orange.fr.</p>
       `,
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      isSystem: true,
+      contentEn: `
+        <p>These terms govern the online sale of gift vouchers for the restaurant L'Insouciant.</p>
+        <h2>Validity</h2>
+        <p>Each gift voucher is valid for 12 months from the purchase date and cannot be extended.</p>
+        <h2>Use</h2>
+        <p>The voucher can be used at L'Insouciant, 6-8 rue de la Mission, 72000 Le Mans, preferably with a reservation, on presentation of the code or QR code shown on the voucher.</p>
+        <h2>Amount</h2>
+        <p>The voucher is non-refundable, cannot be exchanged for cash and cannot be split. If the bill exceeds the voucher value, the difference is payable by the customer; if it is lower, no change is given.</p>
+        <h2>Right of withdrawal</h2>
+        <p>Under articles L221-18 et seq. of the French Consumer Code, the buyer has 14 days from purchase to withdraw, unless the voucher has already been used.</p>
+        <h2>Contact</h2>
+        <p>For any question: +33 2 43 40 00 58 — restaurant-linsouciant@orange.fr.</p>
+      `,
     },
   });
-  console.log("✔ Pages créées (accueil, bons cadeaux, pages légales en brouillon)");
+  console.log("✔ Pages légales");
 
-  // ---------------------------------------------------------------------
-  // Restaurants (10 fiches, données extraites de l'audit du site B12)
-  // ---------------------------------------------------------------------
-  const restaurants: Array<Prisma.RestaurantCreateInput & { slug: string }> = [
-    {
-      slug: "le-cheval-blanc",
-      name: "Le Cheval Blanc",
-      shortDescription: "Restaurant, réceptions, repas de famille et séminaires.",
-      description:
-        "<p>Vous accueille au Cheval Blanc à Changé à proximité du Mans, venez découvrir une carte de saison raffinée. Dans un cadre chaleureux au coin de la cheminée ou dans un coin de verdure quand les beaux jours arrivent.</p><p>Restaurant, réceptions, repas de famille et séminaires.</p>",
-      additionalInfo: "Salle privative jusqu'à 90 personnes. Salon privé 25 personnes. Terrasse.",
-      address: "25 place de l'église",
-      postalCode: "72560",
-      city: "Changé",
-      phone: "02.43.40.42.08",
-      email: "contact@lechevalblanc72.fr",
-      website: "https://lechevalblanc72.fr",
-      priceLunch: "19€",
-      priceDinner: "50€",
-      openingHours: hours({
-        mardi: [{ start: "12:00", end: "14:00" }],
-        mercredi: [{ start: "12:00", end: "14:00" }],
-        jeudi: [{ start: "12:00", end: "14:00" }],
-        vendredi: [{ start: "12:00", end: "14:00" }, { start: "19:00", end: "21:00" }],
-        samedi: [{ start: "12:00", end: "14:00" }, { start: "19:00", end: "21:00" }],
-        dimanche: [{ start: "12:00", end: "14:00" }],
-      }) as unknown as Prisma.InputJsonValue,
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      order: 1,
-    },
-    {
-      slug: "le-jardin-gourmand",
-      name: "Le Jardin Gourmand",
-      shortDescription: "Cuisine simple, autour des produits de saison, dans un cadre chaleureux et original.",
-      // TODO audit : aucune coordonnée ni horaire disponible sur l'ancien site pour cette fiche.
-      priceLunch: "15€",
-      priceDinner: "35€",
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      order: 2,
-    },
-    {
-      slug: "l-insouciant",
-      name: "L'insouciant",
-      shortDescription: "Gastronomie décomplexée associée au voyage culinaire.",
-      description:
-        "<p>Gastronomie décomplexée. L'insouciant vous propose un voyage culinaire haut en saveur. Corentin Courtien et son équipe œuvrent à respecter la nature et les saisons. Les produits sont sourcés en direct ou avec très peu d'intermédiaire. Le chef sublime les matières brutes de notre beau terroir français.</p><p>En salle, un esprit épuré et chaleureux. Un service bienveillant, rigoureux, à votre écoute.</p>",
-      additionalInfo: "Terrasse.",
-      address: "6 Rue de la Mission",
-      postalCode: "72000",
-      city: "Le Mans",
-      phone: "02 43 40 00 58",
-      email: "restaurant-linsouciant@orange.fr",
-      website: "https://www.restaurant-linsouciant.fr/",
-      priceLunch: "30€",
-      priceDinner: "70€",
-      openingHours: hours({
-        mardi: [{ start: "12:00", end: "13:30" }],
-        mercredi: [{ start: "12:00", end: "13:30" }, { start: "19:00", end: "21:30" }],
-        jeudi: [{ start: "12:00", end: "13:30" }, { start: "19:00", end: "21:30" }],
-        vendredi: [{ start: "12:00", end: "13:30" }, { start: "19:00", end: "21:30" }],
-        samedi: [{ start: "12:00", end: "13:30" }, { start: "19:00", end: "21:30" }],
-      }) as unknown as Prisma.InputJsonValue,
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      order: 3,
-    },
-    {
-      slug: "les-etangs-de-guibert",
-      name: "Les étangs de Guibert",
-      shortDescription: "Hôtel et restaurant de charme.",
-      description:
-        "<p>Une grande ferme rénovée au pied de la forêt de Perseigne. 8 ha d'étangs riches en truite et en saumon. Hôtel et restaurant de charme. 3 salles de 30 à 140 couverts. Cheminée - Terrasse avec vue sur l'étang - Bois et parking privé.</p>",
-      additionalInfo:
-        "Fermeture hebdomadaire : Hiver (mi-septembre à mi-mars) dimanche soir et lundi — Été (mi-mars à mi-septembre) dimanche soir. Dernière heure d'accueil : 14h le midi et 21h30 le soir.",
-      address: "Route des Etangs de Guibert",
-      postalCode: "72600",
-      city: "Neufchâtel-en-Saosnois",
-      phone: "02.43.97.15.38",
-      email: "contact@lesetangsdeguibert.fr",
-      // TODO audit : lien affiché (lesetangsdeguibert.com) différent du href réel (mort) — à confirmer avec le restaurant.
-      website: "https://www.lesetangsdeguibert.com/",
-      priceLunch: "26€",
-      priceDinner: "45€",
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      order: 4,
-    },
-    {
-      slug: "l-ardoise",
-      name: "L'ardoise",
-      address: "7 rue Carnot",
-      postalCode: "72270",
-      city: "Malicorne-Sur-Sarthe",
-      phone: "02 43 94 53 56",
-      email: "lardoise.malicorne@gmail.com",
-      website: "http://www.resto-bistro-lardoise.com/",
-      // TODO audit : tarifs affichés à "00€" sur l'ancien site (non renseignés) — à compléter.
-      openingHours: hours({
-        lundi: [{ start: "12:00", end: "13:45" }],
-        mardi: [{ start: "12:00", end: "13:45" }],
-        jeudi: [{ start: "12:00", end: "13:45" }],
-        vendredi: [{ start: "12:00", end: "13:45" }, { start: "19:00", end: "21:00" }],
-        samedi: [{ start: "12:00", end: "13:45" }, { start: "19:00", end: "21:00" }],
-        dimanche: [{ start: "12:00", end: "14:00" }],
-      }) as unknown as Prisma.InputJsonValue,
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      order: 5,
-    },
-    {
-      slug: "la-petite-auberge",
-      name: "La petite Auberge",
-      shortDescription:
-        "L'auberge des Frères Plé propose une cuisine française raffinée, savoureuse et tendance, dans une ambiance détendue et conviviale.",
-      description:
-        "<p>Situé à 17 km du Mans sur la commune de Saint-Jean-d'Assé, le restaurant La Petite Auberge vous accueille depuis 15 ans. L'auberge est tenue par les Frères Plé, dont l'un est cuisinier.</p>",
-      additionalInfo:
-        "3 salles de 10 à 100 couverts. TODO audit : horaires affichés sur l'ancien site (09h00–17h00 tous les jours) semblaient être une erreur de saisie — à vérifier avec le restaurant avant publication.",
-      address: "14 route Nationale",
-      postalCode: "72380",
-      city: "Saint Jean d'Assé",
-      phone: "02.43.25.25.15",
-      website: "https://auberge-restaurant-traiteur.fr",
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      order: 6,
-    },
-    {
-      slug: "le-panier-fleuri",
-      name: "Le Panier Fleuri",
-      shortDescription: "Cuisine exigeante, alliant plats traditionnels et créations innovantes dans un cadre chaleureux.",
-      additionalInfo: "Dernière heure d'accueil : 15h le midi et 21h00 le soir.",
-      address: "1 Av. de Bretagne",
-      postalCode: "72160",
-      city: "Sceaux-sur-Huisne",
-      phone: "02 43 93 40 08",
-      website: "http://www.restaurant-le-panier-fleuri-sceaux-sur-huisne.fr/",
-      facebookUrl: "https://www.facebook.com/restaurantlepanierfleuri",
-      priceLunch: "15€",
-      priceDinner: "45€",
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      order: 7,
-    },
-    {
-      slug: "hotel-restaurant-la-renaissance",
-      name: "Hôtel Restaurant La Renaissance",
-      // TODO audit : aucune coordonnée trouvée sur l'ancien site (adresse, téléphone, email, site web) — recherche externe nécessaire avant publication.
-      priceLunch: "16€",
-      priceDinner: "35€",
-      status: "DRAFT",
-      order: 8,
-    },
-    {
-      slug: "les-tables-de-la-fontaine",
-      name: "Les Tables de la Fontaine",
-      shortDescription: "Le chef Olivier Dabet sublime des produits de saison avec raffinement pour « taquiner les papilles ».",
-      description:
-        "<p>« Taquiner les papilles » est la devise du chef Olivier Dabet. N'attendez pas plus longtemps, venez vivre une expérience gastronomique dans un cadre chaleureux et une atmosphère feutrée.</p>",
-      address: "Château de Belair, 1 Lieu Dit",
-      postalCode: "72330",
-      city: "Cérans-Foulletourte",
-      phone: "02 43 87 18 18",
-      website: "https://www.les-tables-de-la-fontaine.fr/",
-      priceDinner: "55€",
-      openingHours: hours({
-        mardi: [{ start: "19:00", end: "20:30" }],
-        mercredi: [{ start: "19:00", end: "20:30" }],
-        jeudi: [{ start: "19:00", end: "20:30" }],
-        vendredi: [{ start: "19:00", end: "20:30" }],
-        samedi: [{ start: "19:00", end: "20:30" }],
-        dimanche: [{ start: "12:00", end: "13:30" }],
-      }) as unknown as Prisma.InputJsonValue,
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      order: 9,
-    },
-    {
-      slug: "les-jardins-de-marolles",
-      name: "Les Jardins de Marolles",
-      shortDescription: "Amoureux de la cuisine française, nous mettons à l'honneur des classiques culinaires.",
-      description:
-        "<p>Les Jardins de Marolles, situés au cœur de Marolles-les-Braults, proposent une cuisine française simple, raffinée et entièrement faite maison. À partir de produits frais et locaux, le Chef David Sechet revisite les grands classiques avec créativité.</p>",
-      address: "11 Place Henri Coutard",
-      postalCode: "72260",
-      city: "Marolles-les-Braults",
-      phone: "02 43 97 41 06",
-      website: "https://www.lesjardinsdemarolles.fr/",
-      priceDinner: "55€",
-      openingHours: hours({
-        lundi: [{ start: "12:00", end: "13:30" }],
-        mardi: [{ start: "12:00", end: "13:30" }],
-        jeudi: [{ start: "12:00", end: "13:30" }],
-        vendredi: [{ start: "12:00", end: "13:30" }, { start: "19:15", end: "21:15" }],
-        samedi: [{ start: "12:00", end: "13:30" }, { start: "19:15", end: "21:15" }],
-        dimanche: [{ start: "12:00", end: "13:30" }],
-      }) as unknown as Prisma.InputJsonValue,
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      order: 10,
-    },
-  ];
-
-  const restaurantBySlug = new Map<string, string>();
-  for (const data of restaurants) {
-    const { slug, ...rest } = data;
-    const restaurant = await prisma.restaurant.upsert({
-      where: { slug },
-      update: {},
-      create: { slug, ...rest },
-    });
-    restaurantBySlug.set(slug, restaurant.id);
-
-    // Album galerie vide associé (redirection /galerie-{slug} -> /galerie/{slug}
-    // déjà en place dans next.config.ts) — photos à uploader depuis /admin.
-    await prisma.galleryAlbum.upsert({
-      where: { slug },
-      update: {},
-      create: { slug, title: restaurant.name, restaurantId: restaurant.id, order: restaurant.order },
-    });
-  }
-  console.log(`✔ ${restaurants.length} restaurants créés (voir commentaires TODO audit pour les données manquantes)`);
-
-  // ---------------------------------------------------------------------
-  // Bureau de l'association
-  // ---------------------------------------------------------------------
-  const boardMembers: { firstName: string; lastName: string; role: string; restaurantSlug?: string; order: number }[] = [
-    { firstName: "Gaëtan", lastName: "Cledic", role: "Président de l'association", restaurantSlug: "le-cheval-blanc", order: 1 },
-    { firstName: "Romuald", lastName: "Lachater", role: "Vice-président", restaurantSlug: "le-panier-fleuri", order: 2 },
-    { firstName: "Sébastien", lastName: "Plé", role: "Trésorier", restaurantSlug: "la-petite-auberge", order: 3 },
-    { firstName: "Thierry", lastName: "Robin", role: "Trésorier adjoint", order: 4 },
-    { firstName: "Madeline", lastName: "Courtien", role: "Secrétaire", restaurantSlug: "l-insouciant", order: 5 },
-    { firstName: "Laeticia", lastName: "Lachater", role: "Secrétaire Adjoint", restaurantSlug: "le-panier-fleuri", order: 6 },
-  ];
-
-  for (const member of boardMembers) {
-    const existing = await prisma.boardMember.findFirst({
-      where: { firstName: member.firstName, lastName: member.lastName },
-    });
-    if (existing) continue;
-    await prisma.boardMember.create({
-      data: {
-        firstName: member.firstName,
-        lastName: member.lastName,
-        role: member.role,
-        order: member.order,
-        restaurantId: member.restaurantSlug ? restaurantBySlug.get(member.restaurantSlug) : undefined,
-      },
-    });
-  }
-  console.log(`✔ ${boardMembers.length} membres du bureau créés`);
-
-  // ---------------------------------------------------------------------
-  // Partenaires
-  // ---------------------------------------------------------------------
-  const partners = [
-    {
-      name: "Poulet de Loué",
-      description:
-        "Depuis 1969, l'Association des 19 Bonnes Tables Sarthoises collabore avec les producteurs de poulets de Loué, et nos chefs créent des recettes à base de leurs volailles.",
-      order: 1,
-    },
-    { name: "Metro", description: null, order: 2 },
-  ];
-  for (const partner of partners) {
-    const existing = await prisma.partner.findFirst({ where: { name: partner.name } });
-    if (!existing) {
-      await prisma.partner.create({ data: partner });
-    }
-  }
-  console.log(`✔ ${partners.length} partenaires créés (logos à uploader depuis /admin)`);
-
-  // ---------------------------------------------------------------------
-  // Navigation
-  // ---------------------------------------------------------------------
-  // Menu volontairement réduit : "Accueil" est déjà accessible via le logo,
-  // "Bons cadeaux" reste accessible depuis le footer, et les restaurants
-  // sont listés en intégralité directement sur la page d'accueil
-  // (#restaurants) plutôt que sur une page/onglet séparé.
-  const navItems: { label: string; linkType: "INTERNAL" | "EXTERNAL"; url?: string; pageId?: string; order: number }[] = [
-    { label: "L'association", linkType: "INTERNAL", url: "/le-bureau", order: 1 },
-    { label: "Galerie", linkType: "INTERNAL", url: "/galerie", order: 2 },
-    { label: "Partenaires", linkType: "INTERNAL", url: "/partenaires", order: 3 },
-    { label: "Actualités", linkType: "INTERNAL", url: "/actualites", order: 4 },
-    { label: "Contact", linkType: "INTERNAL", url: "/contact", order: 5 },
-  ];
-
-  for (const item of navItems) {
-    const existing = await prisma.navigationItem.findFirst({ where: { label: item.label, parentId: null } });
-    if (!existing) {
-      await prisma.navigationItem.create({
-        data: {
-          label: item.label,
-          linkType: item.linkType,
-          url: item.url,
-          pageId: item.pageId,
-          order: item.order,
-        },
-      });
-    }
-  }
-  console.log("✔ Navigation principale créée");
-
-  console.log("\nSeed terminé. Connectez-vous sur /admin/login avec :");
-  console.log(`  Email : ${adminEmail}`);
-  console.log(`  Mot de passe : ${adminPassword}`);
-  console.log("⚠ Changez ce mot de passe immédiatement après la première connexion.");
+  console.log("Seed terminé.");
 }
 
 main()
@@ -466,6 +379,4 @@ main()
     console.error(error);
     process.exit(1);
   })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .finally(() => prisma.$disconnect());

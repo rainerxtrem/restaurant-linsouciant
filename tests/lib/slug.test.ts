@@ -7,54 +7,38 @@ describe("slugifyText", () => {
   });
 
   it("gère les caractères spéciaux", () => {
-    expect(slugifyText("Château de Belair !")).toBe("chateau-de-belair");
+    expect(slugifyText("Menu Plaisir !")).toBe("menu-plaisir");
   });
 });
 
-const { findUniqueRestaurant, findUniquePage } = vi.hoisted(() => ({
-  findUniqueRestaurant: vi.fn(),
-  findUniquePage: vi.fn(),
-}));
+const { findUniqueMenu } = vi.hoisted(() => ({ findUniqueMenu: vi.fn() }));
 
 vi.mock("@/lib/db/prisma", () => ({
   prisma: {
-    restaurant: { findUnique: findUniqueRestaurant },
-    page: { findUnique: findUniquePage },
-    article: { findUnique: vi.fn() },
+    menu: { findUnique: findUniqueMenu },
+    page: { findUnique: vi.fn() },
     galleryAlbum: { findUnique: vi.fn() },
   },
 }));
 
 describe("ensureUniqueSlug", () => {
-  beforeEach(() => {
-    findUniqueRestaurant.mockReset();
-    findUniquePage.mockReset();
-  });
+  beforeEach(() => findUniqueMenu.mockReset());
 
   it("retourne le slug de base si disponible", async () => {
-    findUniqueRestaurant.mockResolvedValue(null);
-    findUniquePage.mockResolvedValue(null);
-
+    findUniqueMenu.mockResolvedValue(null);
     const { ensureUniqueSlug } = await import("@/lib/slug");
-    const slug = await ensureUniqueSlug("restaurant", "Le Cheval Blanc");
-    expect(slug).toBe("le-cheval-blanc");
+    expect(await ensureUniqueSlug("menu", "Menu Plaisir")).toBe("menu-plaisir");
   });
 
   it("ajoute un suffixe numérique en cas de collision", async () => {
-    findUniqueRestaurant.mockResolvedValueOnce({ id: "existing-1" }).mockResolvedValueOnce(null);
-    findUniquePage.mockResolvedValue(null);
-
+    findUniqueMenu.mockResolvedValueOnce({ id: "existing-1" }).mockResolvedValueOnce(null);
     const { ensureUniqueSlug } = await import("@/lib/slug");
-    const slug = await ensureUniqueSlug("restaurant", "Le Cheval Blanc");
-    expect(slug).toBe("le-cheval-blanc-2");
+    expect(await ensureUniqueSlug("menu", "Menu Plaisir")).toBe("menu-plaisir-2");
   });
 
   it("exclut l'enregistrement courant lors d'une modification", async () => {
-    findUniqueRestaurant.mockResolvedValue({ id: "current-id" });
-    findUniquePage.mockResolvedValue(null);
-
+    findUniqueMenu.mockResolvedValue({ id: "current-id" });
     const { ensureUniqueSlug } = await import("@/lib/slug");
-    const slug = await ensureUniqueSlug("restaurant", "Le Cheval Blanc", "current-id");
-    expect(slug).toBe("le-cheval-blanc");
+    expect(await ensureUniqueSlug("menu", "Menu Plaisir", "current-id")).toBe("menu-plaisir");
   });
 });

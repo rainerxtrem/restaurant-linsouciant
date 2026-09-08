@@ -1,33 +1,35 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db/prisma";
+import { absoluteUrl, localizedPath } from "@/lib/seo";
+import { routing } from "@/i18n/routing";
 
 export const dynamic = "force-dynamic";
 
+const STATIC_PATHS = ["/", "/menus", "/photos", "/contact", "/reservation", "/bons-cadeaux"];
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  let pagePaths: string[] = [];
+  try {
+    const pages = await prisma.page.findMany({
+      where: { status: "PUBLISHED" },
+      select: { slug: true },
+    });
+    pagePaths = pages.map((p) => `/${p.slug}`);
+  } catch {
+    // base non joignable au build — sitemap statique suffisant
+  }
 
-  const [restaurants, pages, articles, albums] = await Promise.all([
-    prisma.restaurant.findMany({ where: { status: "PUBLISHED" }, select: { slug: true, updatedAt: true } }),
-    prisma.page.findMany({ where: { status: "PUBLISHED" }, select: { slug: true, updatedAt: true } }),
-    prisma.article.findMany({ where: { status: "PUBLISHED" }, select: { slug: true, updatedAt: true } }),
-    prisma.galleryAlbum.findMany({ select: { slug: true, updatedAt: true } }),
-  ]);
+  const all = [...STATIC_PATHS, ...pagePaths];
 
-  const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}/`, changeFrequency: "weekly", priority: 1 },
-    { url: `${baseUrl}/nos-restaurants`, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${baseUrl}/le-bureau`, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${baseUrl}/partenaires`, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${baseUrl}/galerie`, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${baseUrl}/actualites`, changeFrequency: "weekly", priority: 0.6 },
-    { url: `${baseUrl}/contact`, changeFrequency: "yearly", priority: 0.4 },
-  ];
-
-  return [
-    ...staticRoutes,
-    ...restaurants.map((r) => ({ url: `${baseUrl}/${r.slug}`, lastModified: r.updatedAt, changeFrequency: "monthly" as const, priority: 0.8 })),
-    ...pages.map((p) => ({ url: `${baseUrl}/${p.slug}`, lastModified: p.updatedAt, changeFrequency: "monthly" as const, priority: 0.6 })),
-    ...articles.map((a) => ({ url: `${baseUrl}/actualites/${a.slug}`, lastModified: a.updatedAt, changeFrequency: "monthly" as const, priority: 0.5 })),
-    ...albums.map((g) => ({ url: `${baseUrl}/galerie/${g.slug}`, lastModified: g.updatedAt, changeFrequency: "monthly" as const, priority: 0.4 })),
-  ];
+  return all.flatMap((path) =>
+    routing.locales.map((locale) => ({
+      url: absoluteUrl(localizedPath(path, locale)),
+      lastModified: new Date(),
+      alternates: {
+        languages: Object.fromEntries(
+          routing.locales.map((l) => [l, absoluteUrl(localizedPath(path, l))])
+        ),
+      },
+    }))
+  );
 }

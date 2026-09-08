@@ -1,59 +1,32 @@
 import { describe, expect, it, vi } from "vitest";
 
+function mockAuth(user: unknown) {
+  vi.resetModules();
+  vi.doMock("@/lib/auth", () => ({ auth: vi.fn().mockResolvedValue(user ? { user } : null) }));
+}
+
 describe("permissions", () => {
-  it("requireContentAccess autorise ADMIN et SUPER_ADMIN", async () => {
-    vi.resetModules();
-    vi.doMock("@/lib/auth", () => ({
-      auth: vi.fn().mockResolvedValue({ user: { id: "1", role: "ADMIN", email: "a@a.fr", name: "A" } }),
-    }));
-    const { requireContentAccess } = await import("@/lib/auth/permissions");
-    await expect(requireContentAccess()).resolves.toBeDefined();
+  it("requireAdmin autorise ADMIN et SUPER_ADMIN", async () => {
+    mockAuth({ id: "1", role: "ADMIN", email: "a@a.fr", name: "A" });
+    const { requireAdmin } = await import("@/lib/auth/permissions");
+    await expect(requireAdmin()).resolves.toBeDefined();
   });
 
   it("requireSuperAdmin rejette un compte ADMIN simple", async () => {
-    vi.resetModules();
-    vi.doMock("@/lib/auth", () => ({
-      auth: vi.fn().mockResolvedValue({ user: { id: "1", role: "ADMIN", email: "a@a.fr", name: "A" } }),
-    }));
+    mockAuth({ id: "1", role: "ADMIN", email: "a@a.fr", name: "A" });
     const { requireSuperAdmin, ForbiddenError } = await import("@/lib/auth/permissions");
     await expect(requireSuperAdmin()).rejects.toBeInstanceOf(ForbiddenError);
   });
 
   it("requireSuperAdmin autorise SUPER_ADMIN", async () => {
-    vi.resetModules();
-    vi.doMock("@/lib/auth", () => ({
-      auth: vi.fn().mockResolvedValue({ user: { id: "1", role: "SUPER_ADMIN", email: "a@a.fr", name: "A" } }),
-    }));
+    mockAuth({ id: "1", role: "SUPER_ADMIN", email: "a@a.fr", name: "A" });
     const { requireSuperAdmin } = await import("@/lib/auth/permissions");
     await expect(requireSuperAdmin()).resolves.toBeDefined();
   });
 
   it("requireSession rejette un visiteur non authentifié", async () => {
-    vi.resetModules();
-    vi.doMock("@/lib/auth", () => ({
-      auth: vi.fn().mockResolvedValue(null),
-    }));
+    mockAuth(null);
     const { requireSession, UnauthorizedError } = await import("@/lib/auth/permissions");
     await expect(requireSession()).rejects.toBeInstanceOf(UnauthorizedError);
-  });
-
-  it("requireGiftVoucherAccess et requireCommunicationAccess autorisent SECRETAIRE", async () => {
-    vi.resetModules();
-    vi.doMock("@/lib/auth", () => ({
-      auth: vi.fn().mockResolvedValue({ user: { id: "1", role: "SECRETAIRE", email: "s@a.fr", name: "S" } }),
-    }));
-    const { requireGiftVoucherAccess, requireCommunicationAccess } = await import("@/lib/auth/permissions");
-    await expect(requireGiftVoucherAccess()).resolves.toBeDefined();
-    await expect(requireCommunicationAccess()).resolves.toBeDefined();
-  });
-
-  it("SECRETAIRE reste rejeté par requireContentAccess et requireSuperAdmin", async () => {
-    vi.resetModules();
-    vi.doMock("@/lib/auth", () => ({
-      auth: vi.fn().mockResolvedValue({ user: { id: "1", role: "SECRETAIRE", email: "s@a.fr", name: "S" } }),
-    }));
-    const { requireContentAccess, requireSuperAdmin, ForbiddenError } = await import("@/lib/auth/permissions");
-    await expect(requireContentAccess()).rejects.toBeInstanceOf(ForbiddenError);
-    await expect(requireSuperAdmin()).rejects.toBeInstanceOf(ForbiddenError);
   });
 });

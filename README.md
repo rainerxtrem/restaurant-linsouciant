@@ -1,315 +1,102 @@
-# 19 Bonnes Tables Sarthoises
+# Restaurant L'Insouciant — site web
 
-Application Next.js (App Router) + PostgreSQL + Prisma reproduisant et remplaçant le site
-[19bonnes-tables-sarthoises.fr](https://19bonnes-tables-sarthoises.fr/), hébergé auparavant sur B12.
-Aucune dépendance à B12 : le site fonctionne intégralement sur votre propre infrastructure
-(base de données, médias, authentification).
+Site vitrine bilingue (FR / EN) du restaurant **L'Insouciant**, 6-8 rue de la
+Mission, 72000 Le Mans — chef Corentin Courtien.
 
-## Sommaire
+Reprend l'intégralité du contenu de l'ancien site
+[restaurant-linsouciant.fr](https://www.restaurant-linsouciant.fr/) (propulsé
+par Zenchef) : accueil, cartes & menus, photos, accès & contact, pages
+légales, réservation Zenchef, newsletter, bons cadeaux.
 
-- [Stack technique](#stack-technique)
-- [Installation](#installation)
-- [Variables d'environnement](#variables-denvironnement)
-- [PostgreSQL](#postgresql)
-- [Prisma](#prisma)
-- [Migration](#migration)
-- [Seed](#seed)
-- [Création du premier administrateur](#création-du-premier-administrateur)
-- [Développement](#développement)
-- [Build](#build)
-- [Production (sans Docker)](#production-sans-docker)
-- [Docker](#docker)
-- [Déploiement VPS](#déploiement-vps)
-- [Domaine](#domaine)
-- [HTTPS](#https)
-- [Sauvegardes](#sauvegardes)
-- [Mise à jour](#mise-à-jour)
-- [Restauration](#restauration)
-- [Tests](#tests)
-- [Architecture](#architecture)
-- [Migration des données depuis B12](#migration-des-données-depuis-b12)
+## Stack
 
-## Stack technique
+| | |
+|---|---|
+| Framework | Next.js 15 (App Router, React 19) |
+| Base de données | PostgreSQL + Prisma 6 |
+| i18n | `next-intl` — FR par défaut (`/menus`), EN préfixé (`/en/menus`) |
+| Auth back-office | NextAuth (Auth.js) v5, identifiants + mot de passe |
+| Emails | Resend (API HTTP) |
+| Paiement bons cadeaux | Stripe Checkout + certificat PDF (pdfkit) |
+| Réservation | Widget Zenchef |
+| Styles | Tailwind CSS (palette encre / or / vin, Fraunces + Inter) |
+| Hébergement | Railway + plugin PostgreSQL (voir `railway/`) |
 
-- Next.js 15 (App Router) + TypeScript strict + Tailwind CSS
-- PostgreSQL + Prisma ORM
-- Auth.js (NextAuth v5) — authentification par identifiants, sessions JWT
-- Zod pour toute validation serveur
-- Tiptap pour l'édition de contenu riche (pages, actualités, restaurants)
-- Stockage médias abstrait (driver `local` par défaut, `s3` en option)
-- Vitest pour les tests
+## Développement local
 
-## Installation
-
-Prérequis : Node.js ≥ 20, npm, un serveur PostgreSQL (local, Docker, ou managé).
+Prérequis : Node ≥ 20, une base PostgreSQL (via Docker : `docker compose up -d db`).
 
 ```bash
+cp .env.example .env          # ajuster DATABASE_URL, AUTH_SECRET…
 npm install
-cp .env.example .env
-# éditer .env avec vos propres valeurs (voir section suivante)
+npm run prisma:migrate        # applique les migrations
+npm run db:seed               # compte admin + contenu du site
+npm run dev                   # http://localhost:3000
 ```
 
-## Variables d'environnement
+Back-office : `http://localhost:3000/admin` (identifiants du seed :
+`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`).
 
-Toutes les variables sont documentées dans [`.env.example`](.env.example). Points importants :
+## Scripts
 
-- `DATABASE_URL` : chaîne de connexion PostgreSQL.
-- `AUTH_SECRET` : secret de session, à générer avec `npx auth secret` ou `openssl rand -base64 32`.
-  **Ne jamais commiter de valeur réelle.**
-- `STORAGE_DRIVER` : `local` (fichiers sur disque, servis via `/media/[...key]`) ou `s3`
-  (bucket compatible S3 — OVH Object Storage, Scaleway, MinIO, Cloudflare R2, AWS S3...).
-- `SMTP_*` : optionnel, active l'envoi d'email de notification à chaque message de contact.
-- `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` : compte SUPER_ADMIN créé par le seed.
+| Script | Rôle |
+|---|---|
+| `npm run dev` | serveur de développement |
+| `npm run build` / `start` | build & serveur de production |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint (config Next) |
+| `npm run test` | Vitest |
+| `npm run prisma:migrate` | migration de dev |
+| `npm run prisma:deploy` | migration de prod (`migrate deploy`) |
+| `npm run db:seed` | seed |
+| `npm run prisma:studio` | explorateur de base |
 
-Aucun secret réel ne doit être versionné : `.env` est dans `.gitignore`.
-
-## PostgreSQL
-
-En local sans Docker, un simple `postgres` (via l'installeur officiel, Homebrew, ou
-`docker run -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16-alpine`) suffit. Créez une base :
-
-```sql
-CREATE DATABASE bonnes_tables;
-```
-
-Puis renseignez `DATABASE_URL` dans `.env` en conséquence.
-
-## Prisma
-
-Le schéma complet est dans [`prisma/schema.prisma`](prisma/schema.prisma) : Restaurant, Page,
-Article/Category, BoardMember, Partner, Media, GalleryAlbum/GalleryItem, NavigationItem,
-ContactMessage, SiteSetting, Redirect, User, AuditLog.
-
-```bash
-npm run prisma:generate   # régénère le client Prisma après une modif du schéma
-npm run prisma:studio     # interface graphique pour explorer/éditer les données
-```
-
-## Migration
-
-```bash
-npm run prisma:migrate    # dev : crée et applique une migration à partir du schéma
-npm run prisma:deploy     # prod : applique les migrations existantes sans en créer
-```
-
-En Docker, `prisma migrate deploy` est exécuté automatiquement au démarrage du conteneur
-(voir `docker-entrypoint.sh`).
-
-## Seed
-
-Le fichier [`prisma/seed.ts`](prisma/seed.ts) importe les données réelles extraites de l'audit
-du site B12 existant (les 10 restaurants, le bureau, les partenaires, la page d'accueil, les
-bons cadeaux, la navigation). Il est **idempotent** (`upsert`) : peut être relancé sans dupliquer.
-
-```bash
-npm run db:seed
-```
-
-Ce que le seed **ne fait pas** (volontairement, pour ne rien inventer) :
-
-- Il ne migre **aucune photo** : les médias de l'ancien site vivent sur `cdn.b12.io` et
-  appartiennent à B12. Récupérez-les manuellement (elles restent accessibles tant que B12
-  n'est pas coupé) et uploadez-les depuis `/admin` sur chaque restaurant/album concerné.
-- Il laisse en **brouillon** les pages légales (mentions légales, politique de confidentialité)
-  qui n'existaient pas du tout sur l'ancien site — à rédiger avant la mise en ligne.
-- Plusieurs champs restent vides quand l'information était introuvable sur l'ancien site
-  (ex. coordonnées de l'Hôtel Restaurant La Renaissance) — recherchez-les avant publication.
-  Chaque cas est signalé par un commentaire `TODO audit` dans `prisma/seed.ts`.
-
-## Création du premier administrateur
-
-Le premier compte SUPER_ADMIN est créé par le seed, avec l'email/mot de passe définis dans
-`.env` (`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`). **Changez ce mot de passe immédiatement**
-après la première connexion sur `/admin/login`, depuis `/admin/administrateurs`.
-
-Pour créer un administrateur supplémentaire sans passer par le seed, connectez-vous en
-SUPER_ADMIN et utilisez `/admin/administrateurs`.
-
-## Développement
-
-```bash
-npm run prisma:migrate
-npm run db:seed
-npm run dev
-```
-
-- Site public : http://localhost:3000
-- Administration : http://localhost:3000/admin/login
-
-## Build
-
-```bash
-npm run build
-npm start
-```
-
-Le build nécessite un `DATABASE_URL` valide dans l'environnement (pas de requête réelle
-n'est faite pendant le build : toutes les pages consommant la base sont en rendu dynamique,
-`DATABASE_URL` sert seulement à `prisma generate`).
-
-## Production (sans Docker)
-
-1. `npm run build`
-2. `npm run prisma:deploy`
-3. `npm start` (idéalement derrière un process manager — voir `pm2`, ou un service systemd)
-4. Placez un reverse proxy (Nginx, Caddy) devant le port 3000 pour le HTTPS et le domaine.
-
-## Docker
-
-```bash
-cp .env.example .env   # puis éditez, notamment POSTGRES_PASSWORD et AUTH_SECRET
-docker compose up -d --build
-docker compose exec app npm run db:seed   # une seule fois, après le premier démarrage
-```
-
-Le `docker-compose.yml` fournit deux services : `db` (PostgreSQL 16) et `app` (l'application,
-build via le `Dockerfile` multi-stage). Les migrations Prisma s'appliquent automatiquement à
-chaque démarrage du conteneur `app`. Les médias uploadés en driver `local` sont persistés dans
-le volume `media_uploads`.
-
-## Déploiement VPS
-
-1. Installez Docker + Docker Compose sur le VPS (ou Node.js 20 + PostgreSQL si vous n'utilisez
-   pas Docker).
-2. Copiez le projet sur le VPS (`git clone` ou `rsync`), créez et remplissez `.env`.
-3. `docker compose up -d --build`, puis `docker compose exec app npm run db:seed` au premier
-   démarrage.
-4. Configurez un reverse proxy (Nginx ou Caddy) pointant vers `127.0.0.1:3000`, avec HTTPS
-   (voir ci-dessous).
-5. Uploadez les médias récupérés de l'ancien site depuis `/admin`.
-6. Vérifiez `/admin/redirections` et `next.config.ts` (`redirects()`) : les anciennes URLs B12
-   connues sont déjà redirigées en 301.
-
-## Domaine
-
-Pointez les enregistrements DNS de `19bonnes-tables-sarthoises.fr` et
-`www.19bonnes-tables-sarthoises.fr` vers l'IP du VPS (enregistrements `A`/`AAAA`, ou `CNAME`
-pour le sous-domaine `www` si votre hébergeur DNS le permet). `NEXT_PUBLIC_SITE_URL` et
-`NEXTAUTH_URL` doivent correspondre au domaine final (`https://19bonnes-tables-sarthoises.fr`).
-Choisissez une version canonique (avec ou sans `www`) et redirigez l'autre — un reverse proxy
-Nginx/Caddy fait cela en une règle.
-
-## HTTPS
-
-Avec Caddy (recommandé pour sa simplicité, HTTPS automatique via Let's Encrypt) :
+## Structure
 
 ```
-19bonnes-tables-sarthoises.fr, www.19bonnes-tables-sarthoises.fr {
-    redir https://19bonnes-tables-sarthoises.fr{uri} 301  # si www -> non-www choisi comme canonique, adapter
-    reverse_proxy 127.0.0.1:3000
-}
-```
-
-Avec Nginx + Certbot : configuration reverse proxy classique vers `127.0.0.1:3000`, puis
-`certbot --nginx -d 19bonnes-tables-sarthoises.fr -d www.19bonnes-tables-sarthoises.fr`.
-
-## Sauvegardes
-
-**PostgreSQL** (via Docker Compose) :
-
-```bash
-docker compose exec db pg_dump -U $POSTGRES_USER $POSTGRES_DB > backup-$(date +%Y%m%d).sql
-```
-
-Automatisez avec un cron quotidien appelant ce script et conservez les archives hors du VPS
-(stockage objet, autre serveur).
-
-**Médias** (driver `local`) : le volume Docker `media_uploads` (ou le dossier
-`storage/uploads` hors Docker) doit être sauvegardé avec la même fréquence, par exemple :
-
-```bash
-docker run --rm -v 19bonnes-tables-sarthoisesfr_media_uploads:/data -v $(pwd):/backup \
-  alpine tar czf /backup/media-$(date +%Y%m%d).tar.gz -C /data .
-```
-
-Si vous utilisez le driver `s3`, la sauvegarde des médias est déléguée à votre fournisseur de
-stockage objet (activez la réplication/versioning côté bucket).
-
-## Mise à jour
-
-```bash
-git pull
-docker compose up -d --build   # rebuild l'image, réapplique les migrations au démarrage
-```
-
-Sans Docker : `git pull && npm install && npm run build && npm run prisma:deploy && pm2 restart app`
-(ou l'équivalent de votre process manager).
-
-## Restauration
-
-**Base de données** :
-
-```bash
-cat backup-YYYYMMDD.sql | docker compose exec -T db psql -U $POSTGRES_USER $POSTGRES_DB
-```
-
-**Médias** :
-
-```bash
-docker run --rm -v 19bonnes-tables-sarthoisesfr_media_uploads:/data -v $(pwd):/backup \
-  alpine sh -c "cd /data && tar xzf /backup/media-YYYYMMDD.tar.gz"
-```
-
-## Tests
-
-```bash
-npm run test        # une passe
-npm run test:watch  # mode watch
-```
-
-Couverture actuelle : validation des formulaires (contact, restaurant), génération et
-unicité des slugs, permissions par rôle (ADMIN / SUPER_ADMIN), publication/dépublication
-d'un restaurant. À étendre au fil du développement (voir `tests/`).
-
-## Architecture
-
-```
-prisma/               schéma, migrations, seed
 src/
   app/
-    (public)/          pages publiques (accueil, [slug], contact, galerie, actualités...)
-    admin/
-      login/            page de connexion (hors garde d'authentification)
-      (dashboard)/       tout le back-office, protégé par le layout + middleware
-    api/
-      admin/             routes API du CMS (protégées, Zod + permissions)
-      auth/               route NextAuth
-    media/[...key]/      sert les fichiers du driver de stockage "local"
-    sitemap.ts, robots.ts
+    (site)/[locale]/      pages publiques bilingues
+    (admin)/admin/        back-office (français, non indexé)
+    api/                  webhooks Stripe, médias, cron, admin
   components/
-    admin/                composants du back-office (formulaires, media picker, éditeur riche...)
-    public/                composants du site public (header, footer, formulaire de contact...)
-    ui/                     primitives partagées (bouton, champ, badge)
+    site/                 header, footer, formulaires, menus, horaires…
+    admin/                éditeurs (menus, pages, réglages, galerie…)
+    public/               composants réutilisables (reveal, lightbox, cookies)
   lib/
-    auth/                  config NextAuth (edge-safe + complète), permissions par rôle
-    db/                     client Prisma singleton
-    services/               logique métier (un fichier par entité), seule couche qui touche Prisma
-    storage/                abstraction stockage médias (local / s3)
-    validation/             schémas Zod par entité
-tests/                    tests Vitest (validation, permissions, slugs, services)
+    services/             menu, gallery, page, newsletter, gift-voucher, settings
+    i18n.ts               helper de contenu traduit (champs *En)
+  i18n/                   routing / middleware next-intl
+messages/                 chaînes d'UI fr.json / en.json
+prisma/                   schéma + migrations + seed
+railway/                  doc de déploiement + gabarit de variables
 ```
 
-Principe : les composants ne contiennent jamais de logique métier ni de requête Prisma
-directe côté serveur en dehors de `lib/services`. Les routes `app/api/admin/**` valident avec
-Zod, vérifient les permissions (`lib/auth/permissions.ts`) puis délèguent aux services.
+## Back-office (`/admin`)
 
-## Migration des données depuis B12
+Tableau de bord · **Cartes & menus** (formules, accords mets-vins, sections,
+plats, FR + EN) · **Photos** (albums + médiathèque) · **Pages** (mentions
+légales, confidentialité, cookies, accessibilité, CGV — éditeur riche) ·
+**Messages** de contact · **Bons cadeaux** (création manuelle, statut, renvoi,
+PDF, export CSV) · **Newsletter** (abonnés, export) · **Réglages**
+(coordonnées, horaires, Zenchef, réseaux, mentions légales, images, SEO) ·
+**Administrateurs** (super-admin uniquement).
 
-L'audit complet du site B12 existant (pages, contenus, URLs, incohérences relevées) a servi de
-base à `prisma/seed.ts`. Points d'attention avant de couper B12 :
+## Déploiement
 
-1. **Médias** : téléchargez toutes les photos utiles depuis `cdn.b12.io/client_media/NL65DUor/...`
-   (visible dans le HTML de l'ancien site) et re-uploadez-les via `/admin` — aucune image de ce
-   nouveau site ne doit jamais pointer vers `cdn.b12.io`.
-2. **SEO** : les URLs de restaurants (`/le-cheval-blanc`, etc.), `/le-bureau`, `/partenaires`,
-   `/galerie` et `/bon-cadeaux` sont conservées à l'identique — aucune redirection nécessaire
-   pour elles. Les autres URLs connues de l'ancien site (galeries `/galerie-*`, doublons, pages
-   B12 résiduelles) sont redirigées en 301 depuis `next.config.ts`. Ajoutez toute redirection
-   supplémentaire découverte a posteriori depuis `/admin/redirections`.
-3. **Contenus manquants** : voir les commentaires `TODO audit` dans `prisma/seed.ts` et la
-   section "Zones d'incertitude" de l'audit — plusieurs informations (téléphone/adresse de
-   l'association, coordonnées de l'Hôtel La Renaissance, horaires de plusieurs restaurants)
-   n'existaient pas ou semblaient erronées sur l'ancien site et doivent être confirmées auprès
-   des restaurateurs avant publication.
-4. Une fois le contenu vérifié et les médias migrés, pointez le DNS du domaine vers le VPS et
-   coupez B12.
+Voir [`railway/README.md`](railway/README.md). En résumé : service web
+Dockerfile + plugin PostgreSQL, variables d'environnement listées dans
+`railway/.env.railway.example`, migrations appliquées automatiquement au
+démarrage (`docker-entrypoint.sh`), seed lancé une fois à la main.
+
+## Contenu repris de l'ancien site
+
+- **Menu Premier Pas** : mardi→vendredi midi — Entrée+Plat 32 €, Plat+Dessert
+  32 €, Entrée+Plat+Dessert 38 €.
+- **Menus Plaisir** : mercredi→samedi midi & soir — Balade de saison 4 plats
+  75 €, Invitation au voyage 6 plats 98 €, accords mets-vins 30 / 36 / 42 €.
+- **Horaires** : lundi & dimanche fermés · mardi 12h-14h · mer-sam 12h-14h &
+  19h-21h30.
+- **Photos** : les albums « Le Restaurant » et « Les Plats » sont créés vides
+  — les images de l'ancien site sont hébergées sur le CDN Zenchef et doivent
+  être ré-uploadées depuis `/admin/photos`.

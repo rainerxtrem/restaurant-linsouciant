@@ -1,38 +1,37 @@
 import { NextResponse } from "next/server";
-import { requireGiftVoucherAccess } from "@/lib/auth/permissions";
+import { requireAdmin } from "@/lib/auth/permissions";
 import { handleApiError } from "@/lib/api/handle-error";
 import { listVouchersAdmin } from "@/lib/services/gift-voucher.service";
 
-function escapeCsvField(value: string): string {
-  return `"${value.replace(/"/g, '""')}"`;
+function csvCell(value: unknown) {
+  const s = value == null ? "" : String(value);
+  return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
 export async function GET() {
   try {
-    await requireGiftVoucherAccess();
+    await requireAdmin();
     const vouchers = await listVouchersAdmin();
-
-    const rows = [
-      ["code", "montant (€)", "statut", "acheteur", "email acheteur", "bénéficiaire", "email bénéficiaire", "acheté le", "utilisé le", "utilisé où"],
-      ...vouchers.map((v) => [
+    const header = ["code", "montant_eur", "statut", "acheteur", "email_acheteur", "beneficiaire", "cree_le", "expire_le"];
+    const rows = vouchers.map((v) =>
+      [
         v.code,
         (v.amountCents / 100).toFixed(2),
         v.status,
         v.buyerName,
         v.buyerEmail,
         v.recipientName ?? "",
-        v.recipientEmail ?? "",
-        v.purchasedAt?.toISOString() ?? "",
-        v.redeemedAt?.toISOString() ?? "",
-        v.redeemedAtRestaurant?.name ?? "",
-      ]),
-    ];
-    const csv = rows.map((row) => row.map(escapeCsvField).join(",")).join("\r\n");
-
+        v.createdAt.toISOString().slice(0, 10),
+        v.expiresAt ? v.expiresAt.toISOString().slice(0, 10) : "",
+      ]
+        .map(csvCell)
+        .join(";")
+    );
+    const csv = [header.join(";"), ...rows].join("\n");
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="bons-cadeaux.csv"`,
+        "Content-Disposition": `attachment; filename="bons-cadeaux-${new Date().toISOString().slice(0, 10)}.csv"`,
       },
     });
   } catch (error) {

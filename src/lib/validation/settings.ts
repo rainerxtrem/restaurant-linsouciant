@@ -1,26 +1,68 @@
 import { z } from "zod";
 
+const optionalText = (max: number) => z.string().trim().max(max).optional().or(z.literal(""));
+const optionalUrl = z.string().trim().url("URL invalide").optional().or(z.literal(""));
+
+const slotSchema = z.object({
+  start: z.string().regex(/^\d{2}:\d{2}$/),
+  end: z.string().regex(/^\d{2}:\d{2}$/),
+});
+const daySchema = z.object({
+  day: z.enum(["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]),
+  closed: z.boolean(),
+  slots: z.array(slotSchema),
+});
+
 export const siteSettingSchema = z.object({
   siteName: z.string().trim().min(2).max(150),
-  siteDescription: z.string().trim().max(500).optional().or(z.literal("")),
+  siteNameEn: optionalText(150),
+  tagline: z.string().trim().max(200),
+  taglineEn: optionalText(200),
+  intro: optionalText(2000),
+  introEn: optionalText(2000),
+
+  addressLine: optionalText(200),
+  postalCode: optionalText(20),
+  city: optionalText(100),
+  phone: optionalText(30),
+  email: z.string().trim().toLowerCase().email().optional().or(z.literal("")),
+
+  openingHours: z.array(daySchema).max(7),
+
+  parkingNote: optionalText(300),
+  parkingNoteEn: optionalText(300),
+  servicesNote: optionalText(1000),
+  servicesNoteEn: optionalText(1000),
+  paymentNote: optionalText(1000),
+  paymentNoteEn: optionalText(1000),
+
+  zenchefBookingUrl: optionalUrl,
+  zenchefNewsletterUrl: optionalUrl,
+  zenchefRestaurantId: optionalText(40),
+
+  facebookUrl: optionalUrl,
+  instagramUrl: optionalUrl,
+  googleMapsUrl: optionalUrl,
+  mapEmbedUrl: optionalText(4000),
+
   logoId: z.string().cuid().optional().nullable(),
   faviconId: z.string().cuid().optional().nullable(),
-  contactEmail: z.string().trim().toLowerCase().email().optional().or(z.literal("")),
-  contactPhone: z
-    .string()
-    .trim()
-    .regex(/^[0-9+().\s-]{6,20}$/)
-    .optional()
-    .or(z.literal("")),
-  address: z.string().trim().max(300).optional().or(z.literal("")),
-  facebookUrl: z.string().trim().url().optional().or(z.literal("")),
-  instagramUrl: z.string().trim().url().optional().or(z.literal("")),
-  linkedinUrl: z.string().trim().url().optional().or(z.literal("")),
-  seoDefaultTitle: z.string().trim().max(70).optional().or(z.literal("")),
-  seoDefaultDescription: z.string().trim().max(160).optional().or(z.literal("")),
-  ogDefaultImageId: z.string().cuid().optional().nullable(),
-  footerText: z.string().trim().max(2000).optional().or(z.literal("")),
-  gtmId: z.string().trim().max(40).optional().or(z.literal("")),
+  ogImageId: z.string().cuid().optional().nullable(),
+  heroImageId: z.string().cuid().optional().nullable(),
+
+  legalCompanyName: optionalText(200),
+  legalSiret: optionalText(40),
+  legalCapital: optionalText(60),
+  legalPublicationDirector: optionalText(120),
+  legalHost: optionalText(1000),
+  legalRcsCity: optionalText(80),
+  legalVatNumber: optionalText(40),
+
+  seoDefaultTitle: optionalText(70),
+  seoDefaultDescription: optionalText(180),
+
+  footerText: optionalText(2000),
+  footerTextEn: optionalText(2000),
 });
 
 export type SiteSettingInput = z.infer<typeof siteSettingSchema>;

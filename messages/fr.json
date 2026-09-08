@@ -1,0 +1,122 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "menus": "Cartes & Menus",
+    "photos": "Photos",
+    "contact": "Accès & Contact",
+    "giftVouchers": "Bons cadeaux",
+    "book": "Réserver une table",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "language": "Langue"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "backHome": "Retour à l'accueil",
+    "readMore": "En savoir plus",
+    "phone": "Téléphone",
+    "email": "Email",
+    "address": "Adresse",
+    "openingHours": "Horaires d'ouverture",
+    "openNow": "Ouvert",
+    "closedNow": "Fermé",
+    "closed": "Fermé",
+    "requiredField": "Champ requis"
+  },
+  "days": {
+    "lundi": "Lundi",
+    "mardi": "Mardi",
+    "mercredi": "Mercredi",
+    "jeudi": "Jeudi",
+    "vendredi": "Vendredi",
+    "samedi": "Samedi",
+    "dimanche": "Dimanche"
+  },
+  "home": {
+    "discoverMenus": "Découvrir les menus",
+    "bookTable": "Réserver une table",
+    "chefTitle": "En cuisine",
+    "menusTitle": "Nos cartes & menus",
+    "menusIntro": "Une cuisine de saison, décomplexée, au fil des arrivages.",
+    "photosTitle": "En images",
+    "photosLink": "Voir toutes les photos",
+    "findUsTitle": "Nous trouver",
+    "newsletterTitle": "Rester informé",
+    "newsletterIntro": "Menus de saison, événements et nouveautés — quelques emails par an, pas plus."
+  },
+  "menus": {
+    "title": "Cartes & Menus",
+    "intro": "Nos menus évoluent au rythme des saisons et des arrivages. Les plats ci-dessous sont donnés à titre indicatif.",
+    "formulas": "Formules",
+    "winePairing": "Accords mets & vins",
+    "empty": "Les menus seront publiés prochainement."
+  },
+  "photos": {
+    "title": "Photos",
+    "intro": "Le restaurant et quelques assiettes.",
+    "empty": "Les photos seront publiées prochainement."
+  },
+  "contact": {
+    "title": "Accès & Contact",
+    "howToCome": "Comment venir",
+    "parking": "Stationnement",
+    "services": "Services",
+    "payment": "Moyens de paiement",
+    "formTitle": "Nous écrire",
+    "formIntro": "Une question, une demande de privatisation ? Écrivez-nous, nous répondons dans les meilleurs délais. Pour réserver une table, utilisez le module de réservation.",
+    "fullName": "Nom complet",
+    "subject": "Objet",
+    "message": "Message",
+    "consent": "J'accepte que ma demande soit enregistrée pour permettre au restaurant d'y répondre.",
+    "send": "Envoyer",
+    "sending": "Envoi…",
+    "success": "Merci, votre message a bien été envoyé. Nous vous répondrons rapidement.",
+    "error": "L'envoi a échoué. Merci de réessayer dans un instant."
+  },
+  "reservation": {
+    "title": "Réserver une table",
+    "intro": "Réservez en ligne en quelques secondes. Pour un groupe ou une privatisation, contactez-nous directement.",
+    "fallback": "Le module de réservation ne s'affiche pas ? Réservez sur cette page :",
+    "openBooking": "Ouvrir la réservation"
+  },
+  "giftVouchers": {
+    "title": "Bons cadeaux",
+    "intro": "Offrez un moment à table à L'Insouciant. Le bon cadeau est envoyé par email, à imprimer ou à transférer.",
+    "amount": "Montant du bon (€)",
+    "buyerName": "Votre nom",
+    "buyerEmail": "Votre email",
+    "isGift": "C'est un cadeau pour quelqu'un d'autre",
+    "recipientName": "Nom du bénéficiaire",
+    "recipientEmail": "Email du bénéficiaire (facultatif)",
+    "personalMessage": "Message personnel (facultatif)",
+    "pay": "Payer et recevoir le bon",
+    "paying": "Redirection vers le paiement…",
+    "error": "Le paiement est momentanément indisponible. Merci de réessayer plus tard.",
+    "successTitle": "Merci pour votre achat",
+    "successBody": "Votre bon cadeau a été envoyé par email. Pensez à vérifier vos courriers indésirables.",
+    "validity": "Valable 12 mois à compter de l'achat. Non remboursable, non fractionnable."
+  },
+  "newsletter": {
+    "placeholder": "Votre adresse email",
+    "consent": "J'accepte de recevoir la newsletter de L'Insouciant.",
+    "subscribe": "S'inscrire",
+    "subscribing": "Inscription…",
+    "checkEmail": "Presque terminé ! Cliquez sur le lien de confirmation reçu par email.",
+    "error": "L'inscription a échoué. Merci de réessayer.",
+    "confirmedTitle": "Inscription confirmée",
+    "confirmedBody": "Vous recevrez désormais nos actualités. Merci !",
+    "invalidToken": "Ce lien n'est plus valide.",
+    "unsubscribedTitle": "Désinscription effectuée",
+    "unsubscribedBody": "Vous ne recevrez plus nos emails. Vous pouvez vous réinscrire à tout moment."
+  },
+  "footer": {
+    "navTitle": "Le restaurant",
+    "legalTitle": "Informations",
+    "followUs": "Nous suivre",
+    "rights": "Tous droits réservés"
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "body": "La page que vous cherchez n'existe pas ou a été déplacée."
+  }
+}

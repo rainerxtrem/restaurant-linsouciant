@@ -1,0 +1,122 @@
+{
+  "nav": {
+    "home": "Home",
+    "menus": "Menus",
+    "photos": "Photos",
+    "contact": "Map & Contact",
+    "giftVouchers": "Gift vouchers",
+    "book": "Book a table",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "language": "Language"
+  },
+  "common": {
+    "loading": "Loading…",
+    "backHome": "Back to home",
+    "readMore": "Read more",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "openingHours": "Opening hours",
+    "openNow": "Open",
+    "closedNow": "Closed",
+    "closed": "Closed",
+    "requiredField": "Required field"
+  },
+  "days": {
+    "lundi": "Monday",
+    "mardi": "Tuesday",
+    "mercredi": "Wednesday",
+    "jeudi": "Thursday",
+    "vendredi": "Friday",
+    "samedi": "Saturday",
+    "dimanche": "Sunday"
+  },
+  "home": {
+    "discoverMenus": "See the menus",
+    "bookTable": "Book a table",
+    "chefTitle": "In the kitchen",
+    "menusTitle": "Our menus",
+    "menusIntro": "Seasonal, unpretentious cooking that follows the day's deliveries.",
+    "photosTitle": "In pictures",
+    "photosLink": "See all photos",
+    "findUsTitle": "Find us",
+    "newsletterTitle": "Stay in touch",
+    "newsletterIntro": "Seasonal menus, events and news — a few emails a year, no more."
+  },
+  "menus": {
+    "title": "Menus",
+    "intro": "Our menus change with the seasons and the day's deliveries. The dishes below are given as an example.",
+    "formulas": "Set menus",
+    "winePairing": "Wine pairing",
+    "empty": "Menus will be published soon."
+  },
+  "photos": {
+    "title": "Photos",
+    "intro": "The restaurant and a few plates.",
+    "empty": "Photos will be published soon."
+  },
+  "contact": {
+    "title": "Map & Contact",
+    "howToCome": "Getting here",
+    "parking": "Parking",
+    "services": "Services",
+    "payment": "Payment methods",
+    "formTitle": "Write to us",
+    "formIntro": "A question, a private event enquiry? Write to us and we'll get back to you shortly. To book a table, please use the booking widget.",
+    "fullName": "Full name",
+    "subject": "Subject",
+    "message": "Message",
+    "consent": "I agree that my enquiry may be stored so the restaurant can reply to it.",
+    "send": "Send",
+    "sending": "Sending…",
+    "success": "Thank you, your message has been sent. We'll reply shortly.",
+    "error": "Sending failed. Please try again in a moment."
+  },
+  "reservation": {
+    "title": "Book a table",
+    "intro": "Book online in seconds. For groups or private events, please contact us directly.",
+    "fallback": "Booking widget not showing? Book on this page:",
+    "openBooking": "Open booking"
+  },
+  "giftVouchers": {
+    "title": "Gift vouchers",
+    "intro": "Give the gift of a meal at L'Insouciant. The voucher is sent by email, ready to print or forward.",
+    "amount": "Voucher amount (€)",
+    "buyerName": "Your name",
+    "buyerEmail": "Your email",
+    "isGift": "This is a gift for someone else",
+    "recipientName": "Recipient's name",
+    "recipientEmail": "Recipient's email (optional)",
+    "personalMessage": "Personal message (optional)",
+    "pay": "Pay and receive the voucher",
+    "paying": "Redirecting to payment…",
+    "error": "Payment is temporarily unavailable. Please try again later.",
+    "successTitle": "Thank you for your purchase",
+    "successBody": "Your gift voucher has been sent by email. Please check your spam folder too.",
+    "validity": "Valid for 12 months from purchase. Non-refundable, non-divisible."
+  },
+  "newsletter": {
+    "placeholder": "Your email address",
+    "consent": "I agree to receive the L'Insouciant newsletter.",
+    "subscribe": "Subscribe",
+    "subscribing": "Subscribing…",
+    "checkEmail": "Almost done! Click the confirmation link we just emailed you.",
+    "error": "Subscription failed. Please try again.",
+    "confirmedTitle": "Subscription confirmed",
+    "confirmedBody": "You'll now receive our news. Thank you!",
+    "invalidToken": "This link is no longer valid.",
+    "unsubscribedTitle": "You have been unsubscribed",
+    "unsubscribedBody": "You will no longer receive our emails. You can subscribe again at any time."
+  },
+  "footer": {
+    "navTitle": "The restaurant",
+    "legalTitle": "Information",
+    "followUs": "Follow us",
+    "rights": "All rights reserved"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you're looking for doesn't exist or has moved."
+  }
+}

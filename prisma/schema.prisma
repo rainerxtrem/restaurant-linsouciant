@@ -1,3 +1,8 @@
+// Site vitrine du restaurant L'Insouciant (Le Mans).
+// Schéma volontairement resserré : un seul restaurant, pas de logique
+// d'association / multi-établissements. Le contenu qui bouge (menus, photos,
+// horaires, pages légales) est éditable depuis /admin.
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,27 +17,21 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 enum Role {
+  // Accès complet au CMS + gestion des comptes administrateurs.
   SUPER_ADMIN
+  // Accès complet au CMS (menus, photos, pages, messages, bons cadeaux,
+  // newsletter, réglages) sauf la gestion des autres comptes.
   ADMIN
-  // Accès restreint à la fiche d'un seul restaurant (voir /mon-restaurant) :
-  // gère son propre restaurant et sa propre galerie, rien d'autre.
-  RESTAURATEUR
-  // Accès restreint à la trésorerie des bons cadeaux (voir /tresorerie) :
-  // suivi des sommes à verser aux restaurants et de leur statut de
-  // versement, plus les statistiques bons cadeaux. Rien d'autre côté CMS.
-  TRESORIER
-  // Accès restreint, dans /admin, aux bons cadeaux (création, suivi,
-  // renvoi, statut) et au bloc "Communication" (messages de contact,
-  // newsletter). Aucun autre accès au CMS (restaurants, pages, bureau,
-  // trésorerie, réglages...).
-  SECRETAIRE
 }
 
 enum PublishStatus {
   DRAFT
-  SCHEDULED
   PUBLISHED
-  ARCHIVED
+}
+
+enum MediaType {
+  IMAGE
+  DOCUMENT
 }
 
 enum ContactMessageStatus {
@@ -41,15 +40,22 @@ enum ContactMessageStatus {
   ARCHIVED
 }
 
-enum MediaType {
-  IMAGE
-  DOCUMENT
-  VIDEO
+// Formule (« Entrée + Plat ») ou accord mets & vins (« 3 verres »).
+enum MenuPriceKind {
+  FORMULA
+  WINE_PAIRING
 }
 
-enum NavigationLinkType {
-  INTERNAL
-  EXTERNAL
+enum GiftVoucherStatus {
+  // Session Stripe créée mais paiement non confirmé.
+  PENDING_PAYMENT
+  // Payé, valide.
+  ACTIVE
+  // Utilisé.
+  REDEEMED
+  EXPIRED
+  // Paiement abandonné / expiré côté Stripe.
+  CANCELLED
 }
 
 // ---------------------------------------------------------------------------
@@ -67,18 +73,7 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  // Renseigné uniquement pour role = RESTAURATEUR : le restaurant que ce
-  // compte est autorisé à gérer depuis /mon-restaurant.
-  restaurantId String?
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
-
-  articles                Article[]
-  uploadedMedia           Media[]
-  auditLogs               AuditLog[]
-  newsletterCampaigns     NewsletterCampaign[]
-  redeemedGiftVouchers    GiftVoucher[]
-  paidGiftVouchers        GiftVoucher[]        @relation("GiftVoucherPaidBy")
-  contactMessageReplies   ContactMessageReply[] @relation("ContactMessageReplyAuthor")
+  uploadedMedia Media[]
 
   @@map("users")
 }
@@ -98,417 +93,152 @@ model Media {
   width        Int?
   height       Int?
   alt          String?
+  altEn        String?
   caption      String?
   uploadedById String?
   uploadedBy   User?     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  restaurantImages   RestaurantImage[]
-  restaurantMainFor  Restaurant[]      @relation("RestaurantMainImage")
-  restaurantOgFor    Restaurant[]      @relation("RestaurantOgImage")
-  pageMainFor        Page[]            @relation("PageMainImage")
-  pageOgFor          Page[]            @relation("PageOgImage")
-  articleMainFor     Article[]         @relation("ArticleMainImage")
-  articleOgFor       Article[]         @relation("ArticleOgImage")
-  boardMemberFor     BoardMember[]
-  partnerLogoFor     Partner[]
-  galleryItems       GalleryItem[]
-  eventMainFor       Event[]           @relation("EventMainImage")
-  pressAssetFor      PressAsset[]
-  settingsLogoFor    SiteSetting[]     @relation("SettingsLogo")
-  settingsFaviconFor SiteSetting[]     @relation("SettingsFavicon")
-  settingsOgFor      SiteSetting[]     @relation("SettingsOgImage")
+  galleryImages     GalleryImage[]
+  menuMainFor       Menu[]        @relation("MenuMainImage")
+  settingsLogoFor   SiteSetting[] @relation("SettingsLogo")
+  settingsFaviconFor SiteSetting[] @relation("SettingsFavicon")
+  settingsOgFor     SiteSetting[] @relation("SettingsOgImage")
+  settingsHeroFor   SiteSetting[] @relation("SettingsHeroImage")
 
   @@index([type])
   @@map("media")
 }
 
 // ---------------------------------------------------------------------------
-// Restaurants
+// Cartes & menus
 // ---------------------------------------------------------------------------
 
-model Restaurant {
+model Menu {
   id               String        @id @default(cuid())
   slug             String        @unique
   name             String
-  shortDescription String?
+  nameEn           String?
   description      String?       @db.Text
-  address          String?
-  postalCode       String?
-  city             String?
-  // Géocodées automatiquement à partir de l'adresse (voir script de
-  // migration) — utilisées par la carte interactive de la page d'accueil.
-  // Nullable : un restaurant sans adresse précise n'apparaît simplement pas
-  // sur la carte.
-  latitude         Float?
-  longitude        Float?
-  phone            String?
-  email            String?
-  website          String?
-  googleMapsUrl    String?
-  facebookUrl      String?
-  instagramUrl     String?
-  openingHours     Json?
-  priceLunch       String?
-  priceDinner      String?
-  additionalInfo   String?       @db.Text
+  descriptionEn    String?       @db.Text
+  // Ex. « Du mardi au vendredi, le midi (hors jours fériés) ».
+  availabilityNote   String?
+  availabilityNoteEn String?
   mainImageId      String?
-  mainImage        Media?        @relation("RestaurantMainImage", fields: [mainImageId], references: [id], onDelete: SetNull)
+  mainImage        Media?        @relation("MenuMainImage", fields: [mainImageId], references: [id], onDelete: SetNull)
   order            Int           @default(0)
-  isFeatured       Boolean       @default(false)
   status           PublishStatus @default(DRAFT)
   publishedAt      DateTime?
-  seoTitle         String?
-  seoDescription   String?
-  ogImageId        String?
-  ogImage          Media?        @relation("RestaurantOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
-  images               RestaurantImage[]
-  boardMembers         BoardMember[]
-  galleryAlbum         GalleryAlbum?
-  users                User[]
-  redeemedGiftVouchers GiftVoucher[]
+  prices   MenuPrice[]
+  sections MenuSection[]
 
   @@index([status, order])
-  @@map("restaurants")
+  @@map("menus")
+}
+
+model MenuPrice {
+  id         String        @id @default(cuid())
+  menuId     String
+  menu       Menu          @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  kind       MenuPriceKind @default(FORMULA)
+  label      String
+  labelEn    String?
+  priceCents Int
+  order      Int           @default(0)
+
+  @@index([menuId, order])
+  @@map("menu_prices")
+}
+
+model MenuSection {
+  id         String  @id @default(cuid())
+  menuId     String
+  menu       Menu    @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  title      String
+  titleEn    String?
+  subtitle   String?
+  subtitleEn String?
+  order      Int     @default(0)
+
+  dishes MenuDish[]
+
+  @@index([menuId, order])
+  @@map("menu_sections")
+}
+
+model MenuDish {
+  id            String      @id @default(cuid())
+  sectionId     String
+  section       MenuSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  name          String
+  nameEn        String?
+  description    String?     @db.Text
+  descriptionEn String?     @db.Text
+  order         Int         @default(0)
+
+  @@index([sectionId, order])
+  @@map("menu_dishes")
 }
 
 // ---------------------------------------------------------------------------
-// Bons cadeaux
+// Galerie photos
 // ---------------------------------------------------------------------------
 
-enum GiftVoucherStatus {
-  // En attente du paiement Stripe (session créée mais non confirmée).
-  PENDING_PAYMENT
-  // Payé, valide, utilisable dans n'importe lequel des restaurants membres.
-  ACTIVE
-  // Utilisé intégralement (pas de solde partiel — voir gift-voucher.service.ts).
-  REDEEMED
-  EXPIRED
-  // Paiement expiré/abandonné côté Stripe (session non complétée à temps).
-  CANCELLED
-}
-
-// Suivi du remboursement au restaurant qui a validé le bon — indépendant du
-// statut du bon lui-même (voir GiftVoucher.payoutStatus).
-enum GiftVoucherPayoutStatus {
-  PENDING
-  PAID
-}
-
-model GiftVoucher {
-  id          String            @id @default(cuid())
-  // Code lisible communiqué au client (ex. "19BT-XXXX-XXXX"), aussi encodé
-  // dans le QR code envoyé par email.
-  code        String            @unique
-  amountCents Int
-  status      GiftVoucherStatus @default(PENDING_PAYMENT)
-
-  buyerName      String
-  buyerEmail     String
-  recipientName  String?
-  recipientEmail String?
-  message        String? @db.Text
-
-  stripeSessionId       String? @unique
-  stripePaymentIntentId String?
-
-  purchasedAt DateTime?
-  expiresAt   DateTime?
-
-  redeemedAt             DateTime?
-  redeemedByUserId       String?
-  redeemedByUser         User?       @relation(fields: [redeemedByUserId], references: [id], onDelete: SetNull)
-  redeemedAtRestaurantId String?
-  redeemedAtRestaurant   Restaurant? @relation(fields: [redeemedAtRestaurantId], references: [id], onDelete: SetNull)
-
-  // Trésorerie : le restaurant qui a validé le bon doit être remboursé de
-  // sa valeur par l'association — suivi indépendant du statut du bon.
-  payoutStatus GiftVoucherPayoutStatus @default(PENDING)
-  paidAt       DateTime?
-  paidByUserId String?
-  paidByUser   User?                   @relation("GiftVoucherPaidBy", fields: [paidByUserId], references: [id], onDelete: SetNull)
-
-  // Relances d'expiration déjà envoyées (évite les doublons si le cron
-  // tourne plus d'une fois dans la fenêtre) — voir gift-voucher-reminders.
-  reminder3moSentAt DateTime?
-  reminder1moSentAt DateTime?
-  reminder7dSentAt  DateTime?
-
+model GalleryAlbum {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  titleEn   String?
+  order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([status])
-  @@index([redeemedAtRestaurantId, payoutStatus])
-  @@map("gift_vouchers")
+  images GalleryImage[]
+
+  @@map("gallery_albums")
 }
 
-model RestaurantImage {
-  id           String     @id @default(cuid())
-  restaurantId String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  mediaId      String
-  media        Media      @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  caption      String?
-  order        Int        @default(0)
-  createdAt    DateTime   @default(now())
+model GalleryImage {
+  id      String       @id @default(cuid())
+  albumId String
+  album   GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  mediaId String
+  media   Media        @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  order   Int          @default(0)
 
-  @@unique([restaurantId, mediaId])
-  @@index([restaurantId, order])
-  @@map("restaurant_images")
+  @@index([albumId, order])
+  @@map("gallery_images")
 }
 
 // ---------------------------------------------------------------------------
-// Pages (CMS générique — inclut bons cadeaux, mentions légales, etc.)
+// Pages éditoriales (mentions légales, confidentialité, cookies, CGV…)
 // ---------------------------------------------------------------------------
 
 model Page {
   id             String        @id @default(cuid())
   slug           String        @unique
   title          String
+  titleEn        String?
   content        String        @db.Text
-  excerpt        String?
-  mainImageId    String?
-  mainImage      Media?        @relation("PageMainImage", fields: [mainImageId], references: [id], onDelete: SetNull)
+  contentEn      String?       @db.Text
   status         PublishStatus @default(DRAFT)
   publishedAt    DateTime?
+  // true = page structurelle (liée dans le pied de page), non supprimable.
+  isSystem       Boolean       @default(false)
   seoTitle       String?
   seoDescription String?
-  ogImageId      String?
-  ogImage        Media?        @relation("PageOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
-  isSystem       Boolean       @default(false)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
-  navigationItems NavigationItem[]
-
-  @@index([status])
   @@map("pages")
 }
 
 // ---------------------------------------------------------------------------
-// Actualités
-// ---------------------------------------------------------------------------
-
-model Category {
-  id        String    @id @default(cuid())
-  slug      String    @unique
-  name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  articles  Article[]
-
-  @@map("categories")
-}
-
-model Article {
-  id             String        @id @default(cuid())
-  slug           String        @unique
-  title          String
-  excerpt        String?
-  content        String        @db.Text
-  mainImageId    String?
-  mainImage      Media?        @relation("ArticleMainImage", fields: [mainImageId], references: [id], onDelete: SetNull)
-  categoryId     String?
-  category       Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  tags           String[]      @default([])
-  status         PublishStatus @default(DRAFT)
-  publishedAt    DateTime?
-  scheduledFor   DateTime?
-  seoTitle       String?
-  seoDescription String?
-  ogImageId      String?
-  ogImage        Media?        @relation("ArticleOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
-  authorId       String?
-  author         User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-
-  newsletterCampaigns NewsletterCampaign[]
-
-  @@index([status, publishedAt])
-  @@map("articles")
-}
-
-model NewsletterCampaign {
-  id             String   @id @default(cuid())
-  subject        String
-  introText      String   @db.Text
-  articleId      String?
-  article        Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
-  recipientCount Int
-  sentAt         DateTime @default(now())
-  sentById       String?
-  sentBy         User?    @relation(fields: [sentById], references: [id], onDelete: SetNull)
-
-  @@map("newsletter_campaigns")
-}
-
-// ---------------------------------------------------------------------------
-// Bureau / Partenaires
-// ---------------------------------------------------------------------------
-
-model BoardMember {
-  id           String      @id @default(cuid())
-  firstName    String
-  lastName     String
-  role         String
-  restaurantId String?
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
-  photoId      String?
-  photo        Media?      @relation(fields: [photoId], references: [id], onDelete: SetNull)
-  bio          String?     @db.Text
-  order        Int         @default(0)
-  isActive     Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  @@index([isActive, order])
-  @@map("board_members")
-}
-
-model Partner {
-  id          String   @id @default(cuid())
-  name        String
-  description String?  @db.Text
-  websiteUrl  String?
-  logoId      String?
-  logo        Media?   @relation(fields: [logoId], references: [id], onDelete: SetNull)
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([isActive, order])
-  @@map("partners")
-}
-
-// ---------------------------------------------------------------------------
-// Espace presse
-// ---------------------------------------------------------------------------
-
-model PressAsset {
-  id          String   @id @default(cuid())
-  label       String
-  description String?
-  // Contrairement à Partner.logoId (optionnel), un élément de kit presse
-  // sans fichier n'a pas de sens — toujours requis, et supprimé avec le
-  // média sous-jacent (comme GalleryItem) plutôt que laissé orphelin.
-  mediaId     String
-  media       Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([isActive, order])
-  @@map("press_assets")
-}
-
-// ---------------------------------------------------------------------------
-// FAQ
-// ---------------------------------------------------------------------------
-
-model FaqItem {
-  id        String   @id @default(cuid())
-  question  String
-  answer    String   @db.Text
-  order     Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([isActive, order])
-  @@map("faq_items")
-}
-
-// ---------------------------------------------------------------------------
-// Événements / agenda
-// ---------------------------------------------------------------------------
-
-model Event {
-  id          String        @id @default(cuid())
-  title       String
-  description String?       @db.Text
-  // Pas de fin obligatoire (ex. une porte ouverte sur une soirée) ; quand
-  // elle est renseignée, sert à savoir si l'événement est "en cours" plutôt
-  // que juste "à venir"/"passé" sur la page publique.
-  startAt     DateTime
-  endAt       DateTime?
-  location    String?
-  mainImageId String?
-  mainImage   Media?        @relation("EventMainImage", fields: [mainImageId], references: [id], onDelete: SetNull)
-  status      PublishStatus @default(DRAFT)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  @@index([status, startAt])
-  @@map("events")
-}
-
-// ---------------------------------------------------------------------------
-// Galerie
-// ---------------------------------------------------------------------------
-
-model GalleryAlbum {
-  id           String      @id @default(cuid())
-  slug         String      @unique
-  title        String
-  description  String?
-  restaurantId String?     @unique
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
-  order        Int         @default(0)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  items GalleryItem[]
-
-  @@map("gallery_albums")
-}
-
-model GalleryItem {
-  id        String       @id @default(cuid())
-  albumId   String
-  album     GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
-  mediaId   String
-  media     Media        @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  order     Int          @default(0)
-  createdAt DateTime     @default(now())
-
-  @@unique([albumId, mediaId])
-  @@index([albumId, order])
-  @@map("gallery_items")
-}
-
-// ---------------------------------------------------------------------------
-// Navigation
-// ---------------------------------------------------------------------------
-
-model NavigationItem {
-  id           String             @id @default(cuid())
-  label        String
-  linkType     NavigationLinkType @default(INTERNAL)
-  url          String?
-  pageId       String?
-  page         Page?              @relation(fields: [pageId], references: [id], onDelete: SetNull)
-  parentId     String?
-  parent       NavigationItem?    @relation("NavigationChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  children     NavigationItem[]   @relation("NavigationChildren")
-  order        Int                @default(0)
-  isActive     Boolean            @default(true)
-  openInNewTab Boolean            @default(false)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-
-  @@index([parentId, order])
-  @@map("navigation_items")
-}
-
-// ---------------------------------------------------------------------------
-// Messages de contact
+// Formulaire de contact
 // ---------------------------------------------------------------------------
 
 model ContactMessage {
@@ -523,127 +253,125 @@ model ContactMessage {
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime             @default(now())
-  readAt      DateTime?
-  archivedAt  DateTime?
-
-  // Fil de discussion complet (réponses de l'équipe ET du client, dans
-  // l'ordre chronologique) — voir ContactMessageReply. Une réponse client
-  // reçue remet automatiquement `status` à UNREAD (voir webhook Resend
-  // Inbound) pour réapparaître comme "à traiter".
-  replies ContactMessageReply[]
 
   @@index([status, createdAt])
   @@map("contact_messages")
 }
 
-enum ContactMessageReplyDirection {
-  // Envoyé depuis /admin/messages vers le client, par email.
-  STAFF
-  // Reçu par email (le client a répondu à un email STAFF) — capturé via
-  // Resend Inbound sur un sous-domaine dédié (reponses.<domaine>), voir
-  // /api/webhooks/resend-inbound. Jamais saisi manuellement.
-  CLIENT
-}
-
-model ContactMessageReply {
-  id               String                        @id @default(cuid())
-  contactMessageId String
-  contactMessage   ContactMessage                @relation(fields: [contactMessageId], references: [id], onDelete: Cascade)
-  direction        ContactMessageReplyDirection
-  body             String                        @db.Text
-  // Renseigné uniquement pour direction = STAFF.
-  authorUserId     String?
-  authorUser       User?                         @relation("ContactMessageReplyAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
-  // Renseignés uniquement pour direction = CLIENT — id Resend de l'email
-  // reçu (déduplique un webhook rejoué) et adresse d'expédition brute
-  // (normalement identique à ContactMessage.email, capturée telle quelle
-  // par sécurité/traçabilité).
-  resendEmailId    String?                       @unique
-  fromEmail        String?
-  createdAt        DateTime                      @default(now())
-
-  @@index([contactMessageId, createdAt])
-  @@map("contact_message_replies")
-}
-
 // ---------------------------------------------------------------------------
-// Newsletter
+// Newsletter (double opt-in maison)
 // ---------------------------------------------------------------------------
 
 model NewsletterSubscriber {
   id               String    @id @default(cuid())
   email            String    @unique
-  // Permet un lien de désinscription en un clic, sans authentification —
-  // pratique standard pour rester conforme (droit de retrait facile).
-  unsubscribeToken String    @unique @default(cuid())
-  subscribedAt     DateTime  @default(now())
+  locale           String    @default("fr")
+  confirmToken     String    @unique
+  confirmedAt      DateTime?
+  unsubscribeToken String    @unique
   unsubscribedAt   DateTime?
-  ipAddress        String?
+  createdAt        DateTime  @default(now())
 
   @@map("newsletter_subscribers")
 }
 
 // ---------------------------------------------------------------------------
-// Paramètres du site (ligne unique)
+// Bons cadeaux
+// ---------------------------------------------------------------------------
+
+model GiftVoucher {
+  id                    String            @id @default(cuid())
+  code                  String            @unique
+  amountCents           Int
+  status                GiftVoucherStatus @default(PENDING_PAYMENT)
+
+  buyerName      String
+  buyerEmail     String
+  recipientName  String?
+  recipientEmail String?
+  message        String? @db.Text
+
+  stripeSessionId       String? @unique
+  stripePaymentIntentId String?
+
+  issuedAt      DateTime?
+  expiresAt     DateTime?
+  redeemedAt    DateTime?
+  pdfStorageKey String?
+  // Relance « votre bon expire bientôt » : horodatée une seule fois par bon.
+  expiryReminderSentAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@map("gift_vouchers")
+}
+
+// ---------------------------------------------------------------------------
+// Réglages du site (singleton)
 // ---------------------------------------------------------------------------
 
 model SiteSetting {
-  id                    String   @id @default("singleton")
-  siteName              String   @default("19 Bonnes Tables Sarthoises")
-  siteDescription       String?  @db.Text
-  logoId                String?
-  logo                  Media?   @relation("SettingsLogo", fields: [logoId], references: [id], onDelete: SetNull)
-  faviconId             String?
-  favicon               Media?   @relation("SettingsFavicon", fields: [faviconId], references: [id], onDelete: SetNull)
-  contactEmail          String?
-  contactPhone          String?
-  address               String?
-  facebookUrl           String?
-  instagramUrl          String?
-  linkedinUrl           String?
+  id String @id @default("singleton")
+
+  siteName    String  @default("L'Insouciant")
+  siteNameEn  String?
+  tagline     String  @default("Gastronomie décomplexée")
+  taglineEn   String?
+  intro       String? @db.Text
+  introEn     String? @db.Text
+
+  addressLine String  @default("")
+  postalCode  String  @default("")
+  city        String  @default("")
+  phone       String  @default("")
+  email       String  @default("")
+
+  // [{ day, closed, slots: [{ start, end }] }]
+  openingHours Json?
+
+  parkingNote    String?
+  parkingNoteEn  String?
+  servicesNote   String? @db.Text
+  servicesNoteEn String? @db.Text
+  paymentNote    String? @db.Text
+  paymentNoteEn  String? @db.Text
+
+  zenchefBookingUrl    String?
+  zenchefNewsletterUrl String?
+  // Identifiant du restaurant côté Zenchef (widget d'embed « rid »).
+  zenchefRestaurantId  String?
+
+  facebookUrl  String?
+  instagramUrl String?
+  googleMapsUrl String?
+  mapEmbedUrl  String? @db.Text
+
+  logoId    String?
+  logo      Media?  @relation("SettingsLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  faviconId String?
+  favicon   Media?  @relation("SettingsFavicon", fields: [faviconId], references: [id], onDelete: SetNull)
+  ogImageId String?
+  ogImage   Media?  @relation("SettingsOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
+  heroImageId String?
+  heroImage   Media? @relation("SettingsHeroImage", fields: [heroImageId], references: [id], onDelete: SetNull)
+
+  legalCompanyName         String?
+  legalSiret               String?
+  legalCapital             String?
+  legalPublicationDirector String?
+  legalHost                String? @db.Text
+  legalRcsCity             String?
+  legalVatNumber           String?
+
   seoDefaultTitle       String?
-  seoDefaultDescription String?  @db.Text
-  ogDefaultImageId      String?
-  ogDefaultImage        Media?   @relation("SettingsOgImage", fields: [ogDefaultImageId], references: [id], onDelete: SetNull)
-  footerText            String?  @db.Text
-  gtmId                 String?
-  updatedAt             DateTime @updatedAt
+  seoDefaultDescription String?
+
+  footerText   String? @db.Text
+  footerTextEn String? @db.Text
+
+  updatedAt DateTime @updatedAt
 
   @@map("site_settings")
-}
-
-// ---------------------------------------------------------------------------
-// Redirections 301 (conservation du référencement existant)
-// ---------------------------------------------------------------------------
-
-model Redirect {
-  id         String   @id @default(cuid())
-  fromPath   String   @unique
-  toPath     String
-  statusCode Int      @default(301)
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@map("redirects")
-}
-
-// ---------------------------------------------------------------------------
-// Journal d'audit
-// ---------------------------------------------------------------------------
-
-model AuditLog {
-  id         String   @id @default(cuid())
-  userId     String?
-  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action     String
-  entityType String
-  entityId   String?
-  metadata   Json?
-  ipAddress  String?
-  createdAt  DateTime @default(now())
-
-  @@index([entityType, entityId])
-  @@index([userId, createdAt])
-  @@map("audit_logs")
 }

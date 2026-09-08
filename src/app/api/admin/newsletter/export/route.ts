@@ -1,27 +1,20 @@
 import { NextResponse } from "next/server";
-import { requireCommunicationAccess } from "@/lib/auth/permissions";
+import { requireAdmin } from "@/lib/auth/permissions";
 import { handleApiError } from "@/lib/api/handle-error";
-import { listActiveSubscribers } from "@/lib/services/newsletter.service";
-
-function escapeCsvField(value: string): string {
-  return `"${value.replace(/"/g, '""')}"`;
-}
+import { listConfirmedSubscribers } from "@/lib/services/newsletter.service";
 
 export async function GET() {
   try {
-    await requireCommunicationAccess();
-    const subscribers = await listActiveSubscribers();
-
-    const rows = [
-      ["email", "date d'inscription"],
-      ...subscribers.map((s) => [s.email, s.subscribedAt.toISOString()]),
-    ];
-    const csv = rows.map((row) => row.map(escapeCsvField).join(",")).join("\r\n");
-
+    await requireAdmin();
+    const subscribers = await listConfirmedSubscribers();
+    const csv = [
+      "email;langue;inscrit_le",
+      ...subscribers.map((s) => `${s.email};${s.locale};${s.createdAt.toISOString().slice(0, 10)}`),
+    ].join("\n");
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="newsletter-abonnes.csv"`,
+        "Content-Disposition": `attachment; filename="abonnes-newsletter-${new Date().toISOString().slice(0, 10)}.csv"`,
       },
     });
   } catch (error) {

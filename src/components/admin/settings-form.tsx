@@ -1,152 +1,241 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState, useState } from "react";
 import Image from "next/image";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { siteSettingSchema, type SiteSettingInput } from "@/lib/validation/settings";
-import { Button } from "@/components/ui/button";
-import { FormField, Input, Textarea } from "@/components/ui/field";
+import type { SiteSettings, OpeningDay } from "@/lib/services/settings.service";
+import { OpeningHoursEditor, defaultOpeningHours } from "@/components/admin/opening-hours-editor";
 import { MediaPicker, type PickedMedia } from "@/components/admin/media-picker";
-import type { Media, SiteSetting } from "@prisma/client";
+import { saveSettingsAction, type SettingsActionState } from "@/app/(admin)/admin/(dashboard)/reglages/actions";
 
-type SettingsWithMedia = SiteSetting & { logo: Media | null; favicon: Media | null };
+const inputCls = "w-full rounded-md border border-ink-200 bg-white px-3 py-2 text-sm";
 
-export function SettingsForm({ settings }: { settings: SettingsWithMedia }) {
-  const router = useRouter();
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [logoPickerOpen, setLogoPickerOpen] = useState(false);
-  const [logo, setLogo] = useState<PickedMedia | null>(
-    settings.logo ? { id: settings.logo.id, url: settings.logo.url, alt: settings.logo.alt, filename: settings.logo.filename } : null
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-lg border border-ink-900/10 bg-white p-5">
+      <h2 className="mb-4 font-medium text-ink-800">{title}</h2>
+      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+    </section>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  textarea,
+  full,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  textarea?: boolean;
+  full?: boolean;
+}) {
+  return (
+    <label className={`block text-sm ${full ? "sm:col-span-2" : ""}`}>
+      <span className="mb-1 block text-xs font-medium text-ink-600">{label}</span>
+      {textarea ? (
+        <textarea className={inputCls} rows={3} value={value} onChange={(e) => onChange(e.target.value)} />
+      ) : (
+        <input className={inputCls} value={value} onChange={(e) => onChange(e.target.value)} />
+      )}
+    </label>
+  );
+}
+
+function ImageField({
+  label,
+  media,
+  onPick,
+  onClear,
+}: {
+  label: string;
+  media: { url: string } | null;
+  onPick: () => void;
+  onClear: () => void;
+}) {
+  return (
+    <div className="text-sm">
+      <span className="mb-1 block text-xs font-medium text-ink-600">{label}</span>
+      <div className="flex items-center gap-3">
+        {media ? (
+          <span className="relative h-14 w-14 overflow-hidden rounded border border-ink-100">
+            <Image src={media.url} alt="" fill className="object-contain" sizes="56px" />
+          </span>
+        ) : null}
+        <button type="button" onClick={onPick} className="rounded border border-ink-200 px-3 py-1 text-xs">
+          Choisir
+        </button>
+        {media ? (
+          <button type="button" onClick={onClear} className="text-xs text-red-600">
+            Retirer
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export function SettingsForm({ settings }: { settings: SiteSettings }) {
+  const [state, formAction, pending] = useActionState<SettingsActionState, FormData>(saveSettingsAction, {});
+  const s = settings;
+
+  const [f, setF] = useState({
+    siteName: s.siteName,
+    siteNameEn: s.siteNameEn ?? "",
+    tagline: s.tagline,
+    taglineEn: s.taglineEn ?? "",
+    intro: s.intro ?? "",
+    introEn: s.introEn ?? "",
+    addressLine: s.addressLine,
+    postalCode: s.postalCode,
+    city: s.city,
+    phone: s.phone,
+    email: s.email,
+    parkingNote: s.parkingNote ?? "",
+    parkingNoteEn: s.parkingNoteEn ?? "",
+    servicesNote: s.servicesNote ?? "",
+    servicesNoteEn: s.servicesNoteEn ?? "",
+    paymentNote: s.paymentNote ?? "",
+    paymentNoteEn: s.paymentNoteEn ?? "",
+    zenchefBookingUrl: s.zenchefBookingUrl ?? "",
+    zenchefNewsletterUrl: s.zenchefNewsletterUrl ?? "",
+    zenchefRestaurantId: s.zenchefRestaurantId ?? "",
+    facebookUrl: s.facebookUrl ?? "",
+    instagramUrl: s.instagramUrl ?? "",
+    googleMapsUrl: s.googleMapsUrl ?? "",
+    mapEmbedUrl: s.mapEmbedUrl ?? "",
+    legalCompanyName: s.legalCompanyName ?? "",
+    legalSiret: s.legalSiret ?? "",
+    legalCapital: s.legalCapital ?? "",
+    legalPublicationDirector: s.legalPublicationDirector ?? "",
+    legalHost: s.legalHost ?? "",
+    legalRcsCity: s.legalRcsCity ?? "",
+    legalVatNumber: s.legalVatNumber ?? "",
+    seoDefaultTitle: s.seoDefaultTitle ?? "",
+    seoDefaultDescription: s.seoDefaultDescription ?? "",
+    footerText: s.footerText ?? "",
+    footerTextEn: s.footerTextEn ?? "",
+  });
+  const set = (k: keyof typeof f) => (v: string) => setF((prev) => ({ ...prev, [k]: v }));
+
+  const [hours, setHours] = useState<OpeningDay[]>(
+    Array.isArray(s.openingHours) && s.openingHours.length === 7
+      ? (s.openingHours as unknown as OpeningDay[])
+      : defaultOpeningHours()
   );
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<SiteSettingInput>({
-    resolver: zodResolver(siteSettingSchema),
-    defaultValues: {
-      siteName: settings.siteName,
-      siteDescription: settings.siteDescription ?? "",
-      logoId: settings.logoId,
-      faviconId: settings.faviconId,
-      contactEmail: settings.contactEmail ?? "",
-      contactPhone: settings.contactPhone ?? "",
-      address: settings.address ?? "",
-      facebookUrl: settings.facebookUrl ?? "",
-      instagramUrl: settings.instagramUrl ?? "",
-      linkedinUrl: settings.linkedinUrl ?? "",
-      seoDefaultTitle: settings.seoDefaultTitle ?? "",
-      seoDefaultDescription: settings.seoDefaultDescription ?? "",
-      footerText: settings.footerText ?? "",
-      gtmId: settings.gtmId ?? "",
-    },
+  type ImgRef = { id: string; url: string } | null;
+  const toRef = (m: { id: string; url: string } | null): ImgRef => (m ? { id: m.id, url: m.url } : null);
+  const [images, setImages] = useState<{ logo: ImgRef; favicon: ImgRef; ogImage: ImgRef; heroImage: ImgRef }>({
+    logo: toRef(s.logo),
+    favicon: toRef(s.favicon),
+    ogImage: toRef(s.ogImage),
+    heroImage: toRef(s.heroImage),
   });
+  const [picker, setPicker] = useState<null | keyof typeof images>(null);
 
-  async function onSubmit(values: SiteSettingInput) {
-    setServerError(null);
-    setSuccess(false);
-    const res = await fetch("/api/admin/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+  function handlePick(media: PickedMedia[]) {
+    const first = media[0];
+    if (!picker || !first) return;
+    setImages((prev) => ({ ...prev, [picker]: { id: first.id, url: first.url } }));
+    setPicker(null);
+  }
+
+  function payload() {
+    return JSON.stringify({
+      ...f,
+      openingHours: hours,
+      logoId: images.logo?.id ?? null,
+      faviconId: images.favicon?.id ?? null,
+      ogImageId: images.ogImage?.id ?? null,
+      heroImageId: images.heroImage?.id ?? null,
     });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setServerError(data.error ?? "Une erreur est survenue.");
-      return;
-    }
-    setSuccess(true);
-    router.refresh();
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <div className="space-y-6 lg:col-span-2">
-        <section className="space-y-4 rounded-lg border border-ink-100 bg-white p-5 shadow-sm">
-          <h2 className="font-display text-base text-ink-900">Identité du site</h2>
-          <FormField label="Nom du site" htmlFor="siteName" error={errors.siteName?.message}>
-            <Input id="siteName" {...register("siteName")} />
-          </FormField>
-          <FormField label="Description" htmlFor="siteDescription" error={errors.siteDescription?.message}>
-            <Textarea id="siteDescription" rows={3} {...register("siteDescription")} />
-          </FormField>
-        </section>
+    <form action={formAction} className="max-w-4xl space-y-6">
+      <input type="hidden" name="payload" value={payload()} />
 
-        <section className="space-y-4 rounded-lg border border-ink-100 bg-white p-5 shadow-sm">
-          <h2 className="font-display text-base text-ink-900">Coordonnées</h2>
-          <FormField label="Email de contact" htmlFor="contactEmail" error={errors.contactEmail?.message}>
-            <Input id="contactEmail" {...register("contactEmail")} />
-          </FormField>
-          <FormField label="Téléphone" htmlFor="contactPhone" error={errors.contactPhone?.message}>
-            <Input id="contactPhone" {...register("contactPhone")} />
-          </FormField>
-          <FormField label="Adresse" htmlFor="address" error={errors.address?.message}>
-            <Input id="address" {...register("address")} />
-          </FormField>
-          <FormField label="Facebook" htmlFor="facebookUrl" error={errors.facebookUrl?.message}>
-            <Input id="facebookUrl" {...register("facebookUrl")} />
-          </FormField>
-          <FormField label="Instagram" htmlFor="instagramUrl" error={errors.instagramUrl?.message}>
-            <Input id="instagramUrl" {...register("instagramUrl")} />
-          </FormField>
-          <FormField label="LinkedIn" htmlFor="linkedinUrl" error={errors.linkedinUrl?.message}>
-            <Input id="linkedinUrl" {...register("linkedinUrl")} />
-          </FormField>
-        </section>
+      <Section title="Identité">
+        <Field label="Nom du site (FR)" value={f.siteName} onChange={set("siteName")} />
+        <Field label="Nom du site (EN)" value={f.siteNameEn} onChange={set("siteNameEn")} />
+        <Field label="Accroche (FR)" value={f.tagline} onChange={set("tagline")} />
+        <Field label="Accroche (EN)" value={f.taglineEn} onChange={set("taglineEn")} />
+        <Field label="Texte d'introduction / philosophie (FR)" value={f.intro} onChange={set("intro")} textarea full />
+        <Field label="Texte d'introduction (EN)" value={f.introEn} onChange={set("introEn")} textarea full />
+      </Section>
 
-        <section className="space-y-4 rounded-lg border border-ink-100 bg-white p-5 shadow-sm">
-          <h2 className="font-display text-base text-ink-900">SEO global</h2>
-          <FormField label="Titre par défaut" htmlFor="seoDefaultTitle" error={errors.seoDefaultTitle?.message}>
-            <Input id="seoDefaultTitle" {...register("seoDefaultTitle")} />
-          </FormField>
-          <FormField label="Meta description par défaut" htmlFor="seoDefaultDescription" error={errors.seoDefaultDescription?.message}>
-            <Textarea id="seoDefaultDescription" rows={2} {...register("seoDefaultDescription")} />
-          </FormField>
-          <FormField label="ID Google Tag Manager" htmlFor="gtmId" error={errors.gtmId?.message}>
-            <Input id="gtmId" {...register("gtmId")} placeholder="GTM-XXXXXXX" />
-          </FormField>
-        </section>
+      <Section title="Coordonnées">
+        <Field label="Adresse" value={f.addressLine} onChange={set("addressLine")} />
+        <Field label="Code postal" value={f.postalCode} onChange={set("postalCode")} />
+        <Field label="Ville" value={f.city} onChange={set("city")} />
+        <Field label="Téléphone" value={f.phone} onChange={set("phone")} />
+        <Field label="Email public" value={f.email} onChange={set("email")} />
+      </Section>
 
-        <section className="space-y-4 rounded-lg border border-ink-100 bg-white p-5 shadow-sm">
-          <h2 className="font-display text-base text-ink-900">Footer</h2>
-          <FormField label="Texte du footer" htmlFor="footerText" error={errors.footerText?.message}>
-            <Textarea id="footerText" rows={3} {...register("footerText")} />
-          </FormField>
-        </section>
-      </div>
+      <section className="rounded-lg border border-ink-900/10 bg-white p-5">
+        <h2 className="mb-4 font-medium text-ink-800">Horaires d&apos;ouverture</h2>
+        <OpeningHoursEditor value={hours} onChange={setHours} />
+      </section>
 
-      <div className="space-y-6">
-        <section className="space-y-3 rounded-lg border border-ink-100 bg-white p-5 shadow-sm">
-          <h2 className="font-display text-base text-ink-900">Logo</h2>
-          {logo ? (
-            <div className="relative h-16 w-full">
-              <Image src={logo.url} alt={logo.alt ?? ""} fill className="object-contain" />
-            </div>
-          ) : null}
-          <Button type="button" variant="secondary" size="sm" onClick={() => setLogoPickerOpen(true)}>
-            Choisir un logo
-          </Button>
-          <MediaPicker
-            open={logoPickerOpen}
-            onClose={() => setLogoPickerOpen(false)}
-            onSelect={([media]) => {
-              if (!media) return;
-              setValue("logoId", media.id);
-              setLogo(media);
-            }}
-          />
-        </section>
+      <Section title="Réservation (Zenchef)">
+        <Field label="Identifiant restaurant Zenchef (rid)" value={f.zenchefRestaurantId} onChange={set("zenchefRestaurantId")} />
+        <Field label="URL de réservation Zenchef" value={f.zenchefBookingUrl} onChange={set("zenchefBookingUrl")} />
+        <Field label="URL d'inscription newsletter Zenchef (facultatif)" value={f.zenchefNewsletterUrl} onChange={set("zenchefNewsletterUrl")} full />
+      </Section>
 
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? "Enregistrement..." : "Enregistrer"}
-        </Button>
-        {success ? <p className="text-sm text-green-600">Paramètres enregistrés.</p> : null}
-        {serverError ? <p className="text-sm text-red-600">{serverError}</p> : null}
+      <Section title="Réseaux sociaux & carte">
+        <Field label="Facebook" value={f.facebookUrl} onChange={set("facebookUrl")} />
+        <Field label="Instagram" value={f.instagramUrl} onChange={set("instagramUrl")} />
+        <Field label="Lien Google Maps" value={f.googleMapsUrl} onChange={set("googleMapsUrl")} />
+        <Field label="URL d'intégration de la carte (iframe src)" value={f.mapEmbedUrl} onChange={set("mapEmbedUrl")} textarea full />
+      </Section>
+
+      <Section title="Services & paiement">
+        <Field label="Stationnement (FR)" value={f.parkingNote} onChange={set("parkingNote")} />
+        <Field label="Stationnement (EN)" value={f.parkingNoteEn} onChange={set("parkingNoteEn")} />
+        <Field label="Services (FR)" value={f.servicesNote} onChange={set("servicesNote")} textarea />
+        <Field label="Services (EN)" value={f.servicesNoteEn} onChange={set("servicesNoteEn")} textarea />
+        <Field label="Moyens de paiement (FR)" value={f.paymentNote} onChange={set("paymentNote")} textarea />
+        <Field label="Moyens de paiement (EN)" value={f.paymentNoteEn} onChange={set("paymentNoteEn")} textarea />
+      </Section>
+
+      <section className="rounded-lg border border-ink-900/10 bg-white p-5">
+        <h2 className="mb-4 font-medium text-ink-800">Images</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <ImageField label="Logo" media={images.logo} onPick={() => setPicker("logo")} onClear={() => setImages((p) => ({ ...p, logo: null }))} />
+          <ImageField label="Favicon" media={images.favicon} onPick={() => setPicker("favicon")} onClear={() => setImages((p) => ({ ...p, favicon: null }))} />
+          <ImageField label="Image de partage (Open Graph)" media={images.ogImage} onPick={() => setPicker("ogImage")} onClear={() => setImages((p) => ({ ...p, ogImage: null }))} />
+          <ImageField label="Image du bandeau d'accueil" media={images.heroImage} onPick={() => setPicker("heroImage")} onClear={() => setImages((p) => ({ ...p, heroImage: null }))} />
+        </div>
+      </section>
+
+      <Section title="Mentions légales">
+        <Field label="Raison sociale" value={f.legalCompanyName} onChange={set("legalCompanyName")} />
+        <Field label="SIRET" value={f.legalSiret} onChange={set("legalSiret")} />
+        <Field label="Capital social" value={f.legalCapital} onChange={set("legalCapital")} />
+        <Field label="Ville du RCS" value={f.legalRcsCity} onChange={set("legalRcsCity")} />
+        <Field label="N° TVA intracommunautaire" value={f.legalVatNumber} onChange={set("legalVatNumber")} />
+        <Field label="Directeur de la publication" value={f.legalPublicationDirector} onChange={set("legalPublicationDirector")} />
+        <Field label="Hébergeur" value={f.legalHost} onChange={set("legalHost")} textarea full />
+      </Section>
+
+      <Section title="Référencement & pied de page">
+        <Field label="Titre SEO par défaut" value={f.seoDefaultTitle} onChange={set("seoDefaultTitle")} />
+        <Field label="Description SEO par défaut" value={f.seoDefaultDescription} onChange={set("seoDefaultDescription")} />
+        <Field label="Texte du pied de page (FR)" value={f.footerText} onChange={set("footerText")} textarea />
+        <Field label="Texte du pied de page (EN)" value={f.footerTextEn} onChange={set("footerTextEn")} textarea />
+      </Section>
+
+      <MediaPicker open={picker !== null} onClose={() => setPicker(null)} onSelect={handlePick} />
+
+      <div className="flex items-center gap-3">
+        <button type="submit" disabled={pending} className="btn-cta">
+          {pending ? "Enregistrement…" : "Enregistrer les réglages"}
+        </button>
+        {state.error ? <span className="text-sm text-red-600">{state.error}</span> : null}
+        {state.success ? <span className="text-sm text-green-700">Réglages enregistrés.</span> : null}
       </div>
     </form>
   );

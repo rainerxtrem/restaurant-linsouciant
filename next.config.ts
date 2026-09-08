@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -12,63 +15,13 @@ const nextConfig: NextConfig = {
     "/api/admin/gift-vouchers/[id]/pdf": ["./node_modules/pdfkit/js/data/**"],
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**",
-      },
-    ],
-  },
-  // Conservation du référencement de l'ancien site B12 (voir audit Phase 1).
-  // Restaurants, /le-bureau, /partenaires, /galerie et /bon-cadeaux gardent
-  // exactement la même URL sur le nouveau site : aucune redirection requise
-  // pour eux. Le reste de la table Redirect (ajouts futurs, cas particuliers)
-  // est géré dynamiquement en base via /admin/redirections + middleware.
-  async redirects() {
-    return [
-      { source: "/linsouciant", destination: "/l-insouciant", permanent: true },
-      { source: "/galerie-le-cheval-blanc", destination: "/galerie/le-cheval-blanc", permanent: true },
-      { source: "/galerie-le-jardin-gourmand", destination: "/galerie/le-jardin-gourmand", permanent: true },
-      { source: "/galerie-l-insouciant", destination: "/galerie/l-insouciant", permanent: true },
-      { source: "/galerie-les-etangs-de-guibert", destination: "/galerie/les-etangs-de-guibert", permanent: true },
-      { source: "/galerie-l-ardoise", destination: "/galerie/l-ardoise", permanent: true },
-      { source: "/galerie-la-petite-auberge", destination: "/galerie/la-petite-auberge", permanent: true },
-      { source: "/galerie-le-panier-fleuri", destination: "/galerie/le-panier-fleuri", permanent: true },
-      { source: "/galerie-hotel-la-renaissance", destination: "/galerie/hotel-restaurant-la-renaissance", permanent: true },
-      { source: "/galerie-les-tables-de-la-fontaine", destination: "/galerie/les-tables-de-la-fontaine", permanent: true },
-      { source: "/galerie-les-jardins-de-marolles", destination: "/galerie/les-jardins-de-marolles", permanent: true },
-      // Fiches "équipe" et "service" jamais liées dans la navigation B12
-      // (voir audit, section 12) : renvoyées vers les pages pertinentes.
-      { source: "/luke-mcgraw", destination: "/le-bureau", permanent: true },
-      { source: "/nick-burke", destination: "/le-bureau", permanent: true },
-      { source: "/rebecca-lopes", destination: "/le-bureau", permanent: true },
-      { source: "/madeline-blais", destination: "/le-bureau", permanent: true },
-      { source: "/19-bonnes-tables-sarthoises-562502", destination: "/le-bureau", permanent: true },
-      { source: "/everyday-is-a-winding-road", destination: "/actualites", permanent: true },
-      { source: "/service-title-7", destination: "/", permanent: true },
-      { source: "/service-title-8", destination: "/", permanent: true },
-      { source: "/gourmet-dinners", destination: "/", permanent: true },
-      { source: "/farm-to-table", destination: "/", permanent: true },
-      { source: "/chefs-table-experience", destination: "/", permanent: true },
-      { source: "/wine-pairing", destination: "/", permanent: true },
-      { source: "/local-specialties", destination: "/", permanent: true },
-      { source: "/reschedule-appointment", destination: "/", permanent: true },
-      { source: "/cancel-appointment", destination: "/", permanent: true },
-      // L'espace trésorerie avait sa propre connexion séparée
-      // (/tresorerie/login) ; le rôle TRESORIER se connecte maintenant
-      // depuis /admin/login comme les autres rôles restreints (secrétaire).
-      // Non permanent (302) : route interne authentifiée, pas un contenu
-      // public à réindexer — au cas où ce choix serait revu plus tard.
-      { source: "/tresorerie", destination: "/admin/login", permanent: false },
-      { source: "/tresorerie/:path*", destination: "/admin/login", permanent: false },
-    ];
+    remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
   async headers() {
     return [
       {
         source: "/:path*",
         headers: [
-          { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
@@ -82,4 +35,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

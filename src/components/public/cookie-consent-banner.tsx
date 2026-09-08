@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getStoredConsent, setStoredConsent, type CookieConsentValue } from "@/lib/cookie-consent";
 import { loadAnalytics } from "@/lib/analytics";
 
@@ -34,7 +34,7 @@ export function CookieConsentBanner() {
           Ce site utilise uniquement des cookies techniques strictement nécessaires à son fonctionnement (connexion
           à l&apos;espace d&apos;administration). Aucun cookie de mesure d&apos;audience ou publicitaire n&apos;est
           déposé sans votre accord.{" "}
-          <Link href="/politique-de-confidentialite" className="link-sweep text-wine-700">
+          <Link href="/politique-cookies" className="link-sweep text-wine-700">
             En savoir plus
           </Link>
         </p>

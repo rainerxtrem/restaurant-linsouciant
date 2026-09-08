@@ -1,0 +1,32 @@
+name: Migrations base de données (Railway)
+
+# Railway redéploie l'app automatiquement à chaque push sur main (intégration
+# GitHub native) et l'entrypoint applique déjà `prisma migrate deploy` au
+# démarrage. Ce workflow est un filet de sécurité : il applique les
+# migrations juste après le merge, avant que le nouveau conteneur ne prenne
+# le relais, ce qui évite toute fenêtre où du code neuf tourne sur un schéma
+# ancien.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "prisma/migrations/**"
+  workflow_dispatch: {}
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: prisma migrate deploy (via Railway)
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          npm i -g @railway/cli
+          railway run --service "${{ vars.RAILWAY_SERVICE || 'restaurant-linsouciant' }}" npx prisma migrate deploy

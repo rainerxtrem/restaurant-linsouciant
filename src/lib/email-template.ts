@@ -19,7 +19,7 @@ const CREAM_100 = "#faf6ee";
 
 export function renderEmail({
   siteName,
-  tagline = "Le savoir-faire pour mieux vous servir.",
+  tagline = "Gastronomie décomplexée",
   preheader,
   bodyHtml,
   footerNote,
@@ -62,7 +62,7 @@ export function renderEmail({
         </tr>
         <tr>
           <td bgcolor="${CREAM_100}" style="background-color:${CREAM_100}; padding:16px 32px; text-align:center; font-family:Arial,Helvetica,sans-serif; font-size:11px; color:${INK_500};">
-            ${escapeHtml(siteName)} — Association loi 1901
+            ${escapeHtml(siteName)}
           </td>
         </tr>
       </table>
