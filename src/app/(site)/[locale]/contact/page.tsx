@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { MapPin, Phone, Mail } from "lucide-react";
+import { MapPin, Phone, Mail, Car, Sparkles, CreditCard } from "lucide-react";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
 import { localized } from "@/lib/i18n";
@@ -27,50 +27,58 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
   const t = await getTranslations();
   const settings = await getSiteSettings();
   const hours = parseOpeningHours(settings.openingHours);
+  const tel = settings.phone.replace(/\s/g, "");
 
-  const blocks: { title: string; body: string }[] = [];
-  if (localized(settings, "parkingNote", locale))
-    blocks.push({ title: t("contact.parking"), body: localized(settings, "parkingNote", locale) });
-  if (localized(settings, "servicesNote", locale))
-    blocks.push({ title: t("contact.services"), body: localized(settings, "servicesNote", locale) });
-  if (localized(settings, "paymentNote", locale))
-    blocks.push({ title: t("contact.payment"), body: localized(settings, "paymentNote", locale) });
+  const infoCards = [
+    localized(settings, "parkingNote", locale)
+      ? { icon: Car, title: t("contact.parking"), body: localized(settings, "parkingNote", locale) }
+      : null,
+    localized(settings, "servicesNote", locale)
+      ? { icon: Sparkles, title: t("contact.services"), body: localized(settings, "servicesNote", locale) }
+      : null,
+    localized(settings, "paymentNote", locale)
+      ? { icon: CreditCard, title: t("contact.payment"), body: localized(settings, "paymentNote", locale) }
+      : null,
+  ].filter((x): x is { icon: typeof Car; title: string; body: string } => x !== null);
 
   return (
     <div className="bg-cream-50">
-      <section className="border-b border-ink-900/10 bg-cream-100 py-20">
+      {/* En-tête */}
+      <section className="border-b border-ink-900/10 bg-cream-100 py-20 sm:py-24">
         <div className="container max-w-3xl">
-          <h1 className="font-display text-4xl text-ink-900 sm:text-5xl">{t("contact.title")}</h1>
+          <p className="eyebrow">{t("nav.contact")}</p>
+          <h1 className="mt-4 font-display text-4xl text-ink-900 sm:text-5xl">{t("contact.title")}</h1>
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="container grid gap-12 lg:grid-cols-2">
-          <Reveal>
-            <div className="space-y-8">
-              <div>
+      {/* Coordonnées + plan + horaires */}
+      <section className="py-16 sm:py-20">
+        <div className="container">
+          <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
+            <Reveal>
+              <div className="flex h-full flex-col">
                 <p className="eyebrow">{t("contact.howToCome")}</p>
-                <address className="mt-3 space-y-2 not-italic text-ink-700">
-                  <p className="flex items-start gap-2">
-                    <MapPin className="mt-0.5 h-4 w-4 text-gold-600" aria-hidden />
-                    <span>
+                <address className="mt-5 space-y-4 not-italic">
+                  <p className="flex items-start gap-3 text-ink-800">
+                    <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-gold-600" aria-hidden />
+                    <span className="text-base leading-relaxed">
                       {settings.addressLine}
                       <br />
                       {settings.postalCode} {settings.city}
                     </span>
                   </p>
                   {settings.phone ? (
-                    <p className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-gold-600" aria-hidden />
-                      <a href={`tel:${settings.phone.replace(/\s/g, "")}`} className="link-sweep text-wine-700">
+                    <p className="flex items-center gap-3">
+                      <Phone className="h-5 w-5 shrink-0 text-gold-600" aria-hidden />
+                      <a href={`tel:${tel}`} className="link-sweep text-base text-wine-700">
                         {settings.phone}
                       </a>
                     </p>
                   ) : null}
                   {settings.email ? (
-                    <p className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-gold-600" aria-hidden />
-                      <a href={`mailto:${settings.email}`} className="link-sweep text-wine-700">
+                    <p className="flex items-center gap-3">
+                      <Mail className="h-5 w-5 shrink-0 text-gold-600" aria-hidden />
+                      <a href={`mailto:${settings.email}`} className="link-sweep text-base text-wine-700">
                         {settings.email}
                       </a>
                     </p>
@@ -81,44 +89,75 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                     href={settings.googleMapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-3 inline-block text-sm text-wine-700 underline"
+                    className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-sm border border-ink-900/15 px-4 py-2 text-sm text-ink-800 transition-colors hover:border-wine-600 hover:text-wine-700"
                   >
-                    Google Maps
+                    Ouvrir dans Google Maps
                   </a>
                 ) : null}
-              </div>
 
-              <div>
-                <p className="eyebrow">{t("common.openingHours")}</p>
-                <div className="mt-3">
-                  <OpeningHours hours={hours} />
+                <div className="mt-10 rounded-lg border border-ink-900/10 bg-white p-6">
+                  <p className="eyebrow">{t("common.openingHours")}</p>
+                  <div className="mt-4">
+                    <OpeningHours hours={hours} />
+                  </div>
                 </div>
               </div>
+            </Reveal>
 
-              {blocks.map((b) => (
-                <div key={b.title}>
-                  <p className="eyebrow">{b.title}</p>
-                  <p className="mt-2 whitespace-pre-line text-sm text-ink-700">{b.body}</p>
-                </div>
-              ))}
-            </div>
-          </Reveal>
-
-          <Reveal delay={120}>
-            <div>
+            <Reveal delay={120}>
               {settings.mapEmbedUrl ? (
-                <div className="mb-8 aspect-[4/3] overflow-hidden rounded-md shadow-card">
+                <div className="h-full min-h-[360px] overflow-hidden rounded-lg shadow-card">
                   <iframe
                     src={settings.mapEmbedUrl}
                     title={settings.siteName}
-                    className="h-full w-full border-0"
+                    className="h-full min-h-[360px] w-full border-0"
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
                   />
                 </div>
               ) : null}
-              <p className="eyebrow">{t("contact.formTitle")}</p>
-              <p className="mt-2 mb-5 text-sm text-ink-600">{t("contact.formIntro")}</p>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* Infos pratiques — cartes séparées */}
+      {infoCards.length > 0 ? (
+        <section className="border-t border-ink-900/10 bg-cream-100 py-16">
+          <div className="container">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {infoCards.map((card) => {
+                const Icon = card.icon;
+                return (
+                  <Reveal key={card.title}>
+                    <div className="h-full rounded-lg border border-ink-900/10 bg-white p-6">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold-400/15 text-gold-600">
+                        <Icon className="h-5 w-5" aria-hidden />
+                      </span>
+                      <p className="mt-4 font-display text-lg text-ink-900">{card.title}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-ink-600">{card.body}</p>
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Formulaire */}
+      <section className="border-t border-ink-900/10 py-16 sm:py-20">
+        <div className="container max-w-2xl">
+          <Reveal>
+            <div className="text-center">
+              <p className="eyebrow justify-center">{t("contact.formTitle")}</p>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-ink-600">
+                {t("contact.formIntro")}
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={100}>
+            <div className="mt-10 rounded-lg border border-ink-900/10 bg-white p-6 shadow-card sm:p-8">
               <ContactForm />
             </div>
           </Reveal>

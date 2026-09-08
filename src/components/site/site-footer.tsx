@@ -101,7 +101,7 @@ export function SiteFooter({
         <div>
           <p className="eyebrow text-cream-100/70">{t("common.openingHours")}</p>
           <div className="mt-4 text-cream-100/80">
-            <OpeningHours hours={hours} showStatus={false} />
+            <OpeningHours hours={hours} showStatus={false} variant="stack" />
           </div>
         </div>
 
