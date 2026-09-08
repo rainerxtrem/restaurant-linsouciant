@@ -39,13 +39,13 @@ async function main() {
   console.log(`✔ Compte SUPER_ADMIN : ${adminEmail}`);
 
   // -------------------------------------------------------------------------
-  // Réglages du site
+  // Réglages du site — `update` = `create` (hors id) : le premier accès au
+  // site crée déjà une ligne "singleton" vide via getSiteSettings(), donc un
+  // `update: {}` la laisserait vide. On réapplique donc les valeurs à chaque
+  // seed (idempotent, ne casse rien si les réglages ont été personnalisés
+  // depuis /admin — à ne relancer que volontairement).
   // -------------------------------------------------------------------------
-  await prisma.siteSetting.upsert({
-    where: { id: "singleton" },
-    update: {},
-    create: {
-      id: "singleton",
+  const siteSettingData = {
       siteName: "L'Insouciant",
       tagline: "Gastronomie décomplexée",
       taglineEn: "Unpretentious gastronomy",
@@ -91,7 +91,12 @@ async function main() {
       seoDefaultTitle: "L'Insouciant · Restaurant gastronomique au Mans",
       seoDefaultDescription:
         "Restaurant L'Insouciant au Mans — cuisine créative et gourmande du chef Corentin Courtien, produits frais et de saison. Réservation en ligne.",
-    },
+  };
+
+  await prisma.siteSetting.upsert({
+    where: { id: "singleton" },
+    update: siteSettingData,
+    create: { id: "singleton", ...siteSettingData },
   });
   console.log("✔ Réglages du site");
 
