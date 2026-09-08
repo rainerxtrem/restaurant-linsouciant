@@ -1,27 +1,14 @@
 import createIntlMiddleware from "next-intl/middleware";
-import { NextResponse } from "next/server";
 import { routing } from "@/i18n/routing";
-import { auth } from "@/lib/auth";
 
-const intlMiddleware = createIntlMiddleware(routing);
-
-// On combine deux middlewares :
-//  - next-intl pour la négociation de langue sur le site public,
-//  - NextAuth (callback `authorized` dans lib/auth/config.ts) pour protéger
-//    /admin. L'admin reste monolingue (français) : pas de préfixe de locale.
-export default auth((request) => {
-  const { pathname } = request.nextUrl;
-
-  if (pathname.startsWith("/admin")) {
-    // La redirection éventuelle vers /admin/login est déjà gérée par le
-    // callback `authorized` ; ici on laisse simplement passer.
-    return NextResponse.next();
-  }
-
-  return intlMiddleware(request);
-});
+// Négociation de langue next-intl pour le site public uniquement.
+// /admin est exclu du matcher (back-office monolingue) et sa protection est
+// assurée côté serveur par le layout du tableau de bord + requireAdmin()
+// sur les routes API. Ne pas envelopper ce middleware dans le wrapper
+// `auth()` de NextAuth : la combinaison provoque une boucle de redirection
+// `/` → `/` avec localePrefix "as-needed".
+export default createIntlMiddleware(routing);
 
 export const config = {
-  // Tout sauf : routes API, assets Next, fichiers statiques (avec extension).
-  matcher: ["/((?!api|_next|_vercel|media|.*\\..*).*)"],
+  matcher: ["/((?!api|_next|_vercel|admin|media|.*\\..*).*)"],
 };
