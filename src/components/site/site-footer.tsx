@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Facebook, Instagram } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -45,7 +46,13 @@ export function SiteFooter({
     <footer className="bg-ink-950 text-cream-100">
       <div className="container grid grid-cols-1 gap-10 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="font-display text-xl text-cream-50">{siteName}</p>
+          <Image
+            src="/logo-light.png"
+            alt={siteName}
+            width={220}
+            height={101}
+            className="h-14 w-auto"
+          />
           <p className="mt-3 font-display italic text-gold-400">
             {locale === "en" && settings.taglineEn ? settings.taglineEn : settings.tagline}
           </p>
@@ -100,7 +107,7 @@ export function SiteFooter({
 
         <div>
           <p className="eyebrow text-cream-100/70">{t("common.openingHours")}</p>
-          <div className="mt-4 text-cream-100/80">
+          <div className="mt-4 text-cream-50">
             <OpeningHours hours={hours} showStatus={false} variant="stack" />
           </div>
         </div>

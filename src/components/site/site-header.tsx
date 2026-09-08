@@ -34,20 +34,26 @@ export function SiteHeader({
     <header className="sticky top-0 z-40">
       <div className="border-b border-ink-900/10 bg-cream-50/95 backdrop-blur">
         <div className="container flex h-20 items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3" aria-label={siteName}>
             {logoUrl ? (
-              <span className="relative h-11 w-11 shrink-0">
-                <Image src={logoUrl} alt={siteName} fill className="object-contain" sizes="44px" />
+              <Image
+                src={logoUrl}
+                alt={siteName}
+                width={260}
+                height={120}
+                priority
+                className="h-11 w-auto sm:h-14"
+              />
+            ) : (
+              <span className="flex flex-col leading-none">
+                <span className="font-display text-lg font-medium tracking-wide text-ink-900 sm:text-xl">
+                  {siteName}
+                </span>
+                <span className="mt-1 hidden text-[10px] uppercase tracking-[0.25em] text-gold-600 sm:block">
+                  {tagline}
+                </span>
               </span>
-            ) : null}
-            <span className="flex flex-col leading-none">
-              <span className="font-display text-lg font-medium tracking-wide text-ink-900 sm:text-xl">
-                {siteName}
-              </span>
-              <span className="mt-1 hidden text-[10px] uppercase tracking-[0.25em] text-gold-600 sm:block">
-                {tagline}
-              </span>
-            </span>
+            )}
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">

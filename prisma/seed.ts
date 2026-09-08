@@ -39,6 +39,28 @@ async function galleryMedia(file: string, alt: string, altEn: string) {
   });
 }
 
+/** Ligne Media pour un fichier à la racine de public/ (logo, favicon…). */
+async function siteMedia(file: string, mimeType: string, alt: string) {
+  const storageKey = `site/${file}`;
+  const existing = await prisma.media.findUnique({ where: { storageKey } });
+  if (existing) return existing;
+  const abs = path.join(process.cwd(), "public", file);
+  const meta = await sharp(readFileSync(abs)).metadata();
+  return prisma.media.create({
+    data: {
+      filename: file,
+      url: `/${file}`,
+      storageKey,
+      type: "IMAGE",
+      mimeType,
+      size: statSync(abs).size,
+      width: meta.width ?? null,
+      height: meta.height ?? null,
+      alt,
+    },
+  });
+}
+
 async function seedAlbum(
   slug: string,
   files: { file: string; alt: string; altEn: string }[]
@@ -86,7 +108,9 @@ async function main() {
   // seed (idempotent, ne casse rien si les réglages ont été personnalisés
   // depuis /admin — à ne relancer que volontairement).
   // -------------------------------------------------------------------------
-  // Images du site (hero + portrait du chef) — servies depuis public/gallery/.
+  // Images du site (logo, favicon, hero, portrait du chef).
+  const logoMedia = await siteMedia("logo.png", "image/png", "L'Insouciant");
+  const faviconMedia = await siteMedia("favicon.png", "image/png", "L'Insouciant");
   const heroMedia = await galleryMedia("hero.jpg", "Salle du restaurant L'Insouciant", "L'Insouciant dining room");
   const chefMedia = await galleryMedia(
     "dcc1a1a346735d8b3f8eb21d2327f1be.jpg",
@@ -95,6 +119,8 @@ async function main() {
   );
 
   const siteSettingData = {
+      logoId: logoMedia.id,
+      faviconId: faviconMedia.id,
       heroImageId: heroMedia.id,
       aboutImageId: chefMedia.id,
       siteName: "L'Insouciant",

@@ -46,10 +46,10 @@ export function OpeningHours({
           if (variant === "stack") {
             return (
               <div key={i}>
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.15em] text-current opacity-60">
+                <dt className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gold-400">
                   {label}
                 </dt>
-                <dd className="mt-0.5 font-medium">
+                <dd className="mt-1 font-medium leading-snug">
                   {group.closed ? (
                     t("common.closed")
                   ) : (
