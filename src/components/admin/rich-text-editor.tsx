@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import TiptapImage from "@tiptap/extension-image";
 import TiptapLink from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import TextAlign from "@tiptap/extension-text-align";
 import { cn } from "@/lib/utils/cn";
 import { MediaPicker, type PickedMedia } from "@/components/admin/media-picker";
 
@@ -84,6 +85,9 @@ function Toolbar({ editor }: { editor: Editor }) {
       <ToolbarButton label="Liste à puces" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()} />
       <ToolbarButton label="Liste numérotée" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()} />
       <ToolbarButton label="Citation" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()} />
+      <ToolbarButton label="⬅" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()} />
+      <ToolbarButton label="Centrer" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()} />
+      <ToolbarButton label="➡" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()} />
       <ToolbarButton label="Séparateur" onClick={() => editor.chain().focus().setHorizontalRule().run()} />
       <ToolbarButton label="Lien" active={editor.isActive("link")} onClick={insertLink} />
       <ToolbarButton label="Bouton" onClick={insertButton} />
@@ -121,6 +125,7 @@ export function RichTextEditor({
       StarterKit,
       TiptapImage,
       ButtonLink.configure({ openOnClick: false }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
       Placeholder.configure({ placeholder: placeholder ?? "Rédigez le contenu ici..." }),
     ],
     content: value,

@@ -69,6 +69,7 @@ export async function saveSettingsAction(
       seoDefaultDescription: orNull(d.seoDefaultDescription),
       footerText: orNull(d.footerText),
       footerTextEn: orNull(d.footerTextEn),
+      pressMentions: orNull(d.pressMentions),
     },
   });
 

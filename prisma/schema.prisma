@@ -107,6 +107,7 @@ model Media {
   settingsOgFor     SiteSetting[] @relation("SettingsOgImage")
   settingsHeroFor   SiteSetting[] @relation("SettingsHeroImage")
   settingsAboutFor  SiteSetting[] @relation("SettingsAboutImage")
+  announcementFor   Announcement[] @relation("AnnouncementImage")
 
   @@index([type])
   @@map("media")
@@ -377,7 +378,36 @@ model SiteSetting {
   footerText   String? @db.Text
   footerTextEn String? @db.Text
 
+  // Distinctions / presse affichées en bande discrète dans le pied de page,
+  // une par ligne (ex. « Guide MICHELIN », « Gault&Millau »).
+  pressMentions String? @db.Text
+
   updatedAt DateTime @updatedAt
 
   @@map("site_settings")
+}
+
+// ---------------------------------------------------------------------------
+// Annonce / pop-up d'accueil (singleton) — planifiée entre deux dates,
+// contenu entièrement éditable (image + texte riche + bouton).
+// ---------------------------------------------------------------------------
+
+model Announcement {
+  id            String    @id @default("singleton")
+  enabled       Boolean   @default(false)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  imageId       String?
+  image         Media?    @relation("AnnouncementImage", fields: [imageId], references: [id], onDelete: SetNull)
+  content       String    @default("") @db.Text
+  contentEn     String?   @db.Text
+  buttonLabel   String?
+  buttonLabelEn String?
+  buttonUrl     String?
+  // Jours pendant lesquels le pop-up reste masqué après fermeture par le
+  // visiteur (stocké côté navigateur).
+  dismissDays   Int       @default(7)
+  updatedAt     DateTime  @updatedAt
+
+  @@map("announcements")
 }

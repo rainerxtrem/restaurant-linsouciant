@@ -169,6 +169,7 @@ async function main() {
       seoDefaultTitle: "L'Insouciant · Restaurant gastronomique au Mans",
       seoDefaultDescription:
         "Restaurant L'Insouciant au Mans — cuisine créative et gourmande du chef Corentin Courtien, produits frais et de saison. Réservation en ligne.",
+      pressMentions: "Guide MICHELIN\nGault&Millau — Jeune Talent Service en salle",
   };
 
   await prisma.siteSetting.upsert({
@@ -378,6 +379,33 @@ async function main() {
   console.log("✔ Galerie photos");
 
   // -------------------------------------------------------------------------
+  // Page « La Maison » (éditable depuis /admin/pages)
+  // -------------------------------------------------------------------------
+  await prisma.page.upsert({
+    where: { slug: "la-maison" },
+    update: {},
+    create: {
+      slug: "la-maison",
+      title: "La Maison",
+      titleEn: "The House",
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      isSystem: true,
+      content: `
+        <p>L'Insouciant, c'est l'histoire d'un duo. En cuisine, <strong>Corentin Courtien</strong> compose une cuisine créative et instinctive, où les épices et les herbes tiennent le premier rôle et où près de 80&nbsp;% des produits viennent de producteurs locaux.</p>
+        <p>En salle, <strong>Madeline Blais</strong> orchestre un service précis et chaleureux, récompensé par le Trophée Gault&amp;Millau du Jeune Talent Service en salle.</p>
+        <p>Le midi, une bistronomie généreuse&nbsp;; le soir, un menu dégustation plus ambitieux, ponctué de petits amuse-bouches entre les plats. Dans une salle épurée à deux pas de l'église Sainte-Jeanne-d'Arc, tout est pensé pour faire du repas une succession de surprises.</p>
+      `,
+      contentEn: `
+        <p>L'Insouciant is the story of a duo. In the kitchen, <strong>Corentin Courtien</strong> creates a spontaneous, creative cuisine in which spices and herbs take the lead and nearly 80% of the produce comes from local growers.</p>
+        <p>In the dining room, <strong>Madeline Blais</strong> leads a precise, warm service, honoured with the Gault&amp;Millau Young Talent Award for front-of-house service.</p>
+        <p>At lunch, generous bistronomy; in the evening, a more ambitious tasting menu punctuated with small amuse-bouches between courses. In a pared-back dining room a step away from the Sainte-Jeanne-d'Arc church, everything is designed to turn the meal into a succession of surprises.</p>
+      `,
+    },
+  });
+  console.log("✔ Page La Maison");
+
+  // -------------------------------------------------------------------------
   // Pages légales
   // -------------------------------------------------------------------------
   await prisma.page.upsert({
@@ -479,6 +507,16 @@ async function main() {
     },
   });
   console.log("✔ Pages légales");
+
+  // -------------------------------------------------------------------------
+  // Annonce / pop-up d'accueil (désactivé par défaut — à configurer dans /admin)
+  // -------------------------------------------------------------------------
+  await prisma.announcement.upsert({
+    where: { id: "singleton" },
+    update: {},
+    create: { id: "singleton", enabled: false },
+  });
+  console.log("✔ Annonce (désactivée)");
 
   console.log("Seed terminé.");
 }

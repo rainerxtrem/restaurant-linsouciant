@@ -13,6 +13,7 @@ import {
   Send,
   Settings,
   Users,
+  Megaphone,
   LogOut,
   Menu as MenuIcon,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const NAV = [
   { href: "/admin/menus", label: "Cartes & menus", icon: UtensilsCrossed },
   { href: "/admin/photos", label: "Photos", icon: Images },
   { href: "/admin/pages", label: "Pages", icon: FileText },
+  { href: "/admin/annonce", label: "Annonce", icon: Megaphone },
   { href: "/admin/messages", label: "Messages", icon: Mail },
   { href: "/admin/bons-cadeaux", label: "Bons cadeaux", icon: Gift },
   { href: "/admin/newsletter", label: "Newsletter", icon: Send },

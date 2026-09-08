@@ -65,6 +65,7 @@ export const siteSettingSchema = z.object({
 
   footerText: optionalText(2000),
   footerTextEn: optionalText(2000),
+  pressMentions: optionalText(1000),
 });
 
 export type SiteSettingInput = z.infer<typeof siteSettingSchema>;

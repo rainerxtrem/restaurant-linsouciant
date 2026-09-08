@@ -117,6 +117,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
     seoDefaultDescription: s.seoDefaultDescription ?? "",
     footerText: s.footerText ?? "",
     footerTextEn: s.footerTextEn ?? "",
+    pressMentions: s.pressMentions ?? "",
   });
   const set = (k: keyof typeof f) => (v: string) => setF((prev) => ({ ...prev, [k]: v }));
 
@@ -238,6 +239,13 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         <Field label="Description SEO par défaut" value={f.seoDefaultDescription} onChange={set("seoDefaultDescription")} />
         <Field label="Texte du pied de page (FR)" value={f.footerText} onChange={set("footerText")} textarea />
         <Field label="Texte du pied de page (EN)" value={f.footerTextEn} onChange={set("footerTextEn")} textarea />
+        <Field
+          label="Distinctions / presse (une par ligne — bande du pied de page)"
+          value={f.pressMentions}
+          onChange={set("pressMentions")}
+          textarea
+          full
+        />
       </Section>
 
       <MediaPicker open={picker !== null} onClose={() => setPicker(null)} onSelect={handlePick} />

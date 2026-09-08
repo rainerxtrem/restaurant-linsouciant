@@ -12,6 +12,8 @@ import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { Reveal } from "@/components/public/reveal";
 import { OpeningHours } from "@/components/site/opening-hours";
 import { HeroBackground } from "@/components/site/hero-background";
+import { HeroLogo } from "@/components/site/hero-logo";
+import { Parallax } from "@/components/site/parallax";
 
 export const dynamic = "force-dynamic";
 
@@ -78,14 +80,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
 
         <div className="relative z-10 flex flex-col items-center px-6 text-center">
           <Reveal>
-            <Image
-              src="/logo-light.png"
-              alt={siteName}
-              width={760}
-              height={350}
-              priority
-              className="h-auto w-[280px] sm:w-[420px] lg:w-[500px]"
-            />
+            <HeroLogo src="/logo-light.png" alt={siteName} />
           </Reveal>
           <Reveal delay={200}>
             <span className="mt-8 h-px w-14 bg-gold-400/70" />
@@ -120,13 +115,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
             {settings.aboutImage ? (
               <Reveal>
                 <div className="relative aspect-[4/5] overflow-hidden">
-                  <Image
-                    src={settings.aboutImage.url}
-                    alt={settings.aboutImage.alt ?? "Corentin Courtien"}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
+                  <Parallax amount={28} className="absolute -top-[8%] left-0 h-[116%] w-full">
+                    <Image
+                      src={settings.aboutImage.url}
+                      alt={settings.aboutImage.alt ?? "Corentin Courtien"}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                    />
+                  </Parallax>
                 </div>
               </Reveal>
             ) : null}
@@ -215,7 +212,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
                   />
                 </div>
                 {dishShot ? (
-                  <div className="absolute -bottom-10 right-0 aspect-[3/4] w-[45%] overflow-hidden border-[6px] border-cream-50 shadow-elevated sm:-bottom-14">
+                  <Parallax
+                    amount={-26}
+                    className="absolute -bottom-10 right-0 aspect-[3/4] w-[45%] overflow-hidden border-[6px] border-cream-50 shadow-elevated sm:-bottom-14"
+                  >
                     <Image
                       src={dishShot.url}
                       alt={dishShot.alt ?? ""}
@@ -223,7 +223,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
                       className="object-cover"
                       sizes="(max-width: 1024px) 45vw, 22vw"
                     />
-                  </div>
+                  </Parallax>
                 ) : null}
               </div>
             </Reveal>

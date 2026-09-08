@@ -59,6 +59,21 @@
   }
 }
 
+/* Fondu d'entrée entre les pages (voir template.tsx). */
+@media (prefers-reduced-motion: no-preference) {
+  .page-fade {
+    animation: page-fade 0.4s ease both;
+  }
+  @keyframes page-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
 /* Ken Burns lent sur l'image du hero quand il n'y a pas de vidéo. */
 @media (prefers-reduced-motion: no-preference) {
   .hero-kenburns {

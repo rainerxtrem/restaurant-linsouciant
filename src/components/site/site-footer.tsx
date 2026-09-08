@@ -23,6 +23,7 @@ const LEGAL_LABELS: Record<string, { fr: string; en: string }> = {
 };
 
 const NAV_LINKS = [
+  { href: "/la-maison", key: "house" },
   { href: "/menus", key: "menus" },
   { href: "/photos", key: "photos" },
   { href: "/bons-cadeaux", key: "giftVouchers" },
@@ -123,6 +124,20 @@ export function SiteFooter({
           </nav>
         </div>
       </div>
+
+      {settings.pressMentions ? (
+        <div className="border-t border-cream-50/10">
+          <div className="container flex flex-wrap items-center justify-center gap-x-10 gap-y-3 py-8 text-center text-[11px] uppercase tracking-[0.25em] text-cream-100/45">
+            {settings.pressMentions
+              .split("\n")
+              .map((m) => m.trim())
+              .filter(Boolean)
+              .map((m, i) => (
+                <span key={i}>{m}</span>
+              ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="border-t border-cream-50/10">
         <div className="container flex flex-col items-start justify-between gap-6 py-12 lg:flex-row lg:items-center">

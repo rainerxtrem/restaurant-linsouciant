@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/services/settings.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
+import { getNextAvailability } from "@/lib/zenchef";
 import { Reveal } from "@/components/public/reveal";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,16 @@ export default async function ReservationPage({ params }: { params: Promise<{ lo
     albums.find((a) => a.slug === "le-restaurant")?.images[0]?.media ??
     null;
   const tel = settings.phone.replace(/\s/g, "");
+  const availability = settings.zenchefRestaurantId
+    ? await getNextAvailability(settings.zenchefRestaurantId, 2)
+    : null;
+  const availabilityDate = availability
+    ? new Date(availability.date + "T12:00:00").toLocaleDateString(locale === "en" ? "en-GB" : "fr-FR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      })
+    : null;
 
   return (
     <div className="grid min-h-[calc(100svh-72px)] lg:grid-cols-2">
@@ -49,6 +60,34 @@ export default async function ReservationPage({ params }: { params: Promise<{ lo
           <Reveal delay={140}>
             <p className="mx-auto mt-5 max-w-xs text-sm leading-relaxed text-ink-600">{t("intro")}</p>
           </Reveal>
+
+          {availability && availabilityDate ? (
+            <Reveal delay={180}>
+              <div className="mx-auto mt-9 max-w-xs border-t border-ink-900/10 pt-8">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-ink-400">
+                  {locale === "en" ? "Next availability" : "Prochaines disponibilités"}
+                </p>
+                <p className="mt-1 font-display text-lg capitalize text-ink-800">{availabilityDate}</p>
+                {availability.shifts.map((shift) => (
+                  <div key={shift.name} className="mt-3">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-gold-600">{shift.name}</p>
+                    <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+                      {shift.slots.slice(0, 6).map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          data-zc-action="open"
+                          className="border border-ink-900/20 px-2.5 py-1 text-xs text-ink-700 transition-colors hover:border-wine-700 hover:text-wine-700"
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          ) : null}
 
           <Reveal delay={220}>
             <div className="mt-10 flex flex-col items-center gap-5">

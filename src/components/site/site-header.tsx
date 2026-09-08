@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils/cn";
 
 const NAV = [
   { key: "home", href: "/" },
+  { key: "house", href: "/la-maison" },
   { key: "menus", href: "/menus" },
   { key: "photos", href: "/photos" },
   { key: "giftVouchers", href: "/bons-cadeaux" },
@@ -80,7 +81,12 @@ export function SiteHeader({
         )}
       >
         <div className="container flex h-[72px] items-center justify-between">
-          <Link href="/" aria-label={siteName} className="relative block">
+          <Link
+            href="/"
+            aria-label={siteName}
+            className="relative block transition-opacity duration-500"
+            style={{ opacity: isHome && !scrolled && !open ? 0 : 1 }}
+          >
             <Image
               src={darkText ? logoUrl ?? logoLightUrl : logoLightUrl}
               alt={siteName}
