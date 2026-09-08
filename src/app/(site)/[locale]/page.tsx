@@ -11,6 +11,7 @@ import { listPublishedMenus } from "@/lib/services/menu.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { Reveal } from "@/components/public/reveal";
 import { OpeningHours } from "@/components/site/opening-hours";
+import { HeroBackground } from "@/components/site/hero-background";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
     listAlbumsWithImages(),
   ]);
   const hours = parseOpeningHours(settings.openingHours);
-  const photos = albums.flatMap((a) => a.images).slice(0, 6);
+  const restaurantShot =
+    albums.find((a) => a.slug === "le-restaurant")?.images[0]?.media ??
+    albums.flatMap((a) => a.images)[0]?.media ??
+    null;
+  const dishShot =
+    albums.find((a) => a.slug === "les-plats")?.images[0]?.media ??
+    albums.flatMap((a) => a.images)[1]?.media ??
+    null;
   const siteName = locale === "en" && settings.siteNameEn ? settings.siteNameEn : settings.siteName;
   const tagline = locale === "en" && settings.taglineEn ? settings.taglineEn : settings.tagline;
 
@@ -54,16 +62,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
       {/* ---------------------------------------------------------------- */}
       <section className="relative flex h-[100svh] min-h-[560px] items-center justify-center overflow-hidden bg-ink-950 text-cream-50">
         {settings.heroVideoUrl ? (
-          <video
-            className="absolute inset-0 h-full w-full object-cover opacity-55"
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster={settings.heroImage?.url}
-          >
-            <source src={settings.heroVideoUrl} />
-          </video>
+          <HeroBackground videoUrl={settings.heroVideoUrl} posterUrl={settings.heroImage?.url} />
         ) : settings.heroImage ? (
           <Image
             src={settings.heroImage.url}
@@ -199,34 +198,50 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
       ) : null}
 
       {/* ---------------------------------------------------------------- */}
-      {/* Photos                                                          */}
+      {/* Photos — deux images superposées + texte                        */}
       {/* ---------------------------------------------------------------- */}
-      {photos.length > 0 ? (
-        <section className="py-28 sm:py-36">
-          <div className="container">
+      {restaurantShot ? (
+        <section className="overflow-hidden py-28 sm:py-36">
+          <div className="container grid items-center gap-16 lg:grid-cols-[1.1fr_1fr] lg:gap-24">
             <Reveal>
-              <div className="flex items-end justify-between">
+              <div className="relative">
+                <div className="relative aspect-[4/3] w-[85%] overflow-hidden">
+                  <Image
+                    src={restaurantShot.url}
+                    alt={restaurantShot.alt ?? ""}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 90vw, 45vw"
+                  />
+                </div>
+                {dishShot ? (
+                  <div className="absolute -bottom-10 right-0 aspect-[3/4] w-[45%] overflow-hidden border-[6px] border-cream-50 shadow-elevated sm:-bottom-14">
+                    <Image
+                      src={dishShot.url}
+                      alt={dishShot.alt ?? ""}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 45vw, 22vw"
+                    />
+                  </div>
+                ) : null}
+              </div>
+            </Reveal>
+
+            <Reveal delay={140}>
+              <div className="max-w-md lg:pl-6">
                 <p className="kicker">{t("home.photosTitle")}</p>
-                <Link href="/photos" className="link-sweep text-xs uppercase tracking-[0.15em] text-wine-700">
+                <p className="mt-5 font-display text-2xl font-light leading-snug text-ink-900 sm:text-[2rem]">
+                  {t("home.photosIntro")}
+                </p>
+                <Link
+                  href="/photos"
+                  className="mt-8 inline-block border-b border-ink-900/30 pb-1 text-xs uppercase tracking-[0.2em] text-ink-800 transition-colors hover:border-wine-700 hover:text-wine-700"
+                >
                   {t("home.photosLink")}
                 </Link>
               </div>
             </Reveal>
-            <div className="mt-10 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
-              {photos.map((img, i) => (
-                <Reveal key={img.id} delay={(i % 3) * 80}>
-                  <div className="relative aspect-square overflow-hidden">
-                    <Image
-                      src={img.media.url}
-                      alt={img.media.alt ?? ""}
-                      fill
-                      className="object-cover transition-transform duration-700 ease-editorial hover:scale-105"
-                      sizes="(max-width: 640px) 50vw, 33vw"
-                    />
-                  </div>
-                </Reveal>
-              ))}
-            </div>
           </div>
         </section>
       ) : null}

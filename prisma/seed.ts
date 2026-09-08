@@ -122,6 +122,7 @@ async function main() {
       logoId: logoMedia.id,
       faviconId: faviconMedia.id,
       heroImageId: heroMedia.id,
+      heroVideoUrl: "https://www.youtube.com/watch?v=9OquUp6x5IU",
       aboutImageId: chefMedia.id,
       siteName: "L'Insouciant",
       tagline: "Gastronomie décomplexée",
