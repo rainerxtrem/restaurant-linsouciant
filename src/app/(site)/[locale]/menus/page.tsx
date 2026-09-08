@@ -1,10 +1,11 @@
+import Image from "next/image";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
-import { localized } from "@/lib/i18n";
 import { Link } from "@/i18n/navigation";
 import { listPublishedMenus } from "@/lib/services/menu.service";
+import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { MenuDisplay } from "@/components/site/menu-display";
 import { Reveal } from "@/components/public/reveal";
 
@@ -24,67 +25,52 @@ export default async function MenusPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
-  const menus = await listPublishedMenus();
+  const [menus, albums] = await Promise.all([listPublishedMenus(), listAlbumsWithImages()]);
+  const backdrop = albums.find((a) => a.slug === "les-plats")?.images[0]?.media ?? null;
 
   return (
-    <div className="bg-cream-100">
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-ink-950 py-24 text-center text-cream-50 sm:py-28">
-        <div className="pointer-events-none absolute inset-0 bg-grain" />
-        <div className="container relative max-w-2xl">
+    <div>
+      {/* Intro plein cadre */}
+      <section className="relative flex h-[70svh] min-h-[420px] items-center justify-center overflow-hidden bg-ink-950 text-cream-50">
+        {backdrop ? (
+          <Image src={backdrop.url} alt="" fill priority className="object-cover opacity-40" sizes="100vw" />
+        ) : null}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink-950/60 via-ink-950/30 to-ink-950/80" />
+        <div className="relative z-10 px-6 text-center">
           <Reveal>
-            <p className="eyebrow justify-center text-gold-300 before:bg-gold-300">
-              {t("nav.menus")}
-            </p>
+            <p className="text-[11px] uppercase tracking-[0.4em] text-gold-300">{t("nav.menus")}</p>
           </Reveal>
-          <Reveal delay={80}>
-            <h1 className="mt-5 font-display text-4xl font-light tracking-tight sm:text-5xl">
+          <Reveal delay={100}>
+            <h1 className="mt-6 font-display text-5xl font-light tracking-tight sm:text-6xl">
               {t("menus.title")}
             </h1>
           </Reveal>
-          <Reveal delay={140}>
-            <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-cream-100/70">
+          <Reveal delay={160}>
+            <span className="mx-auto mt-7 block h-px w-14 bg-gold-400/70" />
+          </Reveal>
+          <Reveal delay={220}>
+            <p className="mx-auto mt-7 max-w-md text-sm leading-relaxed text-cream-100/70">
               {t("menus.intro")}
             </p>
           </Reveal>
-
-          {menus.length > 1 ? (
-            <Reveal delay={200}>
-              <div className="mt-9 flex flex-wrap justify-center gap-3">
-                {menus.map((menu) => (
-                  <Link
-                    key={menu.id}
-                    href={{ pathname: "/menus", hash: `menu-${menu.slug}` }}
-                    className="rounded-full border border-cream-100/25 px-4 py-1.5 text-xs uppercase tracking-wide text-cream-100/80 transition-colors hover:border-gold-400 hover:text-gold-300"
-                  >
-                    {localized(menu, "name", locale)}
-                  </Link>
-                ))}
-              </div>
-            </Reveal>
-          ) : null}
         </div>
       </section>
 
-      {/* Menus */}
-      <section className="py-16 sm:py-20">
-        <div className="container max-w-3xl space-y-14">
-          {menus.length === 0 ? (
-            <p className="text-center text-sm text-ink-500">{t("menus.empty")}</p>
-          ) : (
-            menus.map((menu) => (
-              <Reveal key={menu.id}>
-                <MenuDisplay menu={menu} locale={locale} />
-              </Reveal>
-            ))
-          )}
-        </div>
+      {menus.length === 0 ? (
+        <p className="bg-cream-50 py-32 text-center text-sm text-ink-500">{t("menus.empty")}</p>
+      ) : (
+        menus.map((menu, i) => (
+          <MenuDisplay key={menu.id} menu={menu} locale={locale} index={i} />
+        ))
+      )}
 
-        <div className="container mt-16 max-w-3xl text-center">
-          <Link href="/reservation" className="btn-cta">
-            {t("home.bookTable")}
-          </Link>
-        </div>
+      <section className="border-t border-ink-900/10 bg-cream-100 py-20 text-center">
+        <Link
+          href="/reservation"
+          className="inline-block border-b border-ink-900/30 pb-1 text-xs uppercase tracking-[0.2em] text-ink-800 transition-colors hover:border-wine-700 hover:text-wine-700"
+        >
+          {t("home.bookTable")}
+        </Link>
       </section>
     </div>
   );

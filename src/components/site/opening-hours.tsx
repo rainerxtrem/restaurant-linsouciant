@@ -2,16 +2,16 @@ import { useTranslations } from "next-intl";
 import type { OpeningDay } from "@/lib/services/settings.service";
 import { groupOpeningHours, isOpenNow } from "@/lib/opening-hours";
 
+/**
+ * Horaires d'ouverture. Les couleurs sont relatives à `currentColor` (via
+ * opacity) pour rester lisibles aussi bien sur fond clair que sombre.
+ */
 export function OpeningHours({
   hours,
   showStatus = true,
-  variant = "row",
 }: {
   hours: OpeningDay[];
   showStatus?: boolean;
-  /** "row" : jour à gauche, horaires à droite (contextes larges).
-   *  "stack" : jour en label, horaires en dessous (colonnes étroites, pied de page). */
-  variant?: "row" | "stack";
 }) {
   const t = useTranslations();
   if (hours.length === 0) return null;
@@ -31,7 +31,7 @@ export function OpeningHours({
         </p>
       ) : null}
 
-      <dl className={variant === "stack" ? "space-y-3 text-sm" : "space-y-2.5 text-sm"}>
+      <dl className="space-y-2 text-sm">
         {groups.map((group, i) => {
           const first = group.days[0] ?? "lundi";
           const last = group.days[group.days.length - 1] ?? first;
@@ -39,41 +39,17 @@ export function OpeningHours({
             group.days.length === 1
               ? t(`days.${first}`)
               : `${t(`days.${first}`)} – ${t(`days.${last}`)}`;
-          const value = group.closed
-            ? t("common.closed")
-            : group.slots.map((s) => `${s.start} – ${s.end}`);
-
-          if (variant === "stack") {
-            return (
-              <div key={i}>
-                <dt className="text-[11px] font-semibold uppercase tracking-[0.15em] text-gold-400">
-                  {label}
-                </dt>
-                <dd className="mt-1 font-medium leading-snug">
-                  {group.closed ? (
-                    t("common.closed")
-                  ) : (
-                    <span className="flex flex-col">
-                      {(value as string[]).map((v, j) => (
-                        <span key={j}>{v}</span>
-                      ))}
-                    </span>
-                  )}
-                </dd>
-              </div>
-            );
-          }
 
           return (
-            <div key={i} className="flex items-start justify-between gap-6">
-              <dt className="whitespace-nowrap text-ink-500">{label}</dt>
-              <dd className="flex flex-col items-end text-right font-medium text-ink-800">
+            <div key={i} className="flex items-baseline justify-between gap-6">
+              <dt className="whitespace-nowrap opacity-60">{label}</dt>
+              <dd className="flex flex-col items-end text-right font-medium">
                 {group.closed ? (
-                  t("common.closed")
+                  <span>{t("common.closed")}</span>
                 ) : (
-                  (value as string[]).map((v, j) => (
+                  group.slots.map((s, j) => (
                     <span key={j} className="whitespace-nowrap">
-                      {v}
+                      {s.start} – {s.end}
                     </span>
                   ))
                 )}

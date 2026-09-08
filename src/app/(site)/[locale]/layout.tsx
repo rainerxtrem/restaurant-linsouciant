@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { CookieConsentBanner } from "@/components/public/cookie-consent-banner";
 import { AnalyticsLoader } from "@/components/public/analytics-loader";
+import { ZenchefLoader } from "@/components/site/zenchef-loader";
 import "../../globals.css";
 
 const fraunces = Fraunces({
@@ -92,6 +93,9 @@ export default async function LocaleLayout({
           </div>
           <CookieConsentBanner />
           <AnalyticsLoader />
+          {settings.zenchefRestaurantId ? (
+            <ZenchefLoader restaurantId={settings.zenchefRestaurantId} />
+          ) : null}
         </NextIntlClientProvider>
       </body>
     </html>

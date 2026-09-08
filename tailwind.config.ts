@@ -6,6 +6,9 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // Spans de colonnes générés dynamiquement dans la galerie éditoriale
+  // (grille 12 colonnes asymétrique).
+  safelist: [{ pattern: /col-span-([1-9]|1[0-2])/, variants: ["sm"] }],
   theme: {
     extend: {
       colors: {
