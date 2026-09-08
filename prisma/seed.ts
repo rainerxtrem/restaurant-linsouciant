@@ -359,7 +359,7 @@ async function main() {
     { file: "bc3d7a299b05424d57ad87499bfacfef.jpg", alt: "Banquette et tables", altEn: "Bench seating and tables" },
     { file: "a0e024e51636aec61209f2f9f77690ff.jpg", alt: "Cave à vins", altEn: "Wine cellar" },
     { file: "dcc1a1a346735d8b3f8eb21d2327f1be.jpg", alt: "Corentin Courtien, chef", altEn: "Corentin Courtien, head chef" },
-    { file: "68a95019c079496fe3c4b94948f5baaa.jpg", alt: "Madeline Blais, salle", altEn: "Madeline Blais, front of house" },
+    { file: "68a95019c079496fe3c4b94948f5baaa.jpg", alt: "Madeline Courtien, salle", altEn: "Madeline Courtien, front of house" },
   ]);
 
   await seedAlbum("les-plats", [
@@ -378,12 +378,26 @@ async function main() {
   ]);
   console.log("✔ Galerie photos");
 
+  // Correction ponctuelle de l'alt du portrait (Blais → Courtien).
+  await prisma.media.updateMany({
+    where: { storageKey: "gallery/68a95019c079496fe3c4b94948f5baaa.jpg" },
+    data: { alt: "Madeline Courtien, salle", altEn: "Madeline Courtien, front of house" },
+  });
+
   // -------------------------------------------------------------------------
   // Page « La Maison » (éditable depuis /admin/pages)
   // -------------------------------------------------------------------------
+  const laMaisonContent = `
+        <p>L'Insouciant, c'est l'histoire d'un couple et d'une même exigence : une cuisine sincère, des produits choisis au plus près, un service qui met la table en confiance.</p>
+        <p>À deux pas de l'église Sainte-Jeanne-d'Arc, dans une salle épurée, chaque repas se veut une succession de petites surprises — amuse-bouches glissés entre les plats, accords tenus au verre, attentions discrètes.</p>
+      `;
+  const laMaisonContentEn = `
+        <p>L'Insouciant is the story of a couple and a shared standard: honest cooking, produce sourced as close as possible, and a service that puts the table at ease.</p>
+        <p>A step away from the Sainte-Jeanne-d'Arc church, in a pared-back dining room, every meal is meant as a run of small surprises — amuse-bouches slipped between courses, pairings by the glass, quiet attentions.</p>
+      `;
   await prisma.page.upsert({
     where: { slug: "la-maison" },
-    update: {},
+    update: { content: laMaisonContent, contentEn: laMaisonContentEn },
     create: {
       slug: "la-maison",
       title: "La Maison",
@@ -391,16 +405,8 @@ async function main() {
       status: "PUBLISHED",
       publishedAt: new Date(),
       isSystem: true,
-      content: `
-        <p>L'Insouciant, c'est l'histoire d'un duo. En cuisine, <strong>Corentin Courtien</strong> compose une cuisine créative et instinctive, où les épices et les herbes tiennent le premier rôle et où près de 80&nbsp;% des produits viennent de producteurs locaux.</p>
-        <p>En salle, <strong>Madeline Blais</strong> orchestre un service précis et chaleureux, récompensé par le Trophée Gault&amp;Millau du Jeune Talent Service en salle.</p>
-        <p>Le midi, une bistronomie généreuse&nbsp;; le soir, un menu dégustation plus ambitieux, ponctué de petits amuse-bouches entre les plats. Dans une salle épurée à deux pas de l'église Sainte-Jeanne-d'Arc, tout est pensé pour faire du repas une succession de surprises.</p>
-      `,
-      contentEn: `
-        <p>L'Insouciant is the story of a duo. In the kitchen, <strong>Corentin Courtien</strong> creates a spontaneous, creative cuisine in which spices and herbs take the lead and nearly 80% of the produce comes from local growers.</p>
-        <p>In the dining room, <strong>Madeline Blais</strong> leads a precise, warm service, honoured with the Gault&amp;Millau Young Talent Award for front-of-house service.</p>
-        <p>At lunch, generous bistronomy; in the evening, a more ambitious tasting menu punctuated with small amuse-bouches between courses. In a pared-back dining room a step away from the Sainte-Jeanne-d'Arc church, everything is designed to turn the meal into a succession of surprises.</p>
-      `,
+      content: laMaisonContent,
+      contentEn: laMaisonContentEn,
     },
   });
   console.log("✔ Page La Maison");
