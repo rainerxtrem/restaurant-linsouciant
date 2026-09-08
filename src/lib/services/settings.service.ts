@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { cache } from "react";
 
-const include = { logo: true, favicon: true, ogImage: true, heroImage: true } as const;
+const include = { logo: true, favicon: true, ogImage: true, heroImage: true, aboutImage: true } as const;
 
 /**
  * Réglages du site (singleton). `cache()` déduplique les appels au sein d'un

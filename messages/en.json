@@ -109,6 +109,12 @@
     "unsubscribedTitle": "You have been unsubscribed",
     "unsubscribedBody": "You will no longer receive our emails. You can subscribe again at any time."
   },
+  "cookies": {
+    "text": "This site only uses technical cookies required for it to work (admin login). No analytics or advertising cookies are set without your consent.",
+    "learnMore": "Learn more",
+    "accept": "Accept",
+    "reject": "Decline"
+  },
   "footer": {
     "navTitle": "The restaurant",
     "legalTitle": "Information",

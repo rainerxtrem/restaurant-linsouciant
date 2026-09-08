@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { Fraunces, Inter } from "next/font/google";
 import { routing, type Locale } from "@/i18n/routing";
 import { getSiteSettings, parseOpeningHours } from "@/lib/services/settings.service";
@@ -63,6 +63,7 @@ export default async function LocaleLayout({
   if (!routing.locales.includes(locale as Locale)) notFound();
   setRequestLocale(locale);
 
+  const messages = await getMessages();
   const settings = await getSiteSettings();
   const hours = parseOpeningHours(settings.openingHours);
   const loc = locale as "fr" | "en";
@@ -72,7 +73,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className={`${fraunces.variable} ${inter.variable}`}>
       <body className="font-sans antialiased">
-        <NextIntlClientProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <div className="flex min-h-screen flex-col">
             <SiteHeader siteName={siteName} tagline={tagline} logoUrl={settings.logo?.url ?? null} />
             <main className="flex-1">{children}</main>

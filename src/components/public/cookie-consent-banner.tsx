@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getStoredConsent, setStoredConsent, type CookieConsentValue } from "@/lib/cookie-consent";
 import { loadAnalytics } from "@/lib/analytics";
 
 export function CookieConsentBanner() {
-  // false par défaut (y compris lors du premier rendu serveur) pour éviter
-  // tout écart d'hydratation : on ne décide d'afficher le bandeau qu'une
-  // fois côté client, après avoir consulté le localStorage.
+  const t = useTranslations("cookies");
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -26,28 +25,30 @@ export function CookieConsentBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Gestion des cookies"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-ink-900/10 bg-cream-50/98 p-4 shadow-elevated backdrop-blur sm:p-5"
+      aria-label="Cookies"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-gold-400/30 bg-ink-950 text-cream-100 shadow-[0_-8px_40px_-12px_rgba(0,0,0,0.6)]"
     >
-      <div className="container flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-        <p className="text-sm text-ink-700">
-          Ce site utilise uniquement des cookies techniques strictement nécessaires à son fonctionnement (connexion
-          à l&apos;espace d&apos;administration). Aucun cookie de mesure d&apos;audience ou publicitaire n&apos;est
-          déposé sans votre accord.{" "}
-          <Link href="/politique-cookies" className="link-sweep text-wine-700">
-            En savoir plus
+      <div className="container flex flex-col items-start gap-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:py-3.5">
+        <p className="max-w-3xl text-sm leading-relaxed text-cream-100/85">
+          {t("text")}{" "}
+          <Link href="/politique-cookies" className="whitespace-nowrap font-medium text-gold-300 underline underline-offset-2 hover:text-gold-200">
+            {t("learnMore")}
           </Link>
         </p>
         <div className="flex shrink-0 gap-3">
           <button
             type="button"
             onClick={() => choose("rejected")}
-            className="whitespace-nowrap rounded-sm border border-ink-900/15 px-4 py-2 text-sm font-medium text-ink-800 transition-colors hover:border-wine-700 hover:text-wine-700"
+            className="whitespace-nowrap rounded-sm border border-cream-100/30 px-4 py-2 text-sm font-medium text-cream-100 transition-colors hover:border-cream-100 hover:bg-cream-100/10"
           >
-            Refuser
+            {t("reject")}
           </button>
-          <button type="button" onClick={() => choose("accepted")} className="btn-cta whitespace-nowrap">
-            Accepter
+          <button
+            type="button"
+            onClick={() => choose("accepted")}
+            className="whitespace-nowrap rounded-sm bg-gold-400 px-5 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-gold-300"
+          >
+            {t("accept")}
           </button>
         </div>
       </div>

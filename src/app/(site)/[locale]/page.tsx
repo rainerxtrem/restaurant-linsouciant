@@ -90,20 +90,31 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
       {/* Philosophie / chef */}
       {localized(settings, "intro", locale) ? (
         <section className="bg-cream-100 py-24 sm:py-32">
-          <div className="container grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-            <Reveal>
+          <div className="container grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+            {settings.aboutImage ? (
+              <Reveal>
+                <div className="relative aspect-[4/5] overflow-hidden rounded-md shadow-elevated">
+                  <Image
+                    src={settings.aboutImage.url}
+                    alt={settings.aboutImage.alt ?? "Corentin Courtien"}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                </div>
+              </Reveal>
+            ) : null}
+            <Reveal delay={120}>
               <div>
                 <p className="eyebrow">{t("home.chefTitle")}</p>
                 <h2 className="mt-4 font-display text-3xl text-ink-900 sm:text-4xl">{tagline}</h2>
-              </div>
-            </Reveal>
-            <Reveal delay={120}>
-              <div className="prose prose-sm max-w-none text-ink-700 sm:prose-base">
-                {localized(settings, "intro", locale)
-                  .split(/\n{2,}/)
-                  .map((para, i) => (
-                    <p key={i}>{para}</p>
-                  ))}
+                <div className="prose prose-sm mt-6 max-w-none text-ink-700 sm:prose-base">
+                  {localized(settings, "intro", locale)
+                    .split(/\n{2,}/)
+                    .map((para, i) => (
+                      <p key={i}>{para}</p>
+                    ))}
+                </div>
               </div>
             </Reveal>
           </div>

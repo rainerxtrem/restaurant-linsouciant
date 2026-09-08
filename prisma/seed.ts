@@ -1,14 +1,55 @@
 /**
  * Seed du site L'Insouciant (Le Mans). Toutes les données sont reprises du
  * site d'origine restaurant-linsouciant.fr (menus, horaires, coordonnées,
- * mentions légales) ; rien n'est inventé. Les photos ne sont pas migrées
- * automatiquement (hébergées sur le CDN Zenchef) : les albums sont créés
- * vides, à compléter depuis /admin/photos.
+ * mentions légales, photos) ; rien n'est inventé. Les photos, récupérées
+ * depuis l'ancien site, sont committées dans public/gallery/ et servies
+ * directement — modifiables ensuite depuis /admin/photos.
  */
+import { readFileSync, statSync } from "node:fs";
+import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import sharp from "sharp";
 
 const prisma = new PrismaClient();
+
+const GALLERY_DIR = path.join(process.cwd(), "public", "gallery");
+
+/** Crée (ou récupère) une ligne Media pour un fichier de public/gallery/. */
+async function galleryMedia(file: string, alt: string, altEn: string) {
+  const storageKey = `gallery/${file}`;
+  const existing = await prisma.media.findUnique({ where: { storageKey } });
+  if (existing) return existing;
+  const abs = path.join(GALLERY_DIR, file);
+  const buf = readFileSync(abs);
+  const meta = await sharp(buf).metadata();
+  return prisma.media.create({
+    data: {
+      filename: file,
+      url: `/gallery/${file}`,
+      storageKey,
+      type: "IMAGE",
+      mimeType: "image/jpeg",
+      size: statSync(abs).size,
+      width: meta.width ?? null,
+      height: meta.height ?? null,
+      alt,
+      altEn,
+    },
+  });
+}
+
+async function seedAlbum(
+  slug: string,
+  files: { file: string; alt: string; altEn: string }[]
+) {
+  const album = await prisma.galleryAlbum.findUnique({ where: { slug }, include: { images: true } });
+  if (!album || album.images.length > 0) return; // déjà rempli, on ne touche pas
+  for (const [order, f] of files.entries()) {
+    const media = await galleryMedia(f.file, f.alt, f.altEn);
+    await prisma.galleryImage.create({ data: { albumId: album.id, mediaId: media.id, order } });
+  }
+}
 
 type Slot = { start: string; end: string };
 const DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"] as const;
@@ -45,7 +86,17 @@ async function main() {
   // seed (idempotent, ne casse rien si les réglages ont été personnalisés
   // depuis /admin — à ne relancer que volontairement).
   // -------------------------------------------------------------------------
+  // Images du site (hero + portrait du chef) — servies depuis public/gallery/.
+  const heroMedia = await galleryMedia("hero.jpg", "Salle du restaurant L'Insouciant", "L'Insouciant dining room");
+  const chefMedia = await galleryMedia(
+    "dcc1a1a346735d8b3f8eb21d2327f1be.jpg",
+    "Corentin Courtien, chef de L'Insouciant",
+    "Corentin Courtien, head chef at L'Insouciant"
+  );
+
   const siteSettingData = {
+      heroImageId: heroMedia.id,
+      aboutImageId: chefMedia.id,
       siteName: "L'Insouciant",
       tagline: "Gastronomie décomplexée",
       taglineEn: "Unpretentious gastronomy",
@@ -259,7 +310,7 @@ async function main() {
   console.log("✔ Menus");
 
   // -------------------------------------------------------------------------
-  // Albums photos (vides — à compléter depuis /admin/photos)
+  // Galerie photos — récupérée de l'ancien site (public/gallery/).
   // -------------------------------------------------------------------------
   for (const [i, album] of [
     { slug: "le-restaurant", title: "Le Restaurant", titleEn: "The restaurant" },
@@ -271,7 +322,33 @@ async function main() {
       create: { ...album, order: i },
     });
   }
-  console.log("✔ Albums photos (vides)");
+
+  await seedAlbum("le-restaurant", [
+    { file: "hero.jpg", alt: "Salle du restaurant", altEn: "Dining room" },
+    { file: "6b74d57f39ab1ee25a387937781692bd.jpg", alt: "Salle et escalier", altEn: "Dining room and staircase" },
+    { file: "a2a8a6517b2e542018cd7b9283aa2aaa.jpg", alt: "Table ronde et cave à vins", altEn: "Round table and wine cellar" },
+    { file: "25ed31ee058425b8d825a67e7edef026.jpg", alt: "Salle à l'étage", altEn: "Upstairs dining room" },
+    { file: "bc3d7a299b05424d57ad87499bfacfef.jpg", alt: "Banquette et tables", altEn: "Bench seating and tables" },
+    { file: "a0e024e51636aec61209f2f9f77690ff.jpg", alt: "Cave à vins", altEn: "Wine cellar" },
+    { file: "dcc1a1a346735d8b3f8eb21d2327f1be.jpg", alt: "Corentin Courtien, chef", altEn: "Corentin Courtien, head chef" },
+    { file: "68a95019c079496fe3c4b94948f5baaa.jpg", alt: "Madeline Blais, salle", altEn: "Madeline Blais, front of house" },
+  ]);
+
+  await seedAlbum("les-plats", [
+    { file: "65b5d62b634ed4e10171a866a8682a58.jpg", alt: "Foie gras et figues", altEn: "Foie gras and figs" },
+    { file: "c6c571f16b1b28afb08f1660bc512c16.jpg", alt: "Entrée fleurie", altEn: "Flower-topped starter" },
+    { file: "e3dab38673e6f3a27a19177424ba2890.jpg", alt: "Dessert au miel", altEn: "Honey dessert" },
+    { file: "ec29be179f60174ec756be17ce31430a.jpg", alt: "Viande et champignons", altEn: "Meat and mushrooms" },
+    { file: "3a478f97a8eb1ef4ff3e5e0e883feec9.jpg", alt: "Dessert ananas", altEn: "Pineapple dessert" },
+    { file: "5f439d54d86f3b22407e4f2f8bb0fe02.jpg", alt: "Poisson de ligne", altEn: "Line-caught fish" },
+    { file: "cbb2805b95a98ff62faad59b88ea2e2f.jpg", alt: "Viande en habit vert", altEn: "Herb-crusted meat" },
+    { file: "fa5b12320cf65a6a43daddc21c6b12a8.jpg", alt: "Dessert rouge", altEn: "Red fruit dessert" },
+    { file: "b5a5e88efaf6f6276cab9cdd13d7fd09.jpg", alt: "Tarte pourpre", altEn: "Purple tart" },
+    { file: "c5e3f7d1268914acb55ce20acebb1551.jpg", alt: "Dôme aux violettes", altEn: "Violet dome dessert" },
+    { file: "f5b60a288a8063761f65d41527df469d.jpg", alt: "Pains maison", altEn: "House-made bread" },
+    { file: "6152d8589e4ca627fd30b706646b65b9.jpg", alt: "Menu à emporter", altEn: "Takeaway menu" },
+  ]);
+  console.log("✔ Galerie photos");
 
   // -------------------------------------------------------------------------
   // Pages légales

@@ -127,11 +127,12 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
 
   type ImgRef = { id: string; url: string } | null;
   const toRef = (m: { id: string; url: string } | null): ImgRef => (m ? { id: m.id, url: m.url } : null);
-  const [images, setImages] = useState<{ logo: ImgRef; favicon: ImgRef; ogImage: ImgRef; heroImage: ImgRef }>({
+  const [images, setImages] = useState<{ logo: ImgRef; favicon: ImgRef; ogImage: ImgRef; heroImage: ImgRef; aboutImage: ImgRef }>({
     logo: toRef(s.logo),
     favicon: toRef(s.favicon),
     ogImage: toRef(s.ogImage),
     heroImage: toRef(s.heroImage),
+    aboutImage: toRef(s.aboutImage),
   });
   const [picker, setPicker] = useState<null | keyof typeof images>(null);
 
@@ -150,6 +151,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
       faviconId: images.favicon?.id ?? null,
       ogImageId: images.ogImage?.id ?? null,
       heroImageId: images.heroImage?.id ?? null,
+      aboutImageId: images.aboutImage?.id ?? null,
     });
   }
 
@@ -208,6 +210,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           <ImageField label="Favicon" media={images.favicon} onPick={() => setPicker("favicon")} onClear={() => setImages((p) => ({ ...p, favicon: null }))} />
           <ImageField label="Image de partage (Open Graph)" media={images.ogImage} onPick={() => setPicker("ogImage")} onClear={() => setImages((p) => ({ ...p, ogImage: null }))} />
           <ImageField label="Image du bandeau d'accueil" media={images.heroImage} onPick={() => setPicker("heroImage")} onClear={() => setImages((p) => ({ ...p, heroImage: null }))} />
+          <ImageField label="Image « En cuisine » (accueil)" media={images.aboutImage} onPick={() => setPicker("aboutImage")} onClear={() => setImages((p) => ({ ...p, aboutImage: null }))} />
         </div>
       </section>
 

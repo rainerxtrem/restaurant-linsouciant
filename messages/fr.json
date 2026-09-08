@@ -109,6 +109,12 @@
     "unsubscribedTitle": "Désinscription effectuée",
     "unsubscribedBody": "Vous ne recevrez plus nos emails. Vous pouvez vous réinscrire à tout moment."
   },
+  "cookies": {
+    "text": "Ce site n'utilise que des cookies techniques nécessaires à son fonctionnement (connexion à l'espace d'administration). Aucun cookie de mesure d'audience ou publicitaire sans votre accord.",
+    "learnMore": "En savoir plus",
+    "accept": "Accepter",
+    "reject": "Refuser"
+  },
   "footer": {
     "navTitle": "Le restaurant",
     "legalTitle": "Informations",

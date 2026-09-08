@@ -49,6 +49,7 @@ export const siteSettingSchema = z.object({
   faviconId: z.string().cuid().optional().nullable(),
   ogImageId: z.string().cuid().optional().nullable(),
   heroImageId: z.string().cuid().optional().nullable(),
+  aboutImageId: z.string().cuid().optional().nullable(),
 
   legalCompanyName: optionalText(200),
   legalSiret: optionalText(40),

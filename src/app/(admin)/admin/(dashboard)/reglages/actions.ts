@@ -56,6 +56,7 @@ export async function saveSettingsAction(
       faviconId: d.faviconId ?? null,
       ogImageId: d.ogImageId ?? null,
       heroImageId: d.heroImageId ?? null,
+      aboutImageId: d.aboutImageId ?? null,
       legalCompanyName: orNull(d.legalCompanyName),
       legalSiret: orNull(d.legalSiret),
       legalCapital: orNull(d.legalCapital),
