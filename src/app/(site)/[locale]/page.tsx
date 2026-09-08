@@ -26,9 +26,7 @@ export async function generateMetadata({
     path: "/",
     title: settings.seoDefaultTitle || `${settings.siteName} — ${settings.tagline}`,
     description:
-      settings.seoDefaultDescription ||
-      localized(settings, "intro", locale) ||
-      settings.tagline,
+      settings.seoDefaultDescription || localized(settings, "intro", locale) || settings.tagline,
     image: settings.ogImage?.url ?? settings.heroImage?.url,
     titleIsAbsolute: true,
   });
@@ -50,50 +48,79 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
   const tagline = locale === "en" && settings.taglineEn ? settings.taglineEn : settings.tagline;
 
   return (
-    <div>
-      {/* Hero */}
-      <section className="relative flex min-h-[86vh] items-center overflow-hidden bg-ink-950 text-cream-50">
-        {settings.heroImage ? (
-          <Image src={settings.heroImage.url} alt="" fill priority className="object-cover opacity-50" />
+    <div className="bg-cream-50">
+      {/* ---------------------------------------------------------------- */}
+      {/* Hero plein écran — vidéo (ou image) en fond, nom centré          */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="relative flex h-[100svh] min-h-[560px] items-center justify-center overflow-hidden bg-ink-950 text-cream-50">
+        {settings.heroVideoUrl ? (
+          <video
+            className="absolute inset-0 h-full w-full object-cover opacity-55"
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={settings.heroImage?.url}
+          >
+            <source src={settings.heroVideoUrl} />
+          </video>
+        ) : settings.heroImage ? (
+          <Image
+            src={settings.heroImage.url}
+            alt=""
+            fill
+            priority
+            className="hero-kenburns object-cover opacity-55"
+          />
         ) : null}
-        <div className="pointer-events-none absolute inset-0 bg-grain" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/40 to-ink-950/70" />
-        <div className="container relative z-10 py-32 text-center">
+
+        <div className="pointer-events-none absolute inset-0 bg-grain opacity-50" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink-950/70 via-ink-950/25 to-ink-950/80" />
+
+        <div className="relative z-10 flex flex-col items-center px-6 text-center">
           <Reveal>
-            <p className="eyebrow justify-center text-gold-300 before:bg-gold-300">Le Mans</p>
-          </Reveal>
-          <Reveal delay={100}>
-            <h1 className="mx-auto mt-6 max-w-4xl font-display text-6xl font-light leading-[1.03] tracking-tight sm:text-7xl">
-              {siteName}
-            </h1>
+            <Image
+              src="/logo-light.png"
+              alt={siteName}
+              width={760}
+              height={350}
+              priority
+              className="h-auto w-[280px] sm:w-[420px] lg:w-[500px]"
+            />
           </Reveal>
           <Reveal delay={200}>
-            <p className="mx-auto mt-6 max-w-xl font-display text-xl italic text-gold-200">{tagline}</p>
+            <span className="mt-8 h-px w-14 bg-gold-400/70" />
           </Reveal>
-          <Reveal delay={300}>
-            <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/reservation" className="btn-cta">
-                {t("home.bookTable")}
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-              <Link
-                href="/menus"
-                className="inline-flex items-center justify-center gap-2 rounded-sm border border-cream-100/40 px-6 py-3 text-sm font-medium tracking-wide text-cream-50 transition-all hover:border-cream-50 hover:bg-cream-50/10"
-              >
-                {t("home.discoverMenus")}
-              </Link>
-            </div>
+          <Reveal delay={260}>
+            <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.4em] text-cream-100/80">
+              {settings.city ? `${settings.city} · ` : ""}
+              {tagline}
+            </p>
           </Reveal>
+          <Reveal delay={340}>
+            <Link
+              href="/reservation"
+              className="mt-10 inline-block border-b border-cream-50/40 pb-1 text-sm tracking-wide text-cream-50 transition-colors hover:border-gold-300 hover:text-gold-300"
+            >
+              {t("home.bookTable")}
+            </Link>
+          </Reveal>
+        </div>
+
+        <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2">
+          <span className="cue-line block h-10 w-px origin-top bg-cream-50/50" />
         </div>
       </section>
 
-      {/* Philosophie / chef */}
+      {/* ---------------------------------------------------------------- */}
+      {/* Philosophie / chef                                              */}
+      {/* ---------------------------------------------------------------- */}
       {localized(settings, "intro", locale) ? (
-        <section className="bg-cream-100 py-24 sm:py-32">
-          <div className="container grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+        <section className="py-28 sm:py-40">
+          <div className="container grid items-center gap-14 lg:grid-cols-2 lg:gap-24">
             {settings.aboutImage ? (
               <Reveal>
-                <div className="relative aspect-[4/5] overflow-hidden rounded-md shadow-elevated">
+                <div className="relative aspect-[4/5] overflow-hidden">
                   <Image
                     src={settings.aboutImage.url}
                     alt={settings.aboutImage.alt ?? "Corentin Courtien"}
@@ -105,10 +132,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
               </Reveal>
             ) : null}
             <Reveal delay={120}>
-              <div>
-                <p className="eyebrow">{t("home.chefTitle")}</p>
-                <h2 className="mt-4 font-display text-3xl text-ink-900 sm:text-4xl">{tagline}</h2>
-                <div className="prose prose-sm mt-6 max-w-none text-ink-700 sm:prose-base">
+              <div className="max-w-lg">
+                <p className="kicker">{t("home.chefTitle")}</p>
+                <h2 className="mt-5 font-display text-3xl font-light leading-tight text-ink-900 sm:text-[2.6rem]">
+                  {tagline}
+                </h2>
+                <div className="prose prose-sm mt-7 max-w-none text-ink-600 sm:prose-base">
                   {localized(settings, "intro", locale)
                     .split(/\n{2,}/)
                     .map((para, i) => (
@@ -121,46 +150,45 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
         </section>
       ) : null}
 
-      {/* Menus */}
+      {/* ---------------------------------------------------------------- */}
+      {/* Menus                                                           */}
+      {/* ---------------------------------------------------------------- */}
       {menus.length > 0 ? (
-        <section className="relative overflow-hidden bg-ink-950 py-24 text-cream-100 sm:py-32">
-          <div className="pointer-events-none absolute inset-0 bg-grain" />
-          <div className="container relative">
-            <div className="mx-auto max-w-2xl text-center">
-              <Reveal>
-                <p className="eyebrow justify-center text-gold-300 before:bg-gold-300">
-                  {t("home.menusTitle")}
-                </p>
-              </Reveal>
-              <Reveal delay={80}>
-                <p className="mt-4 font-display text-2xl text-cream-50 sm:text-3xl">
+        <section className="border-y border-ink-900/10 bg-cream-100 py-28 sm:py-36">
+          <div className="container max-w-5xl">
+            <Reveal>
+              <div className="text-center">
+                <p className="kicker">{t("home.menusTitle")}</p>
+                <p className="mx-auto mt-5 max-w-xl font-display text-2xl font-light text-ink-900 sm:text-3xl">
                   {t("home.menusIntro")}
                 </p>
-              </Reveal>
-            </div>
-            <div className="mt-14 grid gap-6 sm:grid-cols-2">
+              </div>
+            </Reveal>
+            <div className="mt-16 grid gap-px overflow-hidden border border-ink-900/10 bg-ink-900/10 sm:grid-cols-2">
               {menus.map((menu, i) => (
-                <Reveal key={menu.id} delay={(i % 2) * 100}>
+                <Reveal key={menu.id} delay={(i % 2) * 100} className="h-full">
                   <Link
                     href={{ pathname: "/menus", hash: `menu-${menu.slug}` }}
-                    className="group flex h-full flex-col justify-between rounded-md border border-cream-50/10 bg-cream-50/5 p-8 transition-colors hover:border-gold-400/50"
+                    className="group flex h-full flex-col justify-between bg-cream-50 p-8 transition-colors hover:bg-white sm:p-10"
                   >
                     <div>
-                      <h3 className="font-display text-2xl text-cream-50">{localized(menu, "name", locale)}</h3>
                       {localized(menu, "availabilityNote", locale) ? (
-                        <p className="mt-2 text-xs uppercase tracking-wide text-gold-300">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-gold-600">
                           {localized(menu, "availabilityNote", locale)}
                         </p>
                       ) : null}
+                      <h3 className="mt-3 font-display text-2xl font-light text-ink-900">
+                        {localized(menu, "name", locale)}
+                      </h3>
                       {localized(menu, "description", locale) ? (
-                        <p className="mt-4 text-sm text-cream-100/70">
+                        <p className="mt-4 text-sm leading-relaxed text-ink-600">
                           {localized(menu, "description", locale)}
                         </p>
                       ) : null}
                     </div>
-                    <span className="mt-6 inline-flex items-center gap-2 text-sm text-gold-300">
+                    <span className="mt-8 inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-wine-700">
                       {t("common.readMore")}
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden />
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
                     </span>
                   </Link>
                 </Reveal>
@@ -170,44 +198,51 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
         </section>
       ) : null}
 
-      {/* Photos */}
+      {/* ---------------------------------------------------------------- */}
+      {/* Photos                                                          */}
+      {/* ---------------------------------------------------------------- */}
       {photos.length > 0 ? (
-        <section className="bg-cream-100 py-24">
+        <section className="py-28 sm:py-36">
           <div className="container">
-            <div className="flex items-end justify-between">
-              <Reveal>
-                <p className="eyebrow">{t("home.photosTitle")}</p>
-              </Reveal>
-              <Link href="/photos" className="link-sweep text-sm text-wine-700">
-                {t("home.photosLink")}
-              </Link>
-            </div>
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {photos.map((img) => (
-                <div key={img.id} className="relative aspect-square overflow-hidden rounded-sm">
-                  <Image
-                    src={img.media.url}
-                    alt={img.media.alt ?? ""}
-                    fill
-                    className="object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
+            <Reveal>
+              <div className="flex items-end justify-between">
+                <p className="kicker">{t("home.photosTitle")}</p>
+                <Link href="/photos" className="link-sweep text-xs uppercase tracking-[0.15em] text-wine-700">
+                  {t("home.photosLink")}
+                </Link>
+              </div>
+            </Reveal>
+            <div className="mt-10 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+              {photos.map((img, i) => (
+                <Reveal key={img.id} delay={(i % 3) * 80}>
+                  <div className="relative aspect-square overflow-hidden">
+                    <Image
+                      src={img.media.url}
+                      alt={img.media.alt ?? ""}
+                      fill
+                      className="object-cover transition-transform duration-700 ease-editorial hover:scale-105"
+                      sizes="(max-width: 640px) 50vw, 33vw"
+                    />
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
         </section>
       ) : null}
 
-      {/* Nous trouver */}
-      <section className="border-t border-ink-900/10 bg-cream-50 py-24">
-        <div className="container grid gap-10 lg:grid-cols-2 lg:items-start">
+      {/* ---------------------------------------------------------------- */}
+      {/* Nous trouver                                                    */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="border-t border-ink-900/10 bg-cream-100 py-28 sm:py-36">
+        <div className="container grid gap-14 lg:grid-cols-2 lg:gap-20">
           <Reveal>
             <div>
-              <p className="eyebrow">{t("home.findUsTitle")}</p>
-              <h2 className="mt-4 font-display text-3xl text-ink-900">{siteName}</h2>
-              <address className="mt-4 space-y-1 not-italic text-ink-700">
-                <p className="flex items-start gap-2">
-                  <MapPin className="mt-0.5 h-4 w-4 text-gold-600" aria-hidden />
+              <p className="kicker">{t("home.findUsTitle")}</p>
+              <h2 className="mt-5 font-display text-3xl font-light text-ink-900">{siteName}</h2>
+              <address className="mt-6 space-y-2 not-italic text-ink-700">
+                <p className="flex items-start gap-3">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" aria-hidden />
                   <span>
                     {settings.addressLine}
                     <br />
@@ -215,28 +250,33 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
                   </span>
                 </p>
                 {settings.phone ? (
-                  <p>
+                  <p className="pl-7">
                     <a href={`tel:${settings.phone.replace(/\s/g, "")}`} className="link-sweep text-wine-700">
                       {settings.phone}
                     </a>
                   </p>
                 ) : null}
               </address>
-              <div className="mt-6">
+              <div className="mt-8">
                 <OpeningHours hours={hours} />
               </div>
-              <Link href="/contact" className="btn-cta mt-8">
-                {t("nav.contact")}
-              </Link>
+              <div className="mt-10 flex gap-6 text-xs uppercase tracking-[0.15em]">
+                <Link href="/contact" className="link-sweep text-wine-700">
+                  {t("nav.contact")}
+                </Link>
+                <Link href="/reservation" className="link-sweep text-wine-700">
+                  {t("home.bookTable")}
+                </Link>
+              </div>
             </div>
           </Reveal>
           {settings.mapEmbedUrl ? (
             <Reveal delay={120}>
-              <div className="aspect-[4/3] overflow-hidden rounded-md shadow-card">
+              <div className="aspect-[4/3] overflow-hidden lg:aspect-auto lg:h-full lg:min-h-[360px]">
                 <iframe
                   src={settings.mapEmbedUrl}
                   title={siteName}
-                  className="h-full w-full border-0"
+                  className="h-full min-h-[300px] w-full border-0"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />

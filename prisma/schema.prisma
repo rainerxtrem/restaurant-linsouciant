@@ -357,6 +357,9 @@ model SiteSetting {
   ogImage   Media?  @relation("SettingsOgImage", fields: [ogImageId], references: [id], onDelete: SetNull)
   heroImageId String?
   heroImage   Media? @relation("SettingsHeroImage", fields: [heroImageId], references: [id], onDelete: SetNull)
+  // Vidéo de fond de la page d'accueil (URL d'un MP4/WebM). L'image
+  // heroImage sert de poster / repli.
+  heroVideoUrl String? @db.Text
   aboutImageId String?
   aboutImage   Media? @relation("SettingsAboutImage", fields: [aboutImageId], references: [id], onDelete: SetNull)
 

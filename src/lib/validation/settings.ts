@@ -50,6 +50,7 @@ export const siteSettingSchema = z.object({
   ogImageId: z.string().cuid().optional().nullable(),
   heroImageId: z.string().cuid().optional().nullable(),
   aboutImageId: z.string().cuid().optional().nullable(),
+  heroVideoUrl: optionalUrl,
 
   legalCompanyName: optionalText(200),
   legalSiret: optionalText(40),

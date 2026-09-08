@@ -68,14 +68,25 @@ export default async function LocaleLayout({
   const hours = parseOpeningHours(settings.openingHours);
   const loc = locale as "fr" | "en";
   const siteName = loc === "en" && settings.siteNameEn ? settings.siteNameEn : settings.siteName;
-  const tagline = loc === "en" && settings.taglineEn ? settings.taglineEn : settings.tagline;
 
   return (
     <html lang={locale} className={`${fraunces.variable} ${inter.variable}`}>
       <body className="font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <div className="flex min-h-screen flex-col">
-            <SiteHeader siteName={siteName} tagline={tagline} logoUrl={settings.logo?.url ?? null} />
+            <SiteHeader
+              siteName={siteName}
+              logoUrl={settings.logo?.url ?? null}
+              phone={settings.phone || null}
+              email={settings.email || null}
+              address={
+                settings.addressLine
+                  ? `${settings.addressLine}, ${settings.postalCode} ${settings.city}`
+                  : null
+              }
+              facebookUrl={settings.facebookUrl}
+              instagramUrl={settings.instagramUrl}
+            />
             <main className="flex-1">{children}</main>
             <SiteFooter settings={settings} hours={hours} locale={loc} />
           </div>

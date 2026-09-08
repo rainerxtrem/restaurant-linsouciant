@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { Facebook, Instagram } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { LanguageSwitcher } from "@/components/site/language-switcher";
 import { cn } from "@/lib/utils/cn";
@@ -13,103 +14,176 @@ const NAV = [
   { key: "photos", href: "/photos" },
   { key: "giftVouchers", href: "/bons-cadeaux" },
   { key: "contact", href: "/contact" },
+  { key: "book", href: "/reservation" },
 ] as const;
 
 export function SiteHeader({
   siteName,
-  tagline,
   logoUrl,
+  logoLightUrl = "/logo-light.png",
+  phone,
+  email,
+  address,
+  facebookUrl,
+  instagramUrl,
 }: {
   siteName: string;
-  tagline: string;
   logoUrl?: string | null;
+  logoLightUrl?: string;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  facebookUrl?: string | null;
+  instagramUrl?: string | null;
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const isHome = pathname === "/";
+
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => setOpen(false), [pathname]);
 
+  useEffect(() => {
+    if (!open) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Sur l'accueil : barre transparente au-dessus du hero, devient opaque au
+  // défilement. Ailleurs : barre sticky opaque (le contenu descend dessous).
+  const transparent = isHome && !scrolled && !open;
+  const darkText = !transparent;
+
   return (
-    <header className="sticky top-0 z-40">
-      <div className="border-b border-ink-900/10 bg-cream-50/95 backdrop-blur">
-        <div className="container flex h-20 items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3" aria-label={siteName}>
-            {logoUrl ? (
-              <Image
-                src={logoUrl}
-                alt={siteName}
-                width={260}
-                height={120}
-                priority
-                className="h-11 w-auto sm:h-14"
-              />
-            ) : (
-              <span className="flex flex-col leading-none">
-                <span className="font-display text-lg font-medium tracking-wide text-ink-900 sm:text-xl">
-                  {siteName}
-                </span>
-                <span className="mt-1 hidden text-[10px] uppercase tracking-[0.25em] text-gold-600 sm:block">
-                  {tagline}
-                </span>
-              </span>
-            )}
+    <>
+      <header
+        className={cn(
+          "z-50 w-full transition-colors duration-500",
+          isHome ? "fixed inset-x-0 top-0" : "sticky top-0",
+          transparent
+            ? "bg-transparent"
+            : "border-b border-ink-900/10 bg-cream-50/85 backdrop-blur-md"
+        )}
+      >
+        <div className="container flex h-[72px] items-center justify-between">
+          <Link href="/" aria-label={siteName} className="relative block">
+            <Image
+              src={darkText ? logoUrl ?? logoLightUrl : logoLightUrl}
+              alt={siteName}
+              width={240}
+              height={110}
+              priority
+              className="h-9 w-auto sm:h-11"
+            />
           </Link>
 
-          <nav className="hidden items-center gap-1 lg:flex">
-            {NAV.map((item) => (
-              <Link
-                key={item.key}
-                href={item.href}
-                className="link-sweep rounded-sm px-3 py-2 text-sm font-medium text-ink-700 transition-colors hover:text-wine-700"
-              >
-                {t(item.key)}
-              </Link>
-            ))}
-            <Link
-              href="/reservation"
-              className="ml-2 whitespace-nowrap rounded-sm bg-wine-700 px-4 py-2 text-sm font-medium text-cream-50 transition-colors hover:bg-wine-800"
-            >
-              {t("book")}
-            </Link>
-            <LanguageSwitcher className="ml-3" />
-          </nav>
-
           <button
-            className="relative z-50 flex h-10 w-10 items-center justify-center text-ink-900 lg:hidden"
+            type="button"
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? t("closeMenu") : t("openMenu")}
             aria-expanded={open}
+            className={cn(
+              "relative z-[70] flex h-10 w-10 items-center justify-center transition-colors",
+              open ? "text-cream-50" : darkText ? "text-ink-900" : "text-cream-50"
+            )}
           >
-            <span className="relative block h-4 w-6">
-              <span className={cn("absolute left-0 top-0 block h-0.5 w-6 bg-current transition-transform duration-300", open && "translate-y-[7px] rotate-45")} />
-              <span className={cn("absolute left-0 top-[7px] block h-0.5 w-6 bg-current transition-opacity duration-200", open && "opacity-0")} />
-              <span className={cn("absolute left-0 top-[14px] block h-0.5 w-6 bg-current transition-transform duration-300", open && "-translate-y-[7px] -rotate-45")} />
+            <span className="relative block h-3 w-7">
+              <span
+                className={cn(
+                  "absolute left-0 top-0 block h-px w-7 bg-current transition-all duration-300",
+                  open && "top-1.5 rotate-45"
+                )}
+              />
+              <span
+                className={cn(
+                  "absolute left-0 top-1.5 block h-px w-7 bg-current transition-opacity duration-200",
+                  open && "opacity-0"
+                )}
+              />
+              <span
+                className={cn(
+                  "absolute left-0 top-3 block h-px w-7 bg-current transition-all duration-300",
+                  open && "top-1.5 -rotate-45"
+                )}
+              />
             </span>
           </button>
         </div>
-      </div>
+      </header>
 
+      {/* Overlay plein écran */}
       <div
         className={cn(
-          "fixed inset-0 top-20 z-40 bg-cream-50 transition-transform duration-300 lg:hidden",
-          open ? "visible translate-y-0" : "invisible -translate-y-2"
+          "fixed inset-0 z-[60] flex flex-col bg-ink-950 text-cream-50 transition-[opacity,visibility] duration-500",
+          open ? "visible opacity-100" : "invisible opacity-0"
         )}
       >
-        <nav className="container flex flex-col divide-y divide-ink-900/10 pt-4">
-          {NAV.map((item) => (
-            <Link key={item.key} href={item.href} className="py-4 font-display text-2xl text-ink-900">
+        <div className="pointer-events-none absolute inset-0 bg-grain opacity-60" />
+        <div className="container relative flex h-[72px] items-center">
+          <Image src={logoLightUrl} alt={siteName} width={200} height={92} className="h-9 w-auto" />
+        </div>
+
+        <nav className="relative flex flex-1 flex-col items-center justify-center gap-1 sm:gap-2">
+          {NAV.map((item, i) => (
+            <Link
+              key={item.key}
+              href={item.href}
+              className={cn(
+                "font-display text-3xl font-light tracking-tight text-cream-100/90 transition-all duration-500 hover:text-gold-300 sm:text-5xl",
+                item.key === "book" && "mt-4 text-gold-300",
+                open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+              )}
+              style={{ transitionDelay: open ? `${120 + i * 55}ms` : "0ms" }}
+            >
               {t(item.key)}
             </Link>
           ))}
-          <Link href="/reservation" className="py-4 font-display text-2xl text-wine-700">
-            {t("book")}
-          </Link>
-          <div className="py-5">
-            <LanguageSwitcher />
-          </div>
         </nav>
+
+        <div className="relative border-t border-cream-50/10">
+          <div className="container flex flex-col items-center gap-4 py-7 text-center text-sm text-cream-100/60 sm:flex-row sm:justify-between sm:text-left">
+            <div className="space-y-1">
+              {address ? <p>{address}</p> : null}
+              <p className="flex flex-wrap justify-center gap-x-3 sm:justify-start">
+                {phone ? (
+                  <a href={`tel:${phone.replace(/\s/g, "")}`} className="hover:text-gold-300">
+                    {phone}
+                  </a>
+                ) : null}
+                {email ? (
+                  <a href={`mailto:${email}`} className="hover:text-gold-300">
+                    {email}
+                  </a>
+                ) : null}
+              </p>
+            </div>
+            <div className="flex items-center gap-5">
+              {facebookUrl ? (
+                <a href={facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-gold-300">
+                  <Facebook className="h-4 w-4" />
+                </a>
+              ) : null}
+              {instagramUrl ? (
+                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-gold-300">
+                  <Instagram className="h-4 w-4" />
+                </a>
+              ) : null}
+              <LanguageSwitcher className="text-cream-100/60" />
+            </div>
+          </div>
+        </div>
       </div>
-    </header>
+    </>
   );
 }

@@ -87,6 +87,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
     taglineEn: s.taglineEn ?? "",
     intro: s.intro ?? "",
     introEn: s.introEn ?? "",
+    heroVideoUrl: s.heroVideoUrl ?? "",
     addressLine: s.addressLine,
     postalCode: s.postalCode,
     city: s.city,
@@ -209,8 +210,16 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           <ImageField label="Logo" media={images.logo} onPick={() => setPicker("logo")} onClear={() => setImages((p) => ({ ...p, logo: null }))} />
           <ImageField label="Favicon" media={images.favicon} onPick={() => setPicker("favicon")} onClear={() => setImages((p) => ({ ...p, favicon: null }))} />
           <ImageField label="Image de partage (Open Graph)" media={images.ogImage} onPick={() => setPicker("ogImage")} onClear={() => setImages((p) => ({ ...p, ogImage: null }))} />
-          <ImageField label="Image du bandeau d'accueil" media={images.heroImage} onPick={() => setPicker("heroImage")} onClear={() => setImages((p) => ({ ...p, heroImage: null }))} />
+          <ImageField label="Image du bandeau d'accueil (poster vidéo / repli)" media={images.heroImage} onPick={() => setPicker("heroImage")} onClear={() => setImages((p) => ({ ...p, heroImage: null }))} />
           <ImageField label="Image « En cuisine » (accueil)" media={images.aboutImage} onPick={() => setPicker("aboutImage")} onClear={() => setImages((p) => ({ ...p, aboutImage: null }))} />
+        </div>
+        <div className="mt-4">
+          <Field
+            label="Vidéo de fond de l'accueil — URL d'un fichier MP4/WebM (facultatif)"
+            value={f.heroVideoUrl}
+            onChange={set("heroVideoUrl")}
+            full
+          />
         </div>
       </section>
 

@@ -52,6 +52,40 @@
   .rule-gold {
     @apply h-px w-16 bg-gradient-to-r from-gold-500 to-transparent;
   }
+
+  /* Libellé minimal : majuscules très espacées, sans tiret (direction épurée). */
+  .kicker {
+    @apply text-[11px] font-medium uppercase tracking-[0.35em] text-gold-600;
+  }
+}
+
+/* Ken Burns lent sur l'image du hero quand il n'y a pas de vidéo. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-kenburns {
+    animation: hero-kenburns 24s ease-in-out infinite alternate;
+  }
+  @keyframes hero-kenburns {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.12);
+    }
+  }
+  .cue-line {
+    animation: cue-line 2.4s ease-in-out infinite;
+  }
+  @keyframes cue-line {
+    0%,
+    100% {
+      transform: scaleY(0.4);
+      opacity: 0.4;
+    }
+    50% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
 }
 
 /* Contenu riche (pages/actualités) : on garde `prose` mais on l'aligne sur
