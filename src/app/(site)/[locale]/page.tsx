@@ -63,17 +63,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
       {/* Hero plein écran — vidéo (ou image) en fond, nom centré          */}
       {/* ---------------------------------------------------------------- */}
       <section className="relative flex h-[100svh] min-h-[560px] items-center justify-center overflow-hidden bg-ink-950 text-cream-50">
-        {settings.heroVideoUrl ? (
-          <HeroBackground videoUrl={settings.heroVideoUrl} posterUrl={settings.heroImage?.url} />
-        ) : settings.heroImage ? (
-          <Image
-            src={settings.heroImage.url}
-            alt=""
-            fill
-            priority
-            className="hero-kenburns object-cover opacity-55"
-          />
-        ) : null}
+        <HeroBackground videoUrl={settings.heroVideoUrl} posterUrl={settings.heroImage?.url} />
 
         <div className="pointer-events-none absolute inset-0 bg-grain opacity-50" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink-950/70 via-ink-950/25 to-ink-950/80" />

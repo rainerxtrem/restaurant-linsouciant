@@ -41,6 +41,28 @@ function euro(cents: number) {
   return (cents / 100).toLocaleString("fr-FR", { minimumFractionDigits: 0 });
 }
 
+/** Sépare « Balade de saison — 4 plats (entrée, poisson…) » en titre + détail. */
+function splitLabel(label: string): { main: string; detail: string | null } {
+  const m = label.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+  if (m) return { main: m[1]!.trim(), detail: m[2]!.trim() };
+  return { main: label, detail: null };
+}
+
+function PriceRow({ label, cents }: { label: string; cents: number }) {
+  const { main, detail } = splitLabel(label);
+  return (
+    <li className="flex items-baseline justify-between gap-5">
+      <span className="min-w-0">
+        <span className="text-ink-800">{main}</span>
+        {detail ? <span className="mt-0.5 block text-xs leading-snug text-ink-400">{detail}</span> : null}
+      </span>
+      <span className="shrink-0 whitespace-nowrap font-display text-base text-wine-700">
+        {euro(cents)} €
+      </span>
+    </li>
+  );
+}
+
 export function MenuSelector({ menus, locale }: { menus: MenuView[]; locale: "fr" | "en" }) {
   const t = useTranslations("menus");
   const L = (fr: string | null, en: string | null) => (locale === "en" && en ? en : fr) ?? "";
@@ -153,30 +175,22 @@ export function MenuSelector({ menus, locale }: { menus: MenuView[]; locale: "fr
 
               {/* Prix */}
               {(formulas.length > 0 || pairings.length > 0) && (
-                <div className="mx-auto mt-10 max-w-sm border-y border-ink-900/10 py-7 text-left">
+                <div className="mx-auto mt-10 max-w-md border-y border-ink-900/10 py-7 text-left text-sm">
                   {formulas.length > 0 ? (
-                    <ul className="space-y-2.5">
+                    <ul className="space-y-3.5">
                       {formulas.map((p) => (
-                        <li key={p.id} className="flex items-baseline gap-2 text-sm">
-                          <span className="text-ink-700">{L(p.label, p.labelEn)}</span>
-                          <span className="mx-1 flex-1 translate-y-[-3px] border-b border-dotted border-ink-900/25" />
-                          <span className="font-display text-base text-wine-700">{euro(p.priceCents)} €</span>
-                        </li>
+                        <PriceRow key={p.id} label={L(p.label, p.labelEn)} cents={p.priceCents} />
                       ))}
                     </ul>
                   ) : null}
                   {pairings.length > 0 ? (
                     <div className={formulas.length > 0 ? "mt-6 border-t border-ink-900/10 pt-6" : ""}>
-                      <p className="mb-3 text-center text-[10px] uppercase tracking-[0.25em] text-ink-400">
+                      <p className="mb-3.5 text-center text-[10px] uppercase tracking-[0.25em] text-ink-400">
                         {t("winePairing")}
                       </p>
-                      <ul className="space-y-2.5">
+                      <ul className="space-y-3.5">
                         {pairings.map((p) => (
-                          <li key={p.id} className="flex items-baseline gap-2 text-sm">
-                            <span className="text-ink-700">{L(p.label, p.labelEn)}</span>
-                            <span className="mx-1 flex-1 translate-y-[-3px] border-b border-dotted border-ink-900/25" />
-                            <span className="font-display text-base text-wine-700">{euro(p.priceCents)} €</span>
-                          </li>
+                          <PriceRow key={p.id} label={L(p.label, p.labelEn)} cents={p.priceCents} />
                         ))}
                       </ul>
                     </div>

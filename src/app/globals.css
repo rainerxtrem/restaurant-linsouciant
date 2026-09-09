@@ -5,18 +5,39 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-cream-100 text-ink-800;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern", "liga", "calt";
   }
   ::selection {
-    @apply bg-gold-300/60 text-ink-900;
+    @apply bg-gold-300/50 text-ink-900;
   }
   h1,
   h2,
   h3,
   h4 {
     @apply font-display;
+  }
+  /* Focus discret mais visible (accessibilité) — anneau or, jamais de halo bleu. */
+  :focus-visible {
+    outline: 2px solid theme("colors.gold.500");
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+  /* Barre de défilement affinée (WebKit) */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-ink-900/15;
+    border: 3px solid theme("colors.cream.100");
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-900/25;
   }
 }
 
@@ -31,8 +52,13 @@
     @apply h-px w-8 bg-gold-500;
   }
 
+  /* Bouton principal : rectangle net, sans rayon, capitales espacées. */
   .btn-cta {
-    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-wine-700 px-6 py-3 text-sm font-medium tracking-wide text-cream-50 no-underline transition-all duration-300 ease-editorial hover:bg-wine-800;
+    @apply inline-flex items-center justify-center gap-2 bg-wine-700 px-9 py-4 text-[11px] font-medium uppercase tracking-[0.2em] text-cream-50 no-underline transition-colors duration-300 ease-editorial hover:bg-wine-800;
+  }
+  /* Lien souligné fin, capitales espacées — appel à l'action secondaire. */
+  .link-underline {
+    @apply inline-block border-b border-ink-900/30 pb-1 text-[11px] uppercase tracking-[0.2em] text-ink-800 transition-colors hover:border-wine-700 hover:text-wine-700;
   }
 
   /* Lien avec soulignement animé (balayage gauche->droite) */
@@ -56,6 +82,17 @@
   /* Libellé minimal : majuscules très espacées, sans tiret (direction épurée). */
   .kicker {
     @apply text-[11px] font-medium uppercase tracking-[0.35em] text-gold-600;
+  }
+}
+
+/* Curseur personnalisé (voir CustomCursor) : on masque le curseur natif
+   uniquement sur desktop à pointeur fin et si les animations sont permises. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  body,
+  a,
+  button,
+  [role="button"] {
+    cursor: none;
   }
 }
 

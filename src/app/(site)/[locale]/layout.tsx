@@ -12,24 +12,27 @@ import { CookieConsentBanner } from "@/components/public/cookie-consent-banner";
 import { AnalyticsLoader } from "@/components/public/analytics-loader";
 import { ZenchefLoader } from "@/components/site/zenchef-loader";
 import { AnnouncementPopup } from "@/components/site/announcement-popup";
+import { CustomCursor } from "@/components/site/custom-cursor";
 import { getActiveAnnouncement } from "@/lib/services/announcement.service";
 import { localized } from "@/lib/i18n";
 import DOMPurify from "isomorphic-dompurify";
 import "../../globals.css";
 
+// Polices variables (un seul fichier woff2 par style) — plus léger que des
+// instances statiques multiples.
 const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
   variable: "--font-fraunces",
   display: "swap",
+  preload: true,
 });
 
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
   variable: "--font-inter",
   display: "swap",
+  preload: true,
 });
 
 export function generateStaticParams() {
@@ -114,6 +117,7 @@ export default async function LocaleLayout({
             <main className="flex-1">{children}</main>
             <SiteFooter settings={settings} hours={hours} locale={loc} />
           </div>
+          <CustomCursor />
           <CookieConsentBanner />
           <AnalyticsLoader />
           {settings.zenchefRestaurantId ? (

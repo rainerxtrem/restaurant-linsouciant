@@ -180,8 +180,14 @@ async function main() {
   console.log("✔ Réglages du site");
 
   // -------------------------------------------------------------------------
-  // Menu « Premier Pas »
+  // Menus — recréés à chaque seed (reset au contenu de référence, y compris
+  // les traductions). Les modifications faites depuis /admin/menus seraient
+  // écrasées : ne relancer le seed que volontairement.
   // -------------------------------------------------------------------------
+  await prisma.menu.deleteMany({
+    where: { slug: { in: ["menu-premier-pas", "menus-plaisir"] } },
+  });
+
   await prisma.menu.upsert({
     where: { slug: "menu-premier-pas" },
     update: {},
@@ -277,15 +283,17 @@ async function main() {
               create: [
                 {
                   name: "La fève edamame",
+                  nameEn: "Edamame bean",
                   order: 0,
-                  description:
-                    "Façon risotto, œufs de saumon, pain bao aux algues et sésame.",
+                  description: "Façon risotto, œufs de saumon, pain bao aux algues et sésame.",
+                  descriptionEn: "Risotto-style, salmon roe, seaweed-and-sesame bao bun.",
                 },
                 {
                   name: "La crevette impériale de Charente",
+                  nameEn: "Charente imperial prawn",
                   order: 1,
-                  description:
-                    "Bavaroise de bisque safranée, condiment passion, céleri et amande.",
+                  description: "Bavaroise de bisque safranée, condiment passion, céleri et amande.",
+                  descriptionEn: "Saffron bisque bavarois, passion-fruit condiment, celery and almond.",
                 },
               ],
             },
@@ -298,14 +306,19 @@ async function main() {
               create: [
                 {
                   name: "Le lieu jaune de ligne",
+                  nameEn: "Line-caught pollack",
                   order: 0,
                   description: "Cappelletti de légumes, écume à l'estragon.",
+                  descriptionEn: "Vegetable cappelletti, tarragon foam.",
                 },
                 {
                   name: "Le taureau de Camargue",
+                  nameEn: "Camargue bull beef",
                   order: 1,
                   description:
                     "Bœuf fumé au pin, haricots à l'huile de persil, béarnaise au poivre de Belém.",
+                  descriptionEn:
+                    "Pine-smoked beef, parsley-oil beans, Belém-pepper béarnaise.",
                 },
               ],
             },
@@ -318,15 +331,21 @@ async function main() {
               create: [
                 {
                   name: "L'or jaune de Lorraine",
+                  nameEn: "Lorraine golden mirabelle",
                   order: 0,
                   description:
                     "Mirabelles rôties à l'amaretto, crème vanille de Madagascar, sorbet œillet d'Inde.",
+                  descriptionEn:
+                    "Amaretto-roasted mirabelle plums, Madagascar vanilla cream, marigold sorbet.",
                 },
                 {
                   name: "Nuit pourpre",
+                  nameEn: "Purple night",
                   order: 1,
                   description:
                     "Ganache chocolat « Chanco », marmelade mûre-cerise au gingembre, éclats de brioche.",
+                  descriptionEn:
+                    "« Chanco » chocolate ganache, blackberry-cherry-ginger marmalade, brioche shards.",
                 },
               ],
             },
