@@ -6,7 +6,7 @@ import { buildMetadata } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
 import { listPublishedMenus } from "@/lib/services/menu.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
-import { MenuDisplay } from "@/components/site/menu-display";
+import { MenuSelector, type MenuView } from "@/components/site/menu-selector";
 import { Reveal } from "@/components/public/reveal";
 
 export const dynamic = "force-dynamic";
@@ -28,10 +28,41 @@ export default async function MenusPage({ params }: { params: Promise<{ locale: 
   const [menus, albums] = await Promise.all([listPublishedMenus(), listAlbumsWithImages()]);
   const backdrop = albums.find((a) => a.slug === "les-plats")?.images[0]?.media ?? null;
 
+  const views: MenuView[] = menus.map((m) => ({
+    slug: m.slug,
+    name: m.name,
+    nameEn: m.nameEn,
+    availabilityNote: m.availabilityNote,
+    availabilityNoteEn: m.availabilityNoteEn,
+    description: m.description,
+    descriptionEn: m.descriptionEn,
+    prices: m.prices.map((p) => ({
+      id: p.id,
+      kind: p.kind,
+      label: p.label,
+      labelEn: p.labelEn,
+      priceCents: p.priceCents,
+    })),
+    sections: m.sections.map((s) => ({
+      id: s.id,
+      title: s.title,
+      titleEn: s.titleEn,
+      subtitle: s.subtitle,
+      subtitleEn: s.subtitleEn,
+      dishes: s.dishes.map((d) => ({
+        id: d.id,
+        name: d.name,
+        nameEn: d.nameEn,
+        description: d.description,
+        descriptionEn: d.descriptionEn,
+      })),
+    })),
+  }));
+
   return (
     <div>
       {/* Intro plein cadre */}
-      <section className="relative flex h-[70svh] min-h-[420px] items-center justify-center overflow-hidden bg-ink-950 text-cream-50">
+      <section className="relative flex h-[62svh] min-h-[400px] items-center justify-center overflow-hidden bg-ink-950 text-cream-50">
         {backdrop ? (
           <Image src={backdrop.url} alt="" fill priority className="object-cover opacity-40" sizes="100vw" />
         ) : null}
@@ -56,12 +87,10 @@ export default async function MenusPage({ params }: { params: Promise<{ locale: 
         </div>
       </section>
 
-      {menus.length === 0 ? (
+      {views.length === 0 ? (
         <p className="bg-cream-50 py-32 text-center text-sm text-ink-500">{t("menus.empty")}</p>
       ) : (
-        menus.map((menu, i) => (
-          <MenuDisplay key={menu.id} menu={menu} locale={locale} index={i} />
-        ))
+        <MenuSelector menus={views} locale={locale} />
       )}
 
       <section className="border-t border-ink-900/10 bg-cream-100 py-20 text-center">
