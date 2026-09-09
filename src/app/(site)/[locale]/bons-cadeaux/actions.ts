@@ -24,6 +24,7 @@ export async function purchaseVoucherAction(
     recipientName: formData.get("recipientName") ?? "",
     recipientEmail: formData.get("recipientEmail") ?? "",
     message: formData.get("message") ?? "",
+    selectionLabel: formData.get("selectionLabel") ?? "",
     website: formData.get("website"),
   });
 

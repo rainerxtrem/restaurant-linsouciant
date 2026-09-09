@@ -44,7 +44,14 @@ export default async function AdminGiftVouchersPage() {
             {vouchers.map((v) => (
               <tr key={v.id}>
                 <td className="px-3 py-3 font-mono text-xs">{v.code}</td>
-                <td className="px-3 py-3">{(v.amountCents / 100).toFixed(2)} €</td>
+                <td className="px-3 py-3">
+                  {(v.amountCents / 100).toFixed(2)} €
+                  {v.selectionLabel ? (
+                    <span className="mt-0.5 block max-w-[16rem] text-[11px] leading-tight text-ink-400">
+                      {v.selectionLabel}
+                    </span>
+                  ) : null}
+                </td>
                 <td className="px-3 py-3">{STATUS_LABEL[v.status]}</td>
                 <td className="px-3 py-3 text-ink-600">
                   {v.buyerName}

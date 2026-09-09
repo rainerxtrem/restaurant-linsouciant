@@ -12,11 +12,12 @@ export async function GET() {
   try {
     await requireAdmin();
     const vouchers = await listVouchersAdmin();
-    const header = ["code", "montant_eur", "statut", "acheteur", "email_acheteur", "beneficiaire", "cree_le", "expire_le"];
+    const header = ["code", "montant_eur", "composition", "statut", "acheteur", "email_acheteur", "beneficiaire", "cree_le", "expire_le"];
     const rows = vouchers.map((v) =>
       [
         v.code,
         (v.amountCents / 100).toFixed(2),
+        v.selectionLabel ?? "",
         v.status,
         v.buyerName,
         v.buyerEmail,

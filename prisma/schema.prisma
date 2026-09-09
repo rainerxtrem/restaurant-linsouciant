@@ -292,6 +292,9 @@ model GiftVoucher {
   recipientName  String?
   recipientEmail String?
   message        String? @db.Text
+  // Description lisible quand le bon a été composé à partir de menus
+  // (ex. « 1 × Menus Plaisir — 4 plats · 2 × Menu Premier Pas — Entrée + Plat »).
+  selectionLabel String? @db.Text
 
   stripeSessionId       String? @unique
   stripePaymentIntentId String?

@@ -33,6 +33,8 @@ export async function createVoucherCheckout(input: GiftVoucherPurchaseInput) {
   const code = await generateUniqueVoucherCode();
   const amountCents = Math.round(input.amount * 100);
 
+  const selectionLabel = input.selectionLabel?.trim() || null;
+
   const voucher = await prisma.giftVoucher.create({
     data: {
       code,
@@ -42,6 +44,7 @@ export async function createVoucherCheckout(input: GiftVoucherPurchaseInput) {
       recipientName: input.recipientName || null,
       recipientEmail: input.recipientEmail || null,
       message: input.message || null,
+      selectionLabel,
     },
   });
 
@@ -61,7 +64,9 @@ export async function createVoucherCheckout(input: GiftVoucherPurchaseInput) {
           unit_amount: amountCents,
           product_data: {
             name: `Bon cadeau ${settings.siteName}`,
-            description: `Bon cadeau d'une valeur de ${(amountCents / 100).toFixed(2)} € à valoir au restaurant ${settings.siteName}.`,
+            description: selectionLabel
+              ? `${selectionLabel} — bon cadeau de ${(amountCents / 100).toFixed(2)} € à valoir au restaurant ${settings.siteName}.`
+              : `Bon cadeau d'une valeur de ${(amountCents / 100).toFixed(2)} € à valoir au restaurant ${settings.siteName}.`,
           },
         },
       },
@@ -168,6 +173,7 @@ async function sendVoucherEmail(voucher: GiftVoucher) {
           : `Merci pour votre achat ! Voici votre bon cadeau de <strong>${amount} €</strong>, à valoir au restaurant ${settings.siteName}.`
       }
     </p>
+    ${voucher.selectionLabel ? `<p style="margin:0 0 16px; font-size:14px; color:#231e1a;"><strong>Ce bon comprend :</strong> ${voucher.selectionLabel}</p>` : ""}
     ${voucher.message && isGift ? `<p style="margin:0 0 16px; padding:14px; background-color:#faf6ee; border-radius:3px; font-style:italic;">« ${voucher.message} »</p>` : ""}
     <div style="text-align:center; margin:24px 0; padding:20px; background-color:#faf6ee; border-radius:4px;">
       <p style="margin:0 0 6px; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#8d8471;">Votre code</p>

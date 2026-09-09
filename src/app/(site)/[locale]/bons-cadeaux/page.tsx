@@ -5,7 +5,8 @@ import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
-import { GiftVoucherForm } from "@/components/site/gift-voucher-form";
+import { listPublishedMenus } from "@/lib/services/menu.service";
+import { GiftVoucherForm, type MenuOffer } from "@/components/site/gift-voucher-form";
 import { Reveal } from "@/components/public/reveal";
 
 export const dynamic = "force-dynamic";
@@ -24,11 +25,21 @@ export default async function GiftVouchersPage({ params }: { params: Promise<{ l
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
-  const albums = await listAlbumsWithImages();
+  const [albums, menus] = await Promise.all([listAlbumsWithImages(), listPublishedMenus()]);
   const shot =
     albums.find((a) => a.slug === "les-plats")?.images[2]?.media ??
     albums.flatMap((a) => a.images)[0]?.media ??
     null;
+
+  const offers: MenuOffer[] = menus
+    .map((m) => ({
+      menuName: m.name,
+      menuNameEn: m.nameEn,
+      options: m.prices
+        .filter((p) => p.kind === "FORMULA")
+        .map((p) => ({ id: p.id, label: p.label, labelEn: p.labelEn, priceCents: p.priceCents })),
+    }))
+    .filter((o) => o.options.length > 0);
 
   return (
     <div className="lg:grid lg:grid-cols-2">
@@ -42,7 +53,7 @@ export default async function GiftVouchersPage({ params }: { params: Promise<{ l
       </div>
 
       <div className="bg-cream-50 px-6 py-24 sm:px-10 lg:py-32">
-        <div className="mx-auto max-w-md">
+        <div className="mx-auto max-w-lg">
           <Reveal>
             <p className="kicker">{t("giftVouchers.title")}</p>
             <h1 className="mt-5 font-display text-4xl font-light text-ink-900">
@@ -55,7 +66,7 @@ export default async function GiftVouchersPage({ params }: { params: Promise<{ l
 
           <Reveal delay={120}>
             <div className="mt-12">
-              <GiftVoucherForm />
+              <GiftVoucherForm offers={offers} locale={locale} />
             </div>
           </Reveal>
 
