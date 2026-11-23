@@ -131,5 +131,14 @@
   "notFound": {
     "title": "Page introuvable",
     "body": "La page que vous cherchez n'existe pas ou a été déplacée."
+  },
+  "themePage": {
+    "menuTitle": "Le menu",
+    "menusTitle": "Les menus",
+    "orderKicker": "Commander",
+    "orderTitle": "Comment commander",
+    "orderByEmail": "Commander par e-mail",
+    "orderSubject": "Commande",
+    "contactUs": "Nous contacter"
   }
 }

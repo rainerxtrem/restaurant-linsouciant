@@ -28,7 +28,13 @@ interface SectionRow {
 const input = "w-full rounded-md border border-ink-200 bg-white px-3 py-2 text-sm";
 const label = "mb-1 block text-xs font-medium text-ink-600";
 
-export function MenuForm({ menu }: { menu: MenuWithRelations | null }) {
+export function MenuForm({
+  menu,
+  themePages = [],
+}: {
+  menu: MenuWithRelations | null;
+  themePages?: { id: string; title: string }[];
+}) {
   const [state, formAction, pending] = useActionState<MenuActionState, FormData>(
     saveMenuAction.bind(null, menu?.id ?? null),
     {}
@@ -42,6 +48,7 @@ export function MenuForm({ menu }: { menu: MenuWithRelations | null }) {
   const [availabilityNoteEn, setAvailabilityNoteEn] = useState(menu?.availabilityNoteEn ?? "");
   const [status, setStatus] = useState<"DRAFT" | "PUBLISHED">(menu?.status ?? "DRAFT");
   const [order, setOrder] = useState(String(menu?.order ?? 0));
+  const [themePageId, setThemePageId] = useState(menu?.themePageId ?? "");
 
   const [prices, setPrices] = useState<PriceRow[]>(
     menu?.prices.map((p) => ({
@@ -76,6 +83,8 @@ export function MenuForm({ menu }: { menu: MenuWithRelations | null }) {
       availabilityNoteEn,
       status,
       order: Number(order) || 0,
+      mainImageId: menu?.mainImageId ?? null,
+      themePageId: themePageId || null,
       prices: prices.map((p) => ({
         kind: p.kind,
         label: p.label,
@@ -132,6 +141,20 @@ export function MenuForm({ menu }: { menu: MenuWithRelations | null }) {
           <div>
             <label className={label}>Ordre d&apos;affichage</label>
             <input type="number" className={input} value={order} onChange={(e) => setOrder(e.target.value)} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className={label}>Afficher ce menu sur</label>
+            <select className={input} value={themePageId} onChange={(e) => setThemePageId(e.target.value)}>
+              <option value="">La carte principale (page Cartes &amp; Menus)</option>
+              {themePages.map((p) => (
+                <option key={p.id} value={p.id}>
+                  Page thématique : {p.title}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-ink-500">
+              Un menu rattaché à une page thématique (ex. menu de Noël) n&apos;apparaît que sur cette page.
+            </p>
           </div>
         </div>
       </section>

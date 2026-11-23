@@ -35,6 +35,7 @@ export const menuSchema = z.object({
   availabilityNote: optional(300),
   availabilityNoteEn: optional(300),
   mainImageId: z.string().cuid().optional().nullable(),
+  themePageId: z.string().cuid().optional().nullable(),
   status: z.enum(["DRAFT", "PUBLISHED"]).default("DRAFT"),
   order: z.coerce.number().int().min(0).default(0),
   prices: z.array(menuPriceSchema).default([]),

@@ -11,16 +11,20 @@ const fullInclude = {
   },
 } as const;
 
+/** Menus de la carte principale (hors menus rattachés à une page thématique). */
 export function listPublishedMenus() {
   return prisma.menu.findMany({
-    where: { status: "PUBLISHED" },
+    where: { status: "PUBLISHED", themePageId: null },
     orderBy: { order: "asc" },
     include: fullInclude,
   });
 }
 
 export function listAllMenus() {
-  return prisma.menu.findMany({ orderBy: { order: "asc" }, include: fullInclude });
+  return prisma.menu.findMany({
+    orderBy: { order: "asc" },
+    include: { ...fullInclude, themePage: { select: { title: true } } },
+  });
 }
 
 export function getMenu(id: string) {
@@ -44,6 +48,7 @@ export async function upsertMenu(input: MenuInput, id?: string) {
     availabilityNote: input.availabilityNote || null,
     availabilityNoteEn: input.availabilityNoteEn || null,
     mainImageId: input.mainImageId ?? null,
+    themePageId: input.themePageId ?? null,
     status: input.status,
     order: input.order,
     publishedAt,

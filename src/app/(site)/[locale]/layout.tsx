@@ -14,6 +14,7 @@ import { ZenchefLoader } from "@/components/site/zenchef-loader";
 import { AnnouncementPopup } from "@/components/site/announcement-popup";
 import { CustomCursor } from "@/components/site/custom-cursor";
 import { getActiveAnnouncement } from "@/lib/services/announcement.service";
+import { listEnabledThemePages } from "@/lib/services/theme-page.service";
 import { localized } from "@/lib/i18n";
 import DOMPurify from "isomorphic-dompurify";
 import "../../globals.css";
@@ -73,10 +74,18 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const messages = await getMessages();
-  const [settings, announcement] = await Promise.all([getSiteSettings(), getActiveAnnouncement()]);
+  const [settings, announcement, themePages] = await Promise.all([
+    getSiteSettings(),
+    getActiveAnnouncement(),
+    listEnabledThemePages(),
+  ]);
   const hours = parseOpeningHours(settings.openingHours);
   const loc = locale as "fr" | "en";
   const siteName = loc === "en" && settings.siteNameEn ? settings.siteNameEn : settings.siteName;
+  const themeLinks = themePages.map((p) => ({
+    href: `/${p.slug}`,
+    label: (loc === "en" && (p.navLabelEn || p.titleEn)) || p.navLabel || p.title,
+  }));
 
   const jsonLd = restaurantJsonLd({
     siteName,
@@ -114,9 +123,10 @@ export default async function LocaleLayout({
               facebookUrl={settings.facebookUrl}
               instagramUrl={settings.instagramUrl}
               giftVouchersEnabled={settings.giftVouchersEnabled}
+              themeLinks={themeLinks}
             />
             <main className="flex-1">{children}</main>
-            <SiteFooter settings={settings} hours={hours} locale={loc} />
+            <SiteFooter settings={settings} hours={hours} locale={loc} themeLinks={themeLinks} />
           </div>
           <CustomCursor />
           <CookieConsentBanner />

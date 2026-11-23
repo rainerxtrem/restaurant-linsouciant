@@ -10,6 +10,7 @@ const STATIC_PATHS = ["/", "/menus", "/photos", "/contact", "/reservation"];
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let pagePaths: string[] = [];
   let giftVouchersEnabled = true;
+  let themePaths: string[] = [];
   try {
     const pages = await prisma.page.findMany({
       where: { status: "PUBLISHED" },
@@ -21,11 +22,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { giftVouchersEnabled: true },
     });
     giftVouchersEnabled = settings?.giftVouchersEnabled ?? true;
+    const themes = await prisma.themePage.findMany({ where: { enabled: true }, select: { slug: true } });
+    themePaths = themes.map((t) => `/${t.slug}`);
   } catch {
     // base non joignable au build — sitemap statique suffisant
   }
 
-  const all = [...STATIC_PATHS, ...(giftVouchersEnabled ? ["/bons-cadeaux"] : []), ...pagePaths];
+  const all = [...STATIC_PATHS, ...(giftVouchersEnabled ? ["/bons-cadeaux"] : []), ...themePaths, ...pagePaths];
 
   return all.flatMap((path) =>
     routing.locales.map((locale) => ({

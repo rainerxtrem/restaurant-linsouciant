@@ -28,6 +28,7 @@ export function SiteHeader({
   facebookUrl,
   instagramUrl,
   giftVouchersEnabled = true,
+  themeLinks = [],
 }: {
   siteName: string;
   logoUrl?: string | null;
@@ -38,6 +39,8 @@ export function SiteHeader({
   facebookUrl?: string | null;
   instagramUrl?: string | null;
   giftVouchersEnabled?: boolean;
+  /** Pages thématiques activées, insérées après « Cartes & Menus ». */
+  themeLinks?: { href: string; label: string }[];
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -67,6 +70,15 @@ export function SiteHeader({
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const navItems: { key: string; href: string; label: string; highlight?: boolean }[] = NAV.filter(
+    (item) => giftVouchersEnabled || item.href !== "/bons-cadeaux"
+  ).flatMap((item) => {
+    const own = { key: item.key, href: item.href, label: t(item.key), highlight: item.key === "book" };
+    return item.key === "menus"
+      ? [own, ...themeLinks.map((l) => ({ key: l.href, href: l.href, label: l.label }))]
+      : [own];
+  });
 
   const transparent = isHome && !scrolled && !open;
   const darkText = !transparent;
@@ -151,18 +163,18 @@ export function SiteHeader({
         </div>
 
         <nav className="relative flex flex-1 flex-col justify-center gap-1 px-8">
-          {NAV.filter((item) => giftVouchersEnabled || item.href !== "/bons-cadeaux").map((item, i) => (
+          {navItems.map((item, i) => (
             <Link
               key={item.key}
               href={item.href}
               className={cn(
                 "border-b border-cream-50/10 py-4 font-display text-2xl font-light tracking-tight text-cream-100/85 transition-all duration-500 hover:text-gold-300",
-                item.key === "book" && "text-gold-300",
+                item.highlight && "text-gold-300",
                 open ? "translate-x-0 opacity-100" : "translate-x-4 opacity-0"
               )}
               style={{ transitionDelay: open ? `${140 + i * 45}ms` : "0ms" }}
             >
-              {t(item.key)}
+              {item.label}
             </Link>
           ))}
         </nav>

@@ -29,7 +29,14 @@ export default async function AdminMenusPage() {
           <tbody className="divide-y divide-ink-900/5">
             {menus.map((menu) => (
               <tr key={menu.id}>
-                <td className="px-4 py-3 font-medium text-ink-800">{menu.name}</td>
+                <td className="px-4 py-3 font-medium text-ink-800">
+                  {menu.name}
+                  {menu.themePage ? (
+                    <span className="mt-0.5 block text-xs font-normal text-ink-400">
+                      Page thématique : {menu.themePage.title}
+                    </span>
+                  ) : null}
+                </td>
                 <td className="px-4 py-3">
                   <span className={menu.status === "PUBLISHED" ? "text-green-700" : "text-ink-400"}>
                     {menu.status === "PUBLISHED" ? "Publié" : "Brouillon"}

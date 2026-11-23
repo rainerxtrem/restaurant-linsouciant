@@ -108,6 +108,8 @@ model Media {
   settingsHeroFor   SiteSetting[] @relation("SettingsHeroImage")
   settingsAboutFor  SiteSetting[] @relation("SettingsAboutImage")
   announcementFor   Announcement[] @relation("AnnouncementImage")
+  themePageHeroFor  ThemePage[]    @relation("ThemePageHero")
+  themeProductFor   ThemeProduct[] @relation("ThemeProductImage")
 
   @@index([type])
   @@map("media")
@@ -132,6 +134,10 @@ model Menu {
   order            Int           @default(0)
   status           PublishStatus @default(DRAFT)
   publishedAt      DateTime?
+  // Menu rattaché à une page thématique (ex. menu de Noël) : affiché sur
+  // cette page et non sur la carte principale (/menus).
+  themePageId      String?
+  themePage        ThemePage?    @relation(fields: [themePageId], references: [id], onDelete: SetNull)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
@@ -416,4 +422,55 @@ model Announcement {
   updatedAt     DateTime  @updatedAt
 
   @@map("announcements")
+}
+
+// ---------------------------------------------------------------------------
+// Pages thématiques (Noël, Pâques, traiteur à emporter…) : présentation +
+// encadrés produits (photo, description, tarifs) + menus rattachés.
+// Servies à la racine (/<slug>), ajoutées au menu du site quand activées.
+// ---------------------------------------------------------------------------
+
+model ThemePage {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  titleEn     String?
+  // Libellé court dans le menu du site (par défaut : le titre).
+  navLabel    String?
+  navLabelEn  String?
+  intro       String?  @db.Text
+  introEn     String?  @db.Text
+  // Modalités de commande / retrait (dates limites, créneaux…).
+  orderInfo   String?  @db.Text
+  orderInfoEn String?  @db.Text
+  heroImageId String?
+  heroImage   Media?   @relation("ThemePageHero", fields: [heroImageId], references: [id], onDelete: SetNull)
+  enabled     Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products ThemeProduct[]
+  menus    Menu[]
+
+  @@index([enabled, order])
+  @@map("theme_pages")
+}
+
+model ThemeProduct {
+  id            String    @id @default(cuid())
+  themePageId   String
+  themePage     ThemePage @relation(fields: [themePageId], references: [id], onDelete: Cascade)
+  name          String
+  nameEn        String?
+  description   String?   @db.Text
+  descriptionEn String?   @db.Text
+  imageId       String?
+  image         Media?    @relation("ThemeProductImage", fields: [imageId], references: [id], onDelete: SetNull)
+  // [{ label, labelEn, priceCents }] — ex. « Le lobe entier (500 g) » 65 €.
+  prices        Json      @default("[]")
+  order         Int       @default(0)
+
+  @@index([themePageId, order])
+  @@map("theme_products")
 }

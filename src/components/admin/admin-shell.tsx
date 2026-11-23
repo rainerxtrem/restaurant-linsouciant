@@ -14,6 +14,7 @@ import {
   Settings,
   Users,
   Megaphone,
+  Sparkles,
   LogOut,
   Menu as MenuIcon,
 } from "lucide-react";
@@ -23,6 +24,7 @@ import { logoutAction } from "@/app/(admin)/admin/(dashboard)/actions";
 const NAV = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard, exact: true },
   { href: "/admin/menus", label: "Cartes & menus", icon: UtensilsCrossed },
+  { href: "/admin/pages-thematiques", label: "Pages thématiques", icon: Sparkles },
   { href: "/admin/photos", label: "Photos", icon: Images },
   { href: "/admin/pages", label: "Pages", icon: FileText },
   { href: "/admin/annonce", label: "Annonce", icon: Megaphone },
@@ -60,7 +62,10 @@ export function AdminShell({
         </div>
         <nav className="flex flex-col gap-0.5 p-3">
           {items.map((item) => {
-            const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+            // « /admin/pages » ne doit pas s'allumer sur « /admin/pages-thematiques ».
+            const active = item.exact
+              ? pathname === item.href
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
             return (
               <Link
