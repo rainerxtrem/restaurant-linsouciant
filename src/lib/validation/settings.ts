@@ -2,6 +2,13 @@ import { z } from "zod";
 
 const optionalText = (max: number) => z.string().trim().max(max).optional().or(z.literal(""));
 const optionalUrl = z.string().trim().url("URL invalide").optional().or(z.literal(""));
+// URL absolue (https://…) ou chemin local servi par le site (/hero-video.mp4).
+const optionalUrlOrPath = z
+  .string()
+  .trim()
+  .refine((v) => /^\/[^/]/.test(v) || z.string().url().safeParse(v).success, "URL invalide")
+  .optional()
+  .or(z.literal(""));
 
 const slotSchema = z.object({
   start: z.string().regex(/^\d{2}:\d{2}$/),
@@ -50,7 +57,7 @@ export const siteSettingSchema = z.object({
   ogImageId: z.string().cuid().optional().nullable(),
   heroImageId: z.string().cuid().optional().nullable(),
   aboutImageId: z.string().cuid().optional().nullable(),
-  heroVideoUrl: optionalUrl,
+  heroVideoUrl: optionalUrlOrPath,
 
   legalCompanyName: optionalText(200),
   legalSiret: optionalText(40),

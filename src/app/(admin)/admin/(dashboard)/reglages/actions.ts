@@ -18,7 +18,8 @@ export async function saveSettingsAction(
 
   const parsed = siteSettingSchema.safeParse(JSON.parse(raw));
   if (!parsed.success) {
-    return { error: "Merci de vérifier les champs (URL, email, horaires)." };
+    const fields = [...new Set(parsed.error.issues.map((i) => String(i.path[0])))];
+    return { error: `Merci de vérifier les champs : ${fields.join(", ")}.` };
   }
   const d = parsed.data;
   const orNull = (v: string | undefined) => (v && v.length > 0 ? v : null);
