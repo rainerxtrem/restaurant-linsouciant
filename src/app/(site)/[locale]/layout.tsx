@@ -113,6 +113,7 @@ export default async function LocaleLayout({
               }
               facebookUrl={settings.facebookUrl}
               instagramUrl={settings.instagramUrl}
+              giftVouchersEnabled={settings.giftVouchersEnabled}
             />
             <main className="flex-1">{children}</main>
             <SiteFooter settings={settings} hours={hours} locale={loc} />

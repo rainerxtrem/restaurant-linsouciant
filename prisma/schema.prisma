@@ -385,6 +385,9 @@ model SiteSetting {
   // une par ligne (ex. « Guide MICHELIN », « Gault&Millau »).
   pressMentions String? @db.Text
 
+  // Page publique « Bons cadeaux » activée (sinon 404 + retirée des menus).
+  giftVouchersEnabled Boolean @default(true)
+
   updatedAt DateTime @updatedAt
 
   @@map("site_settings")

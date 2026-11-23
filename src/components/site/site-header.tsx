@@ -27,6 +27,7 @@ export function SiteHeader({
   address,
   facebookUrl,
   instagramUrl,
+  giftVouchersEnabled = true,
 }: {
   siteName: string;
   logoUrl?: string | null;
@@ -36,6 +37,7 @@ export function SiteHeader({
   address?: string | null;
   facebookUrl?: string | null;
   instagramUrl?: string | null;
+  giftVouchersEnabled?: boolean;
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -149,7 +151,7 @@ export function SiteHeader({
         </div>
 
         <nav className="relative flex flex-1 flex-col justify-center gap-1 px-8">
-          {NAV.map((item, i) => (
+          {NAV.filter((item) => giftVouchersEnabled || item.href !== "/bons-cadeaux").map((item, i) => (
             <Link
               key={item.key}
               href={item.href}

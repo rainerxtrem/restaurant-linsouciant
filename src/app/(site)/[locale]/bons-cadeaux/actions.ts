@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { giftVoucherPurchaseSchema } from "@/lib/validation/gift-voucher";
 import { createVoucherCheckout } from "@/lib/services/gift-voucher.service";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getSiteSettings } from "@/lib/services/settings.service";
 
 export type GiftVoucherPurchaseState = { error?: string; fieldErrors?: Record<string, string[]> };
 
@@ -12,6 +13,9 @@ export async function purchaseVoucherAction(
   _prev: GiftVoucherPurchaseState,
   formData: FormData
 ): Promise<GiftVoucherPurchaseState> {
+  if (!(await getSiteSettings()).giftVouchersEnabled) {
+    return { error: "La vente de bons cadeaux est momentanément suspendue." };
+  }
   const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (!checkRateLimit(`gift-voucher:${ip}`, 5, 10 * 60 * 1000)) {
     return { error: "Trop de tentatives. Merci de réessayer dans quelques minutes." };

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
@@ -8,6 +9,7 @@ import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { listPublishedMenus } from "@/lib/services/menu.service";
 import { GiftVoucherForm, type MenuOffer } from "@/components/site/gift-voucher-form";
 import { Reveal } from "@/components/public/reveal";
+import { getSiteSettings } from "@/lib/services/settings.service";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +26,7 @@ export async function generateMetadata({
 export default async function GiftVouchersPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  if (!(await getSiteSettings()).giftVouchersEnabled) notFound();
   const t = await getTranslations();
   const [albums, menus] = await Promise.all([listAlbumsWithImages(), listPublishedMenus()]);
   const shot =

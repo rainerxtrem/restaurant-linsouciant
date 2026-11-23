@@ -98,7 +98,7 @@ export function SiteFooter({
         <div>
           <p className="eyebrow text-cream-100/70">{t("footer.navTitle")}</p>
           <nav className="mt-4 flex flex-col gap-2 text-sm text-cream-100/80">
-            {NAV_LINKS.map((l) => (
+            {NAV_LINKS.filter((l) => settings.giftVouchersEnabled || l.href !== "/bons-cadeaux").map((l) => (
               <Link key={l.key} href={l.href} className="w-fit hover:text-gold-300">
                 {t(`nav.${l.key}`)}
               </Link>

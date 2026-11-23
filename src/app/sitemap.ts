@@ -5,21 +5,27 @@ import { routing } from "@/i18n/routing";
 
 export const dynamic = "force-dynamic";
 
-const STATIC_PATHS = ["/", "/menus", "/photos", "/contact", "/reservation", "/bons-cadeaux"];
+const STATIC_PATHS = ["/", "/menus", "/photos", "/contact", "/reservation"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let pagePaths: string[] = [];
+  let giftVouchersEnabled = true;
   try {
     const pages = await prisma.page.findMany({
       where: { status: "PUBLISHED" },
       select: { slug: true },
     });
     pagePaths = pages.map((p) => `/${p.slug}`);
+    const settings = await prisma.siteSetting.findUnique({
+      where: { id: "singleton" },
+      select: { giftVouchersEnabled: true },
+    });
+    giftVouchersEnabled = settings?.giftVouchersEnabled ?? true;
   } catch {
     // base non joignable au build — sitemap statique suffisant
   }
 
-  const all = [...STATIC_PATHS, ...pagePaths];
+  const all = [...STATIC_PATHS, ...(giftVouchersEnabled ? ["/bons-cadeaux"] : []), ...pagePaths];
 
   return all.flatMap((path) =>
     routing.locales.map((locale) => ({

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/permissions";
+import { prisma } from "@/lib/db/prisma";
 import { adminGiftVoucherCreateSchema } from "@/lib/validation/gift-voucher";
 import {
   createVoucherManually,
@@ -49,5 +50,17 @@ export async function resendVoucherAction(formData: FormData) {
 export async function deleteVoucherAction(formData: FormData) {
   await requireAdmin();
   await deleteVoucher(String(formData.get("id")));
+  revalidatePath("/admin/bons-cadeaux");
+}
+
+export async function setGiftVouchersEnabledAction(formData: FormData) {
+  await requireAdmin();
+  const enabled = formData.get("enabled") === "true";
+  await prisma.siteSetting.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", giftVouchersEnabled: enabled },
+    update: { giftVouchersEnabled: enabled },
+  });
+  revalidatePath("/", "layout");
   revalidatePath("/admin/bons-cadeaux");
 }
