@@ -94,7 +94,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`${fraunces.variable} ${inter.variable}`}>
-      <body className="font-sans antialiased">
+      <body className="has-custom-cursor font-sans antialiased">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
