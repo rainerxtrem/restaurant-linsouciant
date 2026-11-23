@@ -129,16 +129,18 @@ export async function ThemePageView({
               const name = localized(product, "name", locale);
               const description = localized(product, "description", locale);
               const reversed = i % 2 === 1;
+              // Sans photo : le texte occupe tout l'encadré (pas de bloc vide).
+              const hasImage = Boolean(product.image);
               return (
                 <Reveal key={product.id}>
                   <article className="border border-ink-900/15 bg-cream-50 p-2">
                     <div
-                      className={`grid border border-ink-900/10 md:grid-cols-2 ${
-                        reversed ? "md:[&>*:first-child]:order-2" : ""
+                      className={`grid border border-ink-900/10 ${hasImage ? "md:grid-cols-2" : ""} ${
+                        hasImage && reversed ? "md:[&>*:first-child]:order-2" : ""
                       }`}
                     >
-                      <div className="relative aspect-[4/3] bg-cream-100 md:aspect-auto md:min-h-[340px]">
-                        {product.image ? (
+                      {product.image ? (
+                        <div className="relative aspect-[4/3] bg-cream-100 md:aspect-auto md:min-h-[340px]">
                           <Image
                             src={product.image.url}
                             alt={localized(product.image, "alt", locale) || name}
@@ -146,9 +148,13 @@ export async function ThemePageView({
                             className="object-cover"
                             sizes="(min-width: 1024px) 480px, (min-width: 768px) 50vw, 100vw"
                           />
-                        ) : null}
-                      </div>
-                      <div className="flex flex-col justify-center px-7 py-10 sm:px-10">
+                        </div>
+                      ) : null}
+                      <div
+                        className={`flex flex-col justify-center px-7 py-10 sm:px-10 ${
+                          hasImage ? "" : "mx-auto w-full max-w-2xl"
+                        }`}
+                      >
                         <h2 className="font-display text-3xl font-light tracking-tight text-ink-900">{name}</h2>
                         <span className="mt-5 block h-px w-10 bg-gold-500/70" />
                         {description ? (
