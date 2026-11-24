@@ -141,6 +141,10 @@
     "orderSubject": "Order",
     "contactUs": "Contact us",
     "christmasWish": "Wishes you a joyful festive season ✦",
-    "or": "or"
+    "or": "or",
+    "easterWish": "Wishes you a happy Easter ✦",
+    "valentineWish": "Wishes you a lovely Valentine's Day ♥",
+    "bookTitle": "Book & order",
+    "bookTable": "Book a table"
   }
 }

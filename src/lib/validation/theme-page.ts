@@ -17,7 +17,7 @@ export const themeProductSchema = z.object({
   prices: z.array(themeProductPriceSchema).max(20).default([]),
 });
 
-export const THEME_PAGE_STYLES = ["classic", "christmas"] as const;
+export const THEME_PAGE_STYLES = ["classic", "christmas", "easter", "valentine"] as const;
 export type ThemePageStyle = (typeof THEME_PAGE_STYLES)[number];
 
 export const themePageSchema = z.object({

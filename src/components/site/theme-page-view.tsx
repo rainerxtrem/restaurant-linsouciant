@@ -7,7 +7,7 @@ import { localized } from "@/lib/i18n";
 import { toMenuView } from "@/lib/menu-view";
 import { parseProductPrices } from "@/lib/validation/theme-page";
 import { MenuSelector } from "@/components/site/menu-selector";
-import { ChristmasThemeView } from "@/components/site/christmas-theme-view";
+import { FestiveThemeView } from "@/components/site/festive-theme-view";
 import { euro, Paragraphs, type ThemePageFull } from "@/components/site/theme-page-shared";
 import { Reveal } from "@/components/public/reveal";
 
@@ -24,8 +24,8 @@ export async function ThemePageView({
   phone: string | null;
   email: string | null;
 }) {
-  if (page.style === "christmas") {
-    return <ChristmasThemeView page={page} locale={locale} phone={phone} email={email} />;
+  if (page.style === "christmas" || page.style === "easter" || page.style === "valentine") {
+    return <FestiveThemeView page={page} style={page.style} locale={locale} phone={phone} email={email} />;
   }
 
   const t = await getTranslations("themePage");

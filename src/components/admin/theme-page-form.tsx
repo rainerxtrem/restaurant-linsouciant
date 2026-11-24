@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import type { ThemePageWithProducts } from "@/lib/services/theme-page.service";
-import { parseProductPrices, type ThemePageStyle } from "@/lib/validation/theme-page";
+import { parseProductPrices, THEME_PAGE_STYLES, type ThemePageStyle } from "@/lib/validation/theme-page";
 import { MediaPicker, type PickedMedia } from "@/components/admin/media-picker";
 import {
   saveThemePageAction,
@@ -78,7 +78,9 @@ export function ThemePageForm({ page }: { page: ThemePageWithProducts | null }) 
     setF((prev) => ({ ...prev, [k]: e.target.value }));
 
   const [enabled, setEnabled] = useState(page?.enabled ?? false);
-  const [style, setStyle] = useState<ThemePageStyle>(page?.style === "christmas" ? "christmas" : "classic");
+  const [style, setStyle] = useState<ThemePageStyle>(
+    (THEME_PAGE_STYLES as readonly string[]).includes(page?.style ?? "") ? (page!.style as ThemePageStyle) : "classic"
+  );
   const [hero, setHero] = useState<Img>(page?.heroImage ? { id: page.heroImage.id, url: page.heroImage.url } : null);
   const [products, setProducts] = useState<ProductRow[]>(
     page?.products.map((p) => ({
@@ -183,6 +185,8 @@ export function ThemePageForm({ page }: { page: ThemePageWithProducts | null }) 
             <select className={input} value={style} onChange={(e) => setStyle(e.target.value as ThemePageStyle)}>
               <option value="classic">Classique (charte du site)</option>
               <option value="christmas">Noël (bordeaux, sapin, or, neige)</option>
+              <option value="easter">Pâques (crème, vert sauge, jaune, pétales)</option>
+              <option value="valentine">Saint-Valentin (velours rouge, rose, cœurs)</option>
             </select>
           </div>
           <div>

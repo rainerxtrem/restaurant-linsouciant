@@ -141,6 +141,10 @@
     "orderSubject": "Commande",
     "contactUs": "Nous contacter",
     "christmasWish": "Vous souhaite de joyeuses fêtes de fin d'année ✦",
-    "or": "ou"
+    "or": "ou",
+    "easterWish": "Vous souhaite de joyeuses fêtes de Pâques ✦",
+    "valentineWish": "Vous souhaite une belle Saint-Valentin ♥",
+    "bookTitle": "Réserver & commander",
+    "bookTable": "Réserver une table"
   }
 }
