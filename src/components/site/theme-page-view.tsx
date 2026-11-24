@@ -6,40 +6,10 @@ import { Link } from "@/i18n/navigation";
 import { localized } from "@/lib/i18n";
 import { toMenuView } from "@/lib/menu-view";
 import { parseProductPrices } from "@/lib/validation/theme-page";
-import type { getEnabledThemePageBySlug } from "@/lib/services/theme-page.service";
 import { MenuSelector } from "@/components/site/menu-selector";
+import { ChristmasThemeView } from "@/components/site/christmas-theme-view";
+import { euro, Paragraphs, type ThemePageFull } from "@/components/site/theme-page-shared";
 import { Reveal } from "@/components/public/reveal";
-
-type ThemePageFull = NonNullable<Awaited<ReturnType<typeof getEnabledThemePageBySlug>>>;
-
-function euro(cents: number) {
-  return (cents / 100).toLocaleString("fr-FR", {
-    minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-/** Paragraphes séparés par une ligne vide, retours à la ligne conservés. */
-function Paragraphs({ text, className }: { text: string; className?: string }) {
-  return (
-    <>
-      {text
-        .split(/\n\s*\n/)
-        .map((p) => p.trim())
-        .filter(Boolean)
-        .map((p, i) => (
-          <p key={i} className={className}>
-            {p.split("\n").map((line, j) => (
-              <span key={j}>
-                {j > 0 ? <br /> : null}
-                {line}
-              </span>
-            ))}
-          </p>
-        ))}
-    </>
-  );
-}
 
 export async function ThemePageView({
   page,
@@ -54,6 +24,10 @@ export async function ThemePageView({
   phone: string | null;
   email: string | null;
 }) {
+  if (page.style === "christmas") {
+    return <ChristmasThemeView page={page} locale={locale} phone={phone} email={email} />;
+  }
+
   const t = await getTranslations("themePage");
   const title = localized(page, "title", locale);
   const intro = localized(page, "intro", locale);

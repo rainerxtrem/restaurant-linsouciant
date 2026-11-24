@@ -161,6 +161,7 @@ async function main() {
         "Order deadlines:\nChristmas: 22 December\nNew Year: 29 December\n\nCollect at the restaurant, 6 rue de la Mission, 72000 Le Mans.\nOrder by phone on +33 2 43 40 00 58 or by email at restaurant-linsouciant@orange.fr.",
       heroImageId: plats?.images[0]?.mediaId ?? null,
       enabled: false,
+      style: "christmas",
       products: {
         create: products.map((x, order) => ({
           name: x.name,

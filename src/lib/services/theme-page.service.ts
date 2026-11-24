@@ -104,6 +104,7 @@ export async function upsertThemePage(input: ThemePageInput, id?: string) {
     orderInfoEn: input.orderInfoEn || null,
     heroImageId: input.heroImageId ?? null,
     enabled: input.enabled,
+    style: input.style,
     order: input.order,
   };
 

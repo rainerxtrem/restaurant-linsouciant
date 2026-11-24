@@ -446,6 +446,8 @@ model ThemePage {
   heroImageId String?
   heroImage   Media?   @relation("ThemePageHero", fields: [heroImageId], references: [id], onDelete: SetNull)
   enabled     Boolean  @default(false)
+  // Ambiance visuelle : "classic" (charte du site) ou "christmas" (fêtes).
+  style       String   @default("classic")
   order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

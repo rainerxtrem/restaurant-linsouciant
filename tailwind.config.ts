@@ -60,6 +60,14 @@ const config: Config = {
           800: "#521e22",
           900: "#461c1f",
         },
+        // Ambiance « Noël » des pages thématiques (flyer des fêtes).
+        noel: {
+          berry: "#a3282f",
+          wine: "#5a1519",
+          night: "#1c0709",
+          pine: "#1b2b21",
+          "pine-dark": "#101a14",
+        },
         cream: {
           DEFAULT: "#faf6ee",
           50: "#fffdf9",

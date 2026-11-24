@@ -180,3 +180,64 @@
     transform: translateY(0);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Ambiance « Noël » (pages thématiques, voir christmas-theme-view.tsx)
+   --------------------------------------------------------------------------- */
+
+/* Toile de lin bordeaux, comme le fond du flyer. */
+.noel-linen {
+  background-color: #5a1519;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.09) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 4px),
+    radial-gradient(ellipse at 30% 20%, rgba(140, 34, 40, 0.55), transparent 60%),
+    radial-gradient(ellipse at 80% 90%, rgba(30, 6, 8, 0.6), transparent 55%);
+}
+
+/* Semis discret d'étoiles dorées sur le vert sapin. */
+.noel-stars {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(220, 187, 108, 0.18) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 70% 80%, rgba(220, 187, 108, 0.12) 0 1px, transparent 1.5px);
+  background-size: 140px 140px, 90px 90px;
+}
+
+.noel-flake {
+  position: absolute;
+  top: -12px;
+  border-radius: 9999px;
+  background: #fffdf9;
+  box-shadow: 0 0 6px rgba(255, 253, 249, 0.6);
+  animation-name: noel-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes noel-fall {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(var(--drift, 0px), 110vh, 0);
+  }
+}
+
+.noel-spin {
+  animation: noel-spin 90s linear infinite;
+}
+
+@keyframes noel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .noel-snow {
+    display: none;
+  }
+  .noel-spin {
+    animation: none;
+  }
+}

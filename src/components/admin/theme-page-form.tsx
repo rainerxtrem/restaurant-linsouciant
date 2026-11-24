@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import type { ThemePageWithProducts } from "@/lib/services/theme-page.service";
-import { parseProductPrices } from "@/lib/validation/theme-page";
+import { parseProductPrices, type ThemePageStyle } from "@/lib/validation/theme-page";
 import { MediaPicker, type PickedMedia } from "@/components/admin/media-picker";
 import {
   saveThemePageAction,
@@ -78,6 +78,7 @@ export function ThemePageForm({ page }: { page: ThemePageWithProducts | null }) 
     setF((prev) => ({ ...prev, [k]: e.target.value }));
 
   const [enabled, setEnabled] = useState(page?.enabled ?? false);
+  const [style, setStyle] = useState<ThemePageStyle>(page?.style === "christmas" ? "christmas" : "classic");
   const [hero, setHero] = useState<Img>(page?.heroImage ? { id: page.heroImage.id, url: page.heroImage.url } : null);
   const [products, setProducts] = useState<ProductRow[]>(
     page?.products.map((p) => ({
@@ -127,6 +128,7 @@ export function ThemePageForm({ page }: { page: ThemePageWithProducts | null }) 
       ...f,
       order: Number(f.order) || 0,
       enabled,
+      style,
       heroImageId: hero?.id ?? null,
       products: products.map((p) => ({
         name: p.name,
@@ -175,6 +177,13 @@ export function ThemePageForm({ page }: { page: ThemePageWithProducts | null }) 
               <span>/</span>
               <input className={input} value={f.slug} onChange={set("slug")} placeholder="noel (générée depuis le titre si vide)" />
             </div>
+          </div>
+          <div>
+            <label className={label}>Ambiance visuelle</label>
+            <select className={input} value={style} onChange={(e) => setStyle(e.target.value as ThemePageStyle)}>
+              <option value="classic">Classique (charte du site)</option>
+              <option value="christmas">Noël (bordeaux, sapin, or, neige)</option>
+            </select>
           </div>
           <div>
             <label className={label}>Ordre dans le menu</label>

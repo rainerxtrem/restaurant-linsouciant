@@ -17,6 +17,9 @@ export const themeProductSchema = z.object({
   prices: z.array(themeProductPriceSchema).max(20).default([]),
 });
 
+export const THEME_PAGE_STYLES = ["classic", "christmas"] as const;
+export type ThemePageStyle = (typeof THEME_PAGE_STYLES)[number];
+
 export const themePageSchema = z.object({
   title: z.string().trim().min(2).max(200),
   titleEn: optional(200),
@@ -30,6 +33,7 @@ export const themePageSchema = z.object({
   orderInfoEn: optional(3000),
   heroImageId: z.string().cuid().optional().nullable(),
   enabled: z.boolean().default(false),
+  style: z.enum(THEME_PAGE_STYLES).default("classic"),
   order: z.coerce.number().int().min(0).default(0),
   products: z.array(themeProductSchema).max(100).default([]),
 });
