@@ -21,18 +21,50 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { logoutAction } from "@/app/(admin)/admin/(dashboard)/actions";
 
-const NAV = [
-  { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard, exact: true },
-  { href: "/admin/menus", label: "Cartes & menus", icon: UtensilsCrossed },
-  { href: "/admin/pages-thematiques", label: "Pages thématiques", icon: Sparkles },
-  { href: "/admin/photos", label: "Photos", icon: Images },
-  { href: "/admin/pages", label: "Pages", icon: FileText },
-  { href: "/admin/annonce", label: "Annonce", icon: Megaphone },
-  { href: "/admin/messages", label: "Messages", icon: Mail },
-  { href: "/admin/bons-cadeaux", label: "Bons cadeaux", icon: Gift },
-  { href: "/admin/newsletter", label: "Newsletter", icon: Send },
-  { href: "/admin/reglages", label: "Réglages", icon: Settings },
-  { href: "/admin/administrateurs", label: "Administrateurs", icon: Users, superAdminOnly: true },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+  superAdminOnly?: boolean;
+}
+
+/** Menu de l'admin regroupé par catégories (titre null = sans intitulé). */
+const NAV_GROUPS: { title: string | null; items: NavItem[] }[] = [
+  {
+    title: null,
+    items: [{ href: "/admin", label: "Tableau de bord", icon: LayoutDashboard, exact: true }],
+  },
+  {
+    title: "Carte & offres",
+    items: [
+      { href: "/admin/menus", label: "Cartes & menus", icon: UtensilsCrossed },
+      { href: "/admin/pages-thematiques", label: "Pages thématiques", icon: Sparkles },
+      { href: "/admin/bons-cadeaux", label: "Bons cadeaux", icon: Gift },
+    ],
+  },
+  {
+    title: "Contenu du site",
+    items: [
+      { href: "/admin/photos", label: "Photos", icon: Images },
+      { href: "/admin/pages", label: "Pages", icon: FileText },
+      { href: "/admin/annonce", label: "Annonce", icon: Megaphone },
+    ],
+  },
+  {
+    title: "Clients",
+    items: [
+      { href: "/admin/messages", label: "Messages", icon: Mail },
+      { href: "/admin/newsletter", label: "Newsletter", icon: Send },
+    ],
+  },
+  {
+    title: "Configuration",
+    items: [
+      { href: "/admin/reglages", label: "Réglages", icon: Settings },
+      { href: "/admin/administrateurs", label: "Administrateurs", icon: Users, superAdminOnly: true },
+    ],
+  },
 ];
 
 export function AdminShell({
@@ -47,7 +79,10 @@ export function AdminShell({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const items = NAV.filter((item) => !item.superAdminOnly || isSuperAdmin);
+  const groups = NAV_GROUPS.map((g) => ({
+    ...g,
+    items: g.items.filter((item) => !item.superAdminOnly || isSuperAdmin),
+  })).filter((g) => g.items.length > 0);
 
   return (
     <div className="flex min-h-screen bg-cream-100 text-ink-800">
@@ -60,28 +95,39 @@ export function AdminShell({
         <div className="flex h-16 items-center border-b border-ink-900/10 px-5 font-display text-lg text-ink-900">
           L&apos;Insouciant
         </div>
-        <nav className="flex flex-col gap-0.5 p-3">
-          {items.map((item) => {
-            // « /admin/pages » ne doit pas s'allumer sur « /admin/pages-thematiques ».
-            const active = item.exact
-              ? pathname === item.href
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                  active ? "bg-wine-700 text-cream-50" : "text-ink-600 hover:bg-cream-100"
-                )}
-              >
-                <Icon className="h-4 w-4" aria-hidden />
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="flex flex-col overflow-y-auto p-3 pb-28" style={{ maxHeight: "calc(100vh - 4rem)" }}>
+          {groups.map((group, gi) => (
+            <div key={group.title ?? gi} className={gi > 0 ? "mt-5" : undefined}>
+              {group.title ? (
+                <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+                  {group.title}
+                </p>
+              ) : null}
+              <div className="flex flex-col gap-0.5">
+                {group.items.map((item) => {
+                  // « /admin/pages » ne doit pas s'allumer sur « /admin/pages-thematiques ».
+                  const active = item.exact
+                    ? pathname === item.href
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                        active ? "bg-wine-700 text-cream-50" : "text-ink-600 hover:bg-cream-100"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" aria-hidden />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
         <div className="absolute bottom-0 w-full border-t border-ink-900/10 p-3">
           <p className="px-3 pb-2 text-xs text-ink-400">{userName}</p>
