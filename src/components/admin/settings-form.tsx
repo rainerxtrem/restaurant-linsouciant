@@ -239,13 +239,13 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         <Field label="Description SEO par défaut" value={f.seoDefaultDescription} onChange={set("seoDefaultDescription")} />
         <Field label="Texte du pied de page (FR)" value={f.footerText} onChange={set("footerText")} textarea />
         <Field label="Texte du pied de page (EN)" value={f.footerTextEn} onChange={set("footerTextEn")} textarea />
-        <Field
-          label="Distinctions / presse (une par ligne — bande du pied de page)"
-          value={f.pressMentions}
-          onChange={set("pressMentions")}
-          textarea
-          full
-        />
+        <p className="text-xs text-ink-500 sm:col-span-2">
+          Les distinctions et la presse (bande du pied de page) se gèrent dans{" "}
+          <a href="/admin/distinctions" className="text-wine-700 underline">
+            Distinctions
+          </a>
+          .
+        </p>
       </Section>
 
       <MediaPicker open={picker !== null} onClose={() => setPicker(null)} onSelect={handlePick} />

@@ -110,6 +110,8 @@ model Media {
   announcementFor   Announcement[] @relation("AnnouncementImage")
   themePageHeroFor  ThemePage[]    @relation("ThemePageHero")
   themeProductFor   ThemeProduct[] @relation("ThemeProductImage")
+  producerFor       Producer[]     @relation("ProducerImage")
+  distinctionFor    Distinction[]  @relation("DistinctionImage")
 
   @@index([type])
   @@map("media")
@@ -391,6 +393,11 @@ model SiteSetting {
   // une par ligne (ex. « Guide MICHELIN », « Gault&Millau »).
   pressMentions String? @db.Text
 
+  // Libellé de la carte du moment, affiché sur /menus
+  // (ex. « Carte d'automne · novembre 2026 »). Vide = non affiché.
+  menusSeasonLabel   String?
+  menusSeasonLabelEn String?
+
   // Page publique « Bons cadeaux » activée (sinon 404 + retirée des menus).
   giftVouchersEnabled Boolean @default(true)
 
@@ -475,4 +482,45 @@ model ThemeProduct {
 
   @@index([themePageId, order])
   @@map("theme_products")
+}
+
+// ---------------------------------------------------------------------------
+// Producteurs partenaires (section « Nos producteurs » de /la-maison).
+// ---------------------------------------------------------------------------
+
+model Producer {
+  id            String  @id @default(cuid())
+  name          String
+  // Métier / produit : « Maraîcher », « Éleveur de volailles »…
+  craft         String?
+  craftEn       String?
+  location      String?
+  description   String? @db.Text
+  descriptionEn String? @db.Text
+  imageId       String?
+  image         Media?  @relation("ProducerImage", fields: [imageId], references: [id], onDelete: SetNull)
+  url           String?
+  order         Int     @default(0)
+
+  @@index([order])
+  @@map("producers")
+}
+
+// ---------------------------------------------------------------------------
+// Distinctions et presse (bande du pied de page). Logo facultatif : fichier
+// officiel fourni par le guide ; sinon rendu typographique.
+// ---------------------------------------------------------------------------
+
+model Distinction {
+  id       String  @id @default(cuid())
+  name     String
+  detail   String?
+  detailEn String?
+  imageId  String?
+  image    Media?  @relation("DistinctionImage", fields: [imageId], references: [id], onDelete: SetNull)
+  url      String?
+  order    Int     @default(0)
+
+  @@index([order])
+  @@map("distinctions")
 }

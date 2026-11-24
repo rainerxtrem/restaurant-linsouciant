@@ -15,6 +15,8 @@ import {
   Users,
   Megaphone,
   Sparkles,
+  Sprout,
+  Award,
   LogOut,
   Menu as MenuIcon,
 } from "lucide-react";
@@ -48,6 +50,8 @@ const NAV_GROUPS: { title: string | null; items: NavItem[] }[] = [
     items: [
       { href: "/admin/photos", label: "Photos", icon: Images },
       { href: "/admin/pages", label: "Pages", icon: FileText },
+      { href: "/admin/producteurs", label: "Producteurs", icon: Sprout },
+      { href: "/admin/distinctions", label: "Distinctions", icon: Award },
       { href: "/admin/annonce", label: "Annonce", icon: Megaphone },
     ],
   },

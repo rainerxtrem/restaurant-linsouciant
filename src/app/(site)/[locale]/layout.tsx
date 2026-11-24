@@ -12,9 +12,9 @@ import { CookieConsentBanner } from "@/components/public/cookie-consent-banner";
 import { AnalyticsLoader } from "@/components/public/analytics-loader";
 import { ZenchefLoader } from "@/components/site/zenchef-loader";
 import { AnnouncementPopup } from "@/components/site/announcement-popup";
-import { CustomCursor } from "@/components/site/custom-cursor";
 import { getActiveAnnouncement } from "@/lib/services/announcement.service";
 import { listEnabledThemePages } from "@/lib/services/theme-page.service";
+import { listDistinctions } from "@/lib/services/house.service";
 import { localized } from "@/lib/i18n";
 import DOMPurify from "isomorphic-dompurify";
 import "../../globals.css";
@@ -74,10 +74,11 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const messages = await getMessages();
-  const [settings, announcement, themePages] = await Promise.all([
+  const [settings, announcement, themePages, distinctions] = await Promise.all([
     getSiteSettings(),
     getActiveAnnouncement(),
     listEnabledThemePages(),
+    listDistinctions(),
   ]);
   const hours = parseOpeningHours(settings.openingHours);
   const loc = locale as "fr" | "en";
@@ -103,7 +104,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`${fraunces.variable} ${inter.variable}`}>
-      <body className="has-custom-cursor font-sans antialiased">
+      <body className="font-sans antialiased">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -126,9 +127,8 @@ export default async function LocaleLayout({
               themeLinks={themeLinks}
             />
             <main className="flex-1">{children}</main>
-            <SiteFooter settings={settings} hours={hours} locale={loc} themeLinks={themeLinks} />
+            <SiteFooter settings={settings} hours={hours} locale={loc} themeLinks={themeLinks} distinctions={distinctions} />
           </div>
-          <CustomCursor />
           <CookieConsentBanner />
           <AnalyticsLoader />
           {settings.zenchefRestaurantId ? (

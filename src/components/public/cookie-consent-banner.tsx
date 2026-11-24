@@ -6,51 +6,60 @@ import { Link } from "@/i18n/navigation";
 import { getStoredConsent, setStoredConsent, type CookieConsentValue } from "@/lib/cookie-consent";
 import { loadAnalytics } from "@/lib/analytics";
 
+/**
+ * Bandeau cookies discret : petite carte en bas à gauche, aux couleurs du
+ * site. « Refuser » et « Accepter » ont exactement le même poids visuel
+ * (recommandation CNIL : refuser doit être aussi simple qu'accepter).
+ */
 export function CookieConsentBanner() {
   const t = useTranslations("cookies");
   const [visible, setVisible] = useState(false);
+  const [shown, setShown] = useState(false);
 
   useEffect(() => {
-    setVisible(getStoredConsent() === null);
+    if (getStoredConsent() !== null) return;
+    setVisible(true);
+    // Laisse la page s'afficher avant de faire glisser la carte.
+    const id = window.setTimeout(() => setShown(true), 900);
+    return () => window.clearTimeout(id);
   }, []);
 
   function choose(value: CookieConsentValue) {
     setStoredConsent(value);
     if (value === "accepted") loadAnalytics();
-    setVisible(false);
+    setShown(false);
+    window.setTimeout(() => setVisible(false), 400);
   }
 
   if (!visible) return null;
+
+  const button =
+    "flex-1 border border-ink-900/25 px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.18em] text-ink-800 transition-colors duration-300 hover:border-ink-900 hover:bg-ink-900 hover:text-cream-50";
 
   return (
     <div
       role="dialog"
       aria-label="Cookies"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-gold-400/30 bg-ink-950 text-cream-100 shadow-[0_-8px_40px_-12px_rgba(0,0,0,0.6)]"
+      aria-live="polite"
+      className={`fixed bottom-4 left-4 right-4 z-50 max-w-sm border border-ink-900/10 bg-cream-50/95 p-6 shadow-elevated backdrop-blur-md transition-all duration-500 ease-editorial sm:bottom-6 sm:left-6 sm:right-auto ${
+        shown ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
+      }`}
     >
-      <div className="container flex flex-col items-start gap-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:py-3.5">
-        <p className="max-w-3xl text-sm leading-relaxed text-cream-100/85">
-          {t("text")}{" "}
-          <Link href="/politique-cookies" className="whitespace-nowrap font-medium text-gold-300 underline underline-offset-2 hover:text-gold-200">
-            {t("learnMore")}
-          </Link>
-        </p>
-        <div className="flex shrink-0 gap-3">
-          <button
-            type="button"
-            onClick={() => choose("rejected")}
-            className="whitespace-nowrap rounded-sm border border-cream-100/30 px-4 py-2 text-sm font-medium text-cream-100 transition-colors hover:border-cream-100 hover:bg-cream-100/10"
-          >
-            {t("reject")}
-          </button>
-          <button
-            type="button"
-            onClick={() => choose("accepted")}
-            className="whitespace-nowrap rounded-sm bg-gold-400 px-5 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-gold-300"
-          >
-            {t("accept")}
-          </button>
-        </div>
+      <p className="font-display text-lg font-light italic text-ink-900">Cookies</p>
+      <span aria-hidden className="mt-3 block h-px w-8 bg-gold-500/60" />
+      <p className="mt-4 text-xs leading-relaxed text-ink-600">
+        {t("text")}{" "}
+        <Link href="/politique-cookies" className="whitespace-nowrap text-ink-800 underline decoration-gold-500/60 underline-offset-4 hover:decoration-ink-800">
+          {t("learnMore")}
+        </Link>
+      </p>
+      <div className="mt-5 flex gap-3">
+        <button type="button" onClick={() => choose("rejected")} className={button}>
+          {t("reject")}
+        </button>
+        <button type="button" onClick={() => choose("accepted")} className={button}>
+          {t("accept")}
+        </button>
       </div>
     </div>
   );

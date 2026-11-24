@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import type { SiteSettings, OpeningDay } from "@/lib/services/settings.service";
 import { OpeningHours } from "@/components/site/opening-hours";
 import { NewsletterForm } from "@/components/site/newsletter-form";
+import type { DistinctionWithImage } from "@/lib/services/house.service";
 
 const LEGAL_LINKS = [
   { href: "/mentions-legales", key: "mentions-legales" },
@@ -36,11 +37,13 @@ export function SiteFooter({
   hours,
   locale,
   themeLinks = [],
+  distinctions = [],
 }: {
   settings: SiteSettings;
   hours: OpeningDay[];
   locale: "fr" | "en";
   themeLinks?: { href: string; label: string }[];
+  distinctions?: DistinctionWithImage[];
 }) {
   const t = useTranslations();
   const siteName = locale === "en" && settings.siteNameEn ? settings.siteNameEn : settings.siteName;
@@ -132,17 +135,42 @@ export function SiteFooter({
         </div>
       </div>
 
-      {settings.pressMentions ? (
+      {distinctions.length > 0 ? (
         <div className="border-t border-cream-50/10">
-          <div className="container flex flex-wrap items-center justify-center gap-x-10 gap-y-3 py-8 text-center text-[11px] uppercase tracking-[0.25em] text-cream-100/45">
-            {settings.pressMentions
-              .split("\n")
-              .map((m) => m.trim())
-              .filter(Boolean)
-              .map((m, i) => (
-                <span key={i}>{m}</span>
-              ))}
-          </div>
+          <ul className="container flex flex-wrap items-center justify-center gap-x-14 gap-y-8 py-10 text-center">
+            {distinctions.map((d) => {
+              const detail = (locale === "en" && d.detailEn) || d.detail;
+              const body = d.image ? (
+                <Image
+                  src={d.image.url}
+                  alt={detail ? `${d.name} — ${detail}` : d.name}
+                  width={180}
+                  height={72}
+                  className="h-11 w-auto object-contain opacity-60 brightness-0 invert transition-opacity duration-500 group-hover:opacity-95"
+                />
+              ) : (
+                <span className="flex flex-col items-center">
+                  <span className="font-display text-[13px] uppercase tracking-[0.3em] text-cream-100/70 transition-colors duration-500 group-hover:text-gold-300">
+                    {d.name}
+                  </span>
+                  {detail ? (
+                    <span className="mt-1.5 font-display text-sm italic text-cream-100/45">{detail}</span>
+                  ) : null}
+                </span>
+              );
+              return (
+                <li key={d.id} className="group">
+                  {d.url ? (
+                    <a href={d.url} target="_blank" rel="noopener noreferrer" className="block">
+                      {body}
+                    </a>
+                  ) : (
+                    body
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
       ) : null}
 

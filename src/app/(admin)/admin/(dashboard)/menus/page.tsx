@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { listAllMenus } from "@/lib/services/menu.service";
 import { deleteMenuAction } from "./actions";
+import { getSiteSettings } from "@/lib/services/settings.service";
+import { SeasonLabelForm } from "@/components/admin/season-label-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminMenusPage() {
-  const menus = await listAllMenus();
+  const [menus, settings] = await Promise.all([listAllMenus(), getSiteSettings()]);
 
   return (
     <div>
@@ -15,6 +17,8 @@ export default async function AdminMenusPage() {
           Nouveau menu
         </Link>
       </div>
+
+      <SeasonLabelForm label={settings.menusSeasonLabel ?? ""} labelEn={settings.menusSeasonLabelEn ?? ""} />
 
       <div className="mt-6 overflow-hidden rounded-lg border border-ink-900/10 bg-white">
         <table className="w-full text-sm">

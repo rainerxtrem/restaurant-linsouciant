@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/permissions";
 import { menuSchema, type MenuInput } from "@/lib/validation/menu";
 import { upsertMenu, deleteMenu } from "@/lib/services/menu.service";
+import { prisma } from "@/lib/db/prisma";
+import { seasonLabelSchema } from "@/lib/validation/house";
 
 export type MenuActionState = { error?: string };
 
@@ -36,4 +38,24 @@ export async function deleteMenuAction(formData: FormData) {
   await deleteMenu(id);
   revalidatePath("/admin/menus");
   revalidatePath("/menus");
+}
+
+export type SeasonLabelState = { error?: string; success?: boolean };
+
+/** Libellé de la carte du moment (« Carte d'automne · novembre 2026 »). */
+export async function saveSeasonLabelAction(_prev: SeasonLabelState, formData: FormData): Promise<SeasonLabelState> {
+  await requireAdmin();
+  const parsed = seasonLabelSchema.safeParse({
+    label: formData.get("label") ?? "",
+    labelEn: formData.get("labelEn") ?? "",
+  });
+  if (!parsed.success) return { error: "Libellé trop long (120 caractères max)." };
+  await prisma.siteSetting.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", menusSeasonLabel: parsed.data.label || null, menusSeasonLabelEn: parsed.data.labelEn || null },
+    update: { menusSeasonLabel: parsed.data.label || null, menusSeasonLabelEn: parsed.data.labelEn || null },
+  });
+  revalidatePath("/menus");
+  revalidatePath("/admin/menus");
+  return { success: true };
 }

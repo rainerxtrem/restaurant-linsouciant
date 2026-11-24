@@ -9,8 +9,10 @@ import { localized } from "@/lib/i18n";
 import { getPublishedPage } from "@/lib/services/page.service";
 import { getSiteSettings } from "@/lib/services/settings.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
+import { listProducers } from "@/lib/services/house.service";
 import { Reveal } from "@/components/public/reveal";
 import { Parallax } from "@/components/site/parallax";
+import { ProducersSection } from "@/components/site/producers-section";
 
 export const dynamic = "force-dynamic";
 
@@ -52,10 +54,11 @@ export default async function LaMaisonPage({ params }: { params: Promise<{ local
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [page, settings, albums] = await Promise.all([
+  const [page, settings, albums, producers] = await Promise.all([
     getPublishedPage("la-maison"),
     getSiteSettings(),
     listAlbumsWithImages(),
+    listProducers(),
   ]);
   if (!page) notFound();
 
@@ -136,6 +139,8 @@ export default async function LaMaisonPage({ params }: { params: Promise<{ local
       <section className="border-t border-ink-900/10 bg-cream-100 py-24 sm:py-32">
         <Person data={PEOPLE.madeline} image={madelineImg} reversed />
       </section>
+
+      <ProducersSection producers={producers} locale={locale} />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { buildMetadata } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
 import { listPublishedMenus } from "@/lib/services/menu.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
+import { getSiteSettings } from "@/lib/services/settings.service";
 import { MenuSelector } from "@/components/site/menu-selector";
 import { toMenuView } from "@/lib/menu-view";
 import { Reveal } from "@/components/public/reveal";
@@ -26,7 +27,8 @@ export default async function MenusPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
-  const [menus, albums] = await Promise.all([listPublishedMenus(), listAlbumsWithImages()]);
+  const [menus, albums, settings] = await Promise.all([listPublishedMenus(), listAlbumsWithImages(), getSiteSettings()]);
+  const seasonLabel = (locale === "en" && settings.menusSeasonLabelEn) || settings.menusSeasonLabel;
   const backdrop = albums.find((a) => a.slug === "les-plats")?.images[0]?.media ?? null;
 
   const views = menus.map(toMenuView);
@@ -48,6 +50,11 @@ export default async function MenusPage({ params }: { params: Promise<{ locale: 
               {t("menus.title")}
             </h1>
           </Reveal>
+          {seasonLabel ? (
+            <Reveal delay={130}>
+              <p className="mt-5 font-display text-lg font-light italic text-gold-200 sm:text-xl">{seasonLabel}</p>
+            </Reveal>
+          ) : null}
           <Reveal delay={160}>
             <span className="mx-auto mt-7 block h-px w-14 bg-gold-400/70" />
           </Reveal>
