@@ -218,8 +218,8 @@ export async function ChristmasThemeView({
           <section key={menu.id} id={`menu-${menu.slug}`} className="noel-linen relative overflow-hidden py-24">
             <Snowfall count={24} />
             <Reveal className="container relative z-10 max-w-3xl">
-              <div className="relative rounded-[2.5rem] border border-gold-400/20 bg-noel-pine px-6 pb-14 pt-24 text-center shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7)] sm:px-14">
-                <div className="absolute right-5 top-6 flex items-center gap-4 rounded-2xl bg-noel-berry px-5 py-3 shadow-lg sm:right-8 sm:top-8 sm:px-7">
+              <div className="relative rounded-[2.5rem] border border-gold-400/20 bg-noel-pine px-6 pb-14 pt-16 text-center shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7)] sm:px-14">
+                <div className="absolute left-1/2 top-0 flex -translate-x-1/2 -translate-y-1/2 items-center gap-4 whitespace-nowrap rounded-2xl bg-noel-berry px-5 py-3 shadow-lg sm:px-7">
                   <span className="font-sans text-sm uppercase tracking-[0.12em] text-cream-50 sm:text-lg">
                     {localized(menu, "name", locale)}
                   </span>
