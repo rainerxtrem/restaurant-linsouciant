@@ -10,6 +10,7 @@ import { MenuSelector } from "@/components/site/menu-selector";
 import { FestiveThemeView } from "@/components/site/festive-theme-view";
 import { euro, Paragraphs, type ThemePageFull } from "@/components/site/theme-page-shared";
 import { Reveal } from "@/components/public/reveal";
+import { OnlineOrderButton } from "@/components/site/online-order-button";
 
 export async function ThemePageView({
   page,
@@ -36,6 +37,9 @@ export async function ThemePageView({
 
   const contactButtons = (
     <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+      {page.orderUrl ? (
+        <OnlineOrderButton url={page.orderUrl} label={t("orderOnline")} closeLabel={t("close")} className="btn-cta" />
+      ) : null}
       {phone ? (
         <a href={`tel:${phone.replace(/\s/g, "")}`} className="btn-cta">
           <Phone className="mr-2 h-4 w-4" aria-hidden />

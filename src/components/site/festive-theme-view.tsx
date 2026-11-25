@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { localized } from "@/lib/i18n";
 import { parseProductPrices, type ThemePageStyle } from "@/lib/validation/theme-page";
 import { Reveal } from "@/components/public/reveal";
+import { OnlineOrderButton } from "@/components/site/online-order-button";
 import { euro, Paragraphs, type ThemePageFull } from "@/components/site/theme-page-shared";
 
 /**
@@ -361,6 +362,16 @@ export async function FestiveThemeView({
           <Reveal delay={250}>
             <Ornament className="mx-auto mt-6 w-24" />
           </Reveal>
+          {page.orderUrl ? (
+            <Reveal delay={320}>
+              <OnlineOrderButton
+                url={page.orderUrl}
+                label={t("orderOnline")}
+                closeLabel={t("close")}
+                className={`mt-8 ${btn} font-medium ${c.btnPrimary}`}
+              />
+            </Reveal>
+          ) : null}
         </div>
       </section>
 
@@ -519,8 +530,19 @@ export async function FestiveThemeView({
               </div>
             ) : null}
             <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+              {page.orderUrl ? (
+                <OnlineOrderButton
+                  url={page.orderUrl}
+                  label={t("orderOnline")}
+                  closeLabel={t("close")}
+                  className={`${btn} font-medium ${c.btnPrimary}`}
+                />
+              ) : null}
               {f.showReserve ? (
-                <Link href="/reservation" className={`${btn} font-medium ${c.btnPrimary}`}>
+                <Link
+                  href="/reservation"
+                  className={`${btn} ${page.orderUrl ? `border ${c.btnSecondary}` : `font-medium ${c.btnPrimary}`}`}
+                >
                   <CalendarDays className="mr-2 h-4 w-4" aria-hidden />
                   {t("bookTable")}
                 </Link>
@@ -528,7 +550,7 @@ export async function FestiveThemeView({
               {phone ? (
                 <a
                   href={`tel:${phone.replace(/\s/g, "")}`}
-                  className={`${btn} ${f.showReserve ? `border ${c.btnSecondary}` : `font-medium ${c.btnPrimary}`}`}
+                  className={`${btn} ${f.showReserve || page.orderUrl ? `border ${c.btnSecondary}` : `font-medium ${c.btnPrimary}`}`}
                 >
                   <Phone className="mr-2 h-4 w-4" aria-hidden />
                   {phone}

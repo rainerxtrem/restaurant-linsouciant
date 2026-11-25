@@ -72,6 +72,7 @@ export function ThemePageForm({ page }: { page: ThemePageWithProducts | null }) 
     introEn: page?.introEn ?? "",
     orderInfo: page?.orderInfo ?? "",
     orderInfoEn: page?.orderInfoEn ?? "",
+    orderUrl: page?.orderUrl ?? "",
     order: String(page?.order ?? 0),
   });
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -214,6 +215,19 @@ export function ThemePageForm({ page }: { page: ThemePageWithProducts | null }) 
           <div>
             <label className={label}>Comment commander (EN)</label>
             <textarea className={input} rows={4} value={f.orderInfoEn} onChange={set("orderInfoEn")} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className={label}>Lien de commande en ligne (facultatif)</label>
+            <input
+              className={input}
+              type="url"
+              value={f.orderUrl}
+              onChange={set("orderUrl")}
+              placeholder="https://commands.zenchef.com/results?rid=…"
+            />
+            <p className="mt-1 text-xs text-ink-500">
+              Affiche un bouton « Commander en ligne » qui ouvre ce module (ex. Zenchef) en plein écran sur la page.
+            </p>
           </div>
         </div>
         <div>

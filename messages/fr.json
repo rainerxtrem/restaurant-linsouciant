@@ -149,6 +149,8 @@
     "easterWish": "Vous souhaite de joyeuses fêtes de Pâques ✦",
     "valentineWish": "Vous souhaite une belle Saint-Valentin ♥",
     "bookTitle": "Réserver & commander",
-    "bookTable": "Réserver une table"
+    "bookTable": "Réserver une table",
+    "orderOnline": "Commander en ligne",
+    "close": "Fermer"
   }
 }

@@ -455,6 +455,9 @@ model ThemePage {
   // Modalités de commande / retrait (dates limites, créneaux…).
   orderInfo   String?  @db.Text
   orderInfoEn String?  @db.Text
+  // Module de commande / réservation en ligne (ex. Zenchef click & collect),
+  // ouvert en plein écran par le bouton « Commander en ligne ».
+  orderUrl    String?  @db.Text
   heroImageId String?
   heroImage   Media?   @relation("ThemePageHero", fields: [heroImageId], references: [id], onDelete: SetNull)
   enabled     Boolean  @default(false)

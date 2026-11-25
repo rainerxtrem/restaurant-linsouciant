@@ -149,6 +149,8 @@
     "easterWish": "Wishes you a happy Easter ✦",
     "valentineWish": "Wishes you a lovely Valentine's Day ♥",
     "bookTitle": "Book & order",
-    "bookTable": "Book a table"
+    "bookTable": "Book a table",
+    "orderOnline": "Order online",
+    "close": "Close"
   }
 }

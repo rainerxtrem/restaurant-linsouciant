@@ -31,6 +31,7 @@ export const themePageSchema = z.object({
   introEn: optional(3000),
   orderInfo: optional(3000),
   orderInfoEn: optional(3000),
+  orderUrl: z.string().trim().url().startsWith("https://").max(1000).optional().or(z.literal("")),
   heroImageId: z.string().cuid().optional().nullable(),
   enabled: z.boolean().default(false),
   style: z.enum(THEME_PAGE_STYLES).default("classic"),
