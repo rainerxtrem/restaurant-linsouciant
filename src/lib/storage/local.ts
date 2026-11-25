@@ -9,7 +9,7 @@ const PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_MEDIA_BASE_URL ?? "/media";
 function sanitizeExtension(filename: string): string {
   const ext = path.extname(filename).toLowerCase();
   // Whitelist stricte pour éviter l'upload de scripts déguisés en médias.
-  const allowed = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".pdf", ".mp4", ".webm"];
+  const allowed = [".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".svg", ".pdf", ".mp4", ".webm"];
   return allowed.includes(ext) ? ext : "";
 }
 

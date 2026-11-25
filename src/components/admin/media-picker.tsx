@@ -118,7 +118,7 @@ export function MediaPicker({
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+            accept="image/jpeg,image/png,image/webp,image/avif,.avif,image/gif,image/svg+xml"
             className="hidden"
             onChange={(e) => void handleUpload(e.target.files)}
           />
