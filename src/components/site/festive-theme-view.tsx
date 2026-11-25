@@ -388,15 +388,20 @@ export async function FestiveThemeView({
       {page.products.length > 0 ? (
         <section className={`relative pb-24 pt-4 ${c.products}`}>
           <div className="container max-w-6xl">
-            <div className="grid items-start gap-8 md:grid-cols-2">
+            {/* Rangées à hauteur égale (prix alignés en bas) ; dernière carte seule centrée. */}
+            <div className="grid gap-8 md:grid-cols-2">
               {page.products.map((product, i) => {
                 const prices = parseProductPrices(product.prices);
                 const name = localized(product, "name", locale);
                 const description = localized(product, "description", locale);
                 return (
-                  <Reveal key={product.id} delay={(i % 2) * 100}>
-                    <article className={`rounded-[1.75rem] border p-2 ${c.card}`}>
-                      <div className={`flex flex-col overflow-hidden rounded-[1.4rem] border ${c.cardInner}`}>
+                  <Reveal
+                    key={product.id}
+                    delay={(i % 2) * 100}
+                    className="h-full md:[&:last-child:nth-child(odd)]:col-span-2 md:[&:last-child:nth-child(odd)]:mx-auto md:[&:last-child:nth-child(odd)]:w-[calc(50%-1rem)]"
+                  >
+                    <article className={`h-full rounded-[1.75rem] border p-2 ${c.card}`}>
+                      <div className={`flex h-full flex-col overflow-hidden rounded-[1.4rem] border ${c.cardInner}`}>
                         {product.image ? (
                           <div className="relative aspect-[4/3]">
                             <Image
@@ -417,7 +422,7 @@ export async function FestiveThemeView({
                             </div>
                           ) : null}
                           {prices.length > 0 ? (
-                            <ul className="mx-auto w-full max-w-sm space-y-3 pt-7 text-left text-sm">
+                            <ul className="mx-auto mt-auto w-full max-w-sm space-y-3 pt-7 text-left text-sm">
                               {prices.map((p, k) => {
                                 const lbl = (locale === "en" && p.labelEn) || p.label;
                                 return (
