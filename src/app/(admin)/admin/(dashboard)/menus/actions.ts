@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/permissions";
 import { menuSchema, type MenuInput } from "@/lib/validation/menu";
-import { upsertMenu, deleteMenu } from "@/lib/services/menu.service";
+import { upsertMenu, deleteMenu, duplicateMenu } from "@/lib/services/menu.service";
 import { prisma } from "@/lib/db/prisma";
 import { seasonLabelSchema } from "@/lib/validation/house";
 
@@ -58,4 +58,11 @@ export async function saveSeasonLabelAction(_prev: SeasonLabelState, formData: F
   revalidatePath("/menus");
   revalidatePath("/admin/menus");
   return { success: true };
+}
+
+export async function duplicateMenuAction(formData: FormData) {
+  await requireAdmin();
+  const copy = await duplicateMenu(String(formData.get("id")));
+  revalidatePath("/admin/menus");
+  redirect(`/admin/menus/${copy.id}`);
 }

@@ -18,7 +18,7 @@ export const createUserSchema = z.object({
   name: z.string().trim().min(2, "Nom trop court").max(120),
   email: z.string().trim().toLowerCase().email("Adresse email invalide"),
   password: passwordSchema,
-  role: z.enum(["SUPER_ADMIN", "ADMIN"]),
+  role: z.enum(["SUPER_ADMIN", "ADMIN", "VOUCHER_CHECKER"]),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -27,7 +27,7 @@ export const updateUserSchema = z.object({
   name: z.string().trim().min(2, "Nom trop court").max(120).optional(),
   email: z.string().trim().toLowerCase().email("Adresse email invalide").optional(),
   password: passwordSchema.optional(),
-  role: z.enum(["SUPER_ADMIN", "ADMIN"]).optional(),
+  role: z.enum(["SUPER_ADMIN", "ADMIN", "VOUCHER_CHECKER"]).optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -36,7 +36,7 @@ export const adminEditUserSchema = z.object({
   name: z.string().trim().min(2, "Nom trop court").max(120),
   email: z.string().trim().toLowerCase().email("Adresse email invalide"),
   password: z.union([z.literal(""), passwordSchema]),
-  role: z.enum(["SUPER_ADMIN", "ADMIN"]),
+  role: z.enum(["SUPER_ADMIN", "ADMIN", "VOUCHER_CHECKER"]),
 });
 
 export type AdminEditUserInput = z.infer<typeof adminEditUserSchema>;

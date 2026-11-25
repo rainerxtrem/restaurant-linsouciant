@@ -89,7 +89,15 @@ export default async function AdminGiftVouchersPage() {
                     </span>
                   ) : null}
                 </td>
-                <td className="px-3 py-3">{STATUS_LABEL[v.status]}</td>
+                <td className="px-3 py-3">
+                  {STATUS_LABEL[v.status]}
+                  {v.status === "REDEEMED" && v.redeemedAt ? (
+                    <span className="mt-0.5 block text-[11px] leading-tight text-ink-400">
+                      le {v.redeemedAt.toLocaleDateString("fr-FR")}
+                      {v.redeemedByName ? ` par ${v.redeemedByName}` : ""}
+                    </span>
+                  ) : null}
+                </td>
                 <td className="px-3 py-3 text-ink-600">
                   {v.buyerName}
                   <br />

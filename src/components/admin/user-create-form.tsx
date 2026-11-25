@@ -15,6 +15,7 @@ export function UserCreateForm() {
       <select name="role" defaultValue="ADMIN" className={input}>
         <option value="ADMIN">Administrateur</option>
         <option value="SUPER_ADMIN">Super-administrateur</option>
+        <option value="VOUCHER_CHECKER">Contrôle des bons cadeaux (vérification uniquement)</option>
       </select>
       <div className="sm:col-span-2">
         <button disabled={pending} className="btn-cta">

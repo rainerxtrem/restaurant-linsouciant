@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listAllMenus } from "@/lib/services/menu.service";
-import { deleteMenuAction } from "./actions";
+import { deleteMenuAction, duplicateMenuAction } from "./actions";
 import { getSiteSettings } from "@/lib/services/settings.service";
 import { SeasonLabelForm } from "@/components/admin/season-label-form";
 
@@ -51,6 +51,10 @@ export default async function AdminMenusPage() {
                   <Link href={`/admin/menus/${menu.id}`} className="text-wine-700 hover:underline">
                     Modifier
                   </Link>
+                  <form action={duplicateMenuAction} className="ml-3 inline">
+                    <input type="hidden" name="id" value={menu.id} />
+                    <button className="text-wine-700 hover:underline">Dupliquer</button>
+                  </form>
                   <form action={deleteMenuAction} className="ml-3 inline">
                     <input type="hidden" name="id" value={menu.id} />
                     <button className="text-red-600 hover:underline">Supprimer</button>

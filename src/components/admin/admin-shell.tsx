@@ -16,6 +16,8 @@ import {
   Megaphone,
   Sparkles,
   Sprout,
+  ScanLine,
+  Library,
   Award,
   LogOut,
   Menu as MenuIcon,
@@ -43,12 +45,14 @@ const NAV_GROUPS: { title: string | null; items: NavItem[] }[] = [
       { href: "/admin/menus", label: "Cartes & menus", icon: UtensilsCrossed },
       { href: "/admin/pages-thematiques", label: "Pages thématiques", icon: Sparkles },
       { href: "/admin/bons-cadeaux", label: "Bons cadeaux", icon: Gift },
+      { href: "/admin/controle", label: "Vérifier un bon", icon: ScanLine },
     ],
   },
   {
     title: "Contenu du site",
     items: [
       { href: "/admin/photos", label: "Photos", icon: Images },
+      { href: "/admin/medias", label: "Médiathèque", icon: Library },
       { href: "/admin/pages", label: "Pages", icon: FileText },
       { href: "/admin/producteurs", label: "Producteurs", icon: Sprout },
       { href: "/admin/distinctions", label: "Distinctions", icon: Award },

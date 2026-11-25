@@ -22,6 +22,9 @@ enum Role {
   // Accès complet au CMS (menus, photos, pages, messages, bons cadeaux,
   // newsletter, réglages) sauf la gestion des autres comptes.
   ADMIN
+  // Compte de salle : uniquement la vérification / validation des bons
+  // cadeaux (/admin/controle). Aucun accès au CMS.
+  VOUCHER_CHECKER
 }
 
 enum PublishStatus {
@@ -310,6 +313,8 @@ model GiftVoucher {
   issuedAt      DateTime?
   expiresAt     DateTime?
   redeemedAt    DateTime?
+  // Nom du compte qui a validé le bon en salle (traçabilité).
+  redeemedByName String?
   pdfStorageKey String?
   // Relance « votre bon expire bientôt » : horodatée une seule fois par bon.
   expiryReminderSentAt DateTime?

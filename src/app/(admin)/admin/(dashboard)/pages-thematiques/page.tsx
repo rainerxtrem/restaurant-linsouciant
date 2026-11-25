@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listAllThemePages } from "@/lib/services/theme-page.service";
-import { toggleThemePageAction, deleteThemePageAction } from "./actions";
+import { toggleThemePageAction, deleteThemePageAction, duplicateThemePageAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +65,10 @@ export default async function AdminThemePagesPage() {
                   <Link href={`/admin/pages-thematiques/${p.id}`} className="text-wine-700 hover:underline">
                     Modifier
                   </Link>
+                  <form action={duplicateThemePageAction} className="ml-3 inline">
+                    <input type="hidden" name="id" value={p.id} />
+                    <button className="text-wine-700 hover:underline">Dupliquer</button>
+                  </form>
                   <form action={deleteThemePageAction} className="ml-3 inline">
                     <input type="hidden" name="id" value={p.id} />
                     <button className="text-red-600 hover:underline">Supprimer</button>

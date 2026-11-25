@@ -106,3 +106,37 @@ export async function upsertMenu(input: MenuInput, id?: string) {
 export function deleteMenu(id: string) {
   return prisma.menu.delete({ where: { id } });
 }
+
+/**
+ * Duplique un menu (prix, sections, plats) en brouillon, rattaché au même
+ * endroit (carte principale ou page thématique), sauf `themePageId` fourni.
+ */
+export async function duplicateMenu(id: string, options: { themePageId?: string | null; keepStatus?: boolean } = {}) {
+  const menu = await getMenu(id);
+  if (!menu) throw new Error("Menu introuvable");
+  return upsertMenu({
+    name: options.keepStatus ? menu.name : `${menu.name} (copie)`,
+    nameEn: menu.nameEn ?? "",
+    description: menu.description ?? "",
+    descriptionEn: menu.descriptionEn ?? "",
+    availabilityNote: menu.availabilityNote ?? "",
+    availabilityNoteEn: menu.availabilityNoteEn ?? "",
+    mainImageId: menu.mainImageId,
+    themePageId: options.themePageId !== undefined ? options.themePageId : menu.themePageId,
+    status: options.keepStatus ? menu.status : "DRAFT",
+    order: menu.order,
+    prices: menu.prices.map((p) => ({ kind: p.kind, label: p.label, labelEn: p.labelEn ?? "", priceCents: p.priceCents })),
+    sections: menu.sections.map((s) => ({
+      title: s.title,
+      titleEn: s.titleEn ?? "",
+      subtitle: s.subtitle ?? "",
+      subtitleEn: s.subtitleEn ?? "",
+      dishes: s.dishes.map((d) => ({
+        name: d.name,
+        nameEn: d.nameEn ?? "",
+        description: d.description ?? "",
+        descriptionEn: d.descriptionEn ?? "",
+      })),
+    })),
+  });
+}

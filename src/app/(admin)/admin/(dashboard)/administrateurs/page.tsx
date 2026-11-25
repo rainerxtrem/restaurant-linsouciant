@@ -15,6 +15,10 @@ export default async function AdminUsersPage() {
   return (
     <div>
       <h1 className="font-display text-2xl text-ink-900">Administrateurs</h1>
+      <p className="mt-2 max-w-2xl text-sm text-ink-500">
+        Le rôle « Contrôle des bons cadeaux » est destiné à l&apos;équipe de salle : ce compte n&apos;a accès qu&apos;à
+        l&apos;écran de vérification des bons (/admin/controle), rien d&apos;autre.
+      </p>
       <div className="mt-6">
         <UserCreateForm />
       </div>
@@ -36,7 +40,7 @@ export default async function AdminUsersPage() {
                 <td className="px-4 py-2 font-medium text-ink-800">{u.name}</td>
                 <td className="px-4 py-2 text-ink-600">{u.email}</td>
                 <td className="px-4 py-2 text-ink-500">
-                  {u.role === "SUPER_ADMIN" ? "Super-admin" : "Admin"}
+                  {u.role === "SUPER_ADMIN" ? "Super-admin" : u.role === "VOUCHER_CHECKER" ? "Contrôle des bons" : "Admin"}
                 </td>
                 <td className="px-4 py-2">
                   {u.isActive ? <span className="text-green-700">Actif</span> : <span className="text-ink-400">Désactivé</span>}

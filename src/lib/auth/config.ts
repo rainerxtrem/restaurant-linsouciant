@@ -37,7 +37,10 @@ export const authConfig: NextAuthConfig = {
       const isAdminRoute = pathname.startsWith("/admin") && pathname !== "/admin/login";
       if (isAdminRoute) {
         const role = auth?.user?.role;
-        if (!auth?.user || (role !== "SUPER_ADMIN" && role !== "ADMIN")) {
+        const isVoucherRoute = pathname === "/admin/controle" || pathname.startsWith("/admin/controle/");
+        const allowed =
+          role === "SUPER_ADMIN" || role === "ADMIN" || (isVoucherRoute && role === "VOUCHER_CHECKER");
+        if (!auth?.user || !allowed) {
           return NextResponse.redirect(new URL("/admin/login", request.url));
         }
       }

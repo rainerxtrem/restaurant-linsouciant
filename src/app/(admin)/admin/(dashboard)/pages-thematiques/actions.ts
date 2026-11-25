@@ -9,6 +9,7 @@ import {
   setThemePageEnabled,
   deleteThemePage,
   ThemePageSlugError,
+  duplicateThemePage,
 } from "@/lib/services/theme-page.service";
 
 export type ThemePageActionState = { error?: string };
@@ -58,4 +59,12 @@ export async function deleteThemePageAction(formData: FormData) {
   revalidatePath("/", "layout");
   revalidatePath("/admin/pages-thematiques");
   revalidatePath("/admin/menus");
+}
+
+export async function duplicateThemePageAction(formData: FormData) {
+  await requireAdmin();
+  const copy = await duplicateThemePage(String(formData.get("id")));
+  revalidatePath("/admin/pages-thematiques");
+  revalidatePath("/admin/menus");
+  redirect(`/admin/pages-thematiques/${copy.id}`);
 }

@@ -1,7 +1,8 @@
 import { cache } from "react";
 import { prisma } from "@/lib/db/prisma";
 import { slugifyText } from "@/lib/slug";
-import type { ThemePageInput } from "@/lib/validation/theme-page";
+import { parseProductPrices, THEME_PAGE_STYLES, type ThemePageInput, type ThemePageStyle } from "@/lib/validation/theme-page";
+import { duplicateMenu } from "@/lib/services/menu.service";
 
 /** Premiers segments d'URL déjà pris par des routes du site. */
 const RESERVED_SLUGS = new Set([
@@ -147,4 +148,51 @@ export function deleteThemePage(id: string) {
     prisma.menu.updateMany({ where: { themePageId: id }, data: { themePageId: null, status: "DRAFT" } }),
     prisma.themePage.delete({ where: { id } }),
   ]);
+}
+
+/**
+ * Duplique une page thématique (ex. repartir du Noël de l'an dernier) :
+ * textes, photos, produits et menus rattachés. La copie est désactivée et
+ * reçoit sa propre adresse ; ses menus gardent leur statut (ils restent
+ * invisibles tant que la page n'est pas activée).
+ */
+export async function duplicateThemePage(id: string) {
+  const page = await prisma.themePage.findUnique({
+    where: { id },
+    include: { products: { orderBy: { order: "asc" } }, menus: { select: { id: true } } },
+  });
+  if (!page) throw new Error("Page thématique introuvable");
+
+  const style: ThemePageStyle = (THEME_PAGE_STYLES as readonly string[]).includes(page.style)
+    ? (page.style as ThemePageStyle)
+    : "classic";
+
+  const copy = await upsertThemePage({
+    title: `${page.title} (copie)`,
+    titleEn: page.titleEn ?? "",
+    slug: "",
+    navLabel: page.navLabel ?? "",
+    navLabelEn: page.navLabelEn ?? "",
+    intro: page.intro ?? "",
+    introEn: page.introEn ?? "",
+    orderInfo: page.orderInfo ?? "",
+    orderInfoEn: page.orderInfoEn ?? "",
+    heroImageId: page.heroImageId,
+    enabled: false,
+    style,
+    order: page.order,
+    products: page.products.map((p) => ({
+      name: p.name,
+      nameEn: p.nameEn ?? "",
+      description: p.description ?? "",
+      descriptionEn: p.descriptionEn ?? "",
+      imageId: p.imageId,
+      prices: parseProductPrices(p.prices).map((x) => ({ ...x, labelEn: x.labelEn ?? "" })),
+    })),
+  });
+
+  for (const menu of page.menus) {
+    await duplicateMenu(menu.id, { themePageId: copy.id, keepStatus: true });
+  }
+  return copy;
 }
