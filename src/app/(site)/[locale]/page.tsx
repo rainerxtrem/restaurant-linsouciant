@@ -199,7 +199,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
                 {dishShot ? (
                   <Reveal
                     kind="image"
-                    delay={250}
                     className="absolute -bottom-10 right-0 aspect-[3/4] w-[45%] overflow-hidden border-[6px] border-cream-50 shadow-elevated sm:-bottom-14"
                   >
                     <Image

@@ -37,7 +37,9 @@ export function Reveal({
           observer.disconnect();
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }
+      // Déclenchement dès que l'élément approche de l'écran (marge positive en
+      // bas) : l'animation est déjà en cours quand il devient visible.
+      { threshold: 0, rootMargin: "0px 0px 12% 0px" }
     );
     observer.observe(node);
     return () => observer.disconnect();
