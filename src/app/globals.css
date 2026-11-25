@@ -167,27 +167,11 @@
     transform: none;
   }
 
-  /* Dévoilement d'image : rideau du bas vers le haut + léger recul. Le
-     rideau est sur le calque intérieur [data-reveal-curtain] (voir Reveal). */
+  /* Photos : fondu seul, plus court, sans décalage ni masquage. */
   [data-reveal][data-reveal-kind="image"] {
-    opacity: 1;
     transform: none;
-  }
-  [data-reveal-kind="image"] > [data-reveal-curtain] {
-    clip-path: inset(100% 0 0 0);
-    transition: clip-path var(--motion-reveal) var(--ease-editorial);
+    transition: opacity var(--motion-ui) var(--ease-editorial);
     transition-delay: var(--reveal-delay, 0ms);
-  }
-  [data-reveal="in"][data-reveal-kind="image"] > [data-reveal-curtain] {
-    clip-path: inset(0 0 0 0);
-  }
-  [data-reveal-kind="image"] img {
-    transform: scale(1.05);
-    transition: transform calc(var(--motion-reveal) * 1.25) var(--ease-editorial);
-    transition-delay: var(--reveal-delay, 0ms);
-  }
-  [data-reveal="in"][data-reveal-kind="image"] img {
-    transform: scale(1);
   }
 }
 

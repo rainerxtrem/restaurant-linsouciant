@@ -6,8 +6,10 @@ import { useEffect, useRef, type CSSProperties, type ElementType, type ReactNode
  * Fait apparaître son contenu quand il entre dans le viewport — voir le CSS
  * `[data-reveal]` dans globals.css. Seule famille d'animation du site :
  *  - `kind="fade"` (défaut) : fondu + léger décalage vertical ;
- *  - `kind="image"` : dévoilement en rideau du bas vers le haut, l'image
- *    se posant avec un léger recul (même courbe, même lenteur).
+ *  - `kind="image"` : fondu seul, sans décalage, pour les photos. Pas de
+ *    masquage (clip-path) : une image masquée n'est ni « vue » par
+ *    l'IntersectionObserver ni chargée par le lazy-loading du navigateur,
+ *    ce qui retardait son apparition d'une à deux secondes.
  * Volontairement minimal (IntersectionObserver natif) pour ne pas ajouter de
  * dépendance juste pour une animation de scroll.
  */
@@ -53,17 +55,7 @@ export function Reveal({
       style={delay ? ({ "--reveal-delay": `${delay}ms` } as CSSProperties) : undefined}
       className={className}
     >
-      {kind === "image" ? (
-        // Le rideau (clip-path) est porté par ce calque intérieur et non par
-        // l'élément observé : Chrome considère un élément entièrement masqué
-        // par clip-path comme « non visible », l'observer ne se déclencherait
-        // jamais. L'élément parent doit être positionné (relative/absolute).
-        <span data-reveal-curtain="" className="absolute inset-0 block">
-          {children}
-        </span>
-      ) : (
-        children
-      )}
+      {children}
     </Tag>
   );
 }
