@@ -167,15 +167,18 @@
     transform: none;
   }
 
-  /* Dévoilement d'image : rideau du bas vers le haut + léger recul. */
+  /* Dévoilement d'image : rideau du bas vers le haut + léger recul. Le
+     rideau est sur le calque intérieur [data-reveal-curtain] (voir Reveal). */
   [data-reveal][data-reveal-kind="image"] {
     opacity: 1;
     transform: none;
+  }
+  [data-reveal-kind="image"] > [data-reveal-curtain] {
     clip-path: inset(100% 0 0 0);
     transition: clip-path calc(var(--motion-reveal) * 1.3) var(--ease-editorial);
     transition-delay: var(--reveal-delay, 0ms);
   }
-  [data-reveal="in"][data-reveal-kind="image"] {
+  [data-reveal="in"][data-reveal-kind="image"] > [data-reveal-curtain] {
     clip-path: inset(0 0 0 0);
   }
   [data-reveal-kind="image"] img {

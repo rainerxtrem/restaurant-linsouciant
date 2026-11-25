@@ -51,7 +51,17 @@ export function Reveal({
       style={delay ? ({ "--reveal-delay": `${delay}ms` } as CSSProperties) : undefined}
       className={className}
     >
-      {children}
+      {kind === "image" ? (
+        // Le rideau (clip-path) est porté par ce calque intérieur et non par
+        // l'élément observé : Chrome considère un élément entièrement masqué
+        // par clip-path comme « non visible », l'observer ne se déclencherait
+        // jamais. L'élément parent doit être positionné (relative/absolute).
+        <span data-reveal-curtain="" className="absolute inset-0 block">
+          {children}
+        </span>
+      ) : (
+        children
+      )}
     </Tag>
   );
 }
