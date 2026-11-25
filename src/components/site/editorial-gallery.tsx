@@ -56,7 +56,7 @@ export function EditorialGallery({ photos }: { photos: Photo[] }) {
               src={photo.url}
               alt={photo.alt ?? ""}
               fill
-              className="object-cover transition-transform duration-[900ms] ease-editorial group-hover:scale-[1.04]"
+              className="object-cover transition-transform duration-[1200ms] ease-editorial group-hover:scale-[1.03]"
               sizes="(max-width: 640px) 50vw, 40vw"
             />
           </button>

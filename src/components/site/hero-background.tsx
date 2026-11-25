@@ -72,7 +72,7 @@ export function HeroBackground({
           fill
           priority
           quality={70}
-          className="hero-kenburns object-cover opacity-55"
+          className="object-cover opacity-55"
           sizes="100vw"
         />
       ) : null}
@@ -83,7 +83,7 @@ export function HeroBackground({
           title=""
           aria-hidden
           allow="autoplay; encrypted-media"
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-screen min-w-[177.78vh] -translate-x-1/2 -translate-y-1/2 animate-[page-fade_1s_ease_both] opacity-55"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-screen min-w-[177.78vh] -translate-x-1/2 -translate-y-1/2 animate-[page-fade_1.4s_cubic-bezier(0.22,1,0.36,1)_both] opacity-55"
         />
       ) : null}
     </div>

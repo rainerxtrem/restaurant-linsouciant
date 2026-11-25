@@ -33,7 +33,7 @@ export function ProducersSection({ producers, locale }: { producers: ProducerWit
                         src={p.image.url}
                         alt={p.name}
                         fill
-                        className="object-cover transition-transform duration-[1200ms] ease-editorial group-hover:scale-[1.06]"
+                        className="object-cover transition-transform duration-[1200ms] ease-editorial group-hover:scale-[1.03]"
                         sizes="128px"
                       />
                     ) : (

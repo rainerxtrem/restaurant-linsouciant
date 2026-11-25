@@ -11,7 +11,6 @@ import { getSiteSettings } from "@/lib/services/settings.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { listProducers } from "@/lib/services/house.service";
 import { Reveal } from "@/components/public/reveal";
-import { Parallax } from "@/components/site/parallax";
 import { ProducersSection } from "@/components/site/producers-section";
 
 export const dynamic = "force-dynamic";
@@ -80,12 +79,8 @@ export default async function LaMaisonPage({ params }: { params: Promise<{ local
   }) => (
     <div className="container grid items-center gap-14 lg:grid-cols-2 lg:gap-24">
       {image ? (
-        <Reveal className={reversed ? "lg:order-2" : undefined}>
-          <div className="relative aspect-[4/5] overflow-hidden">
-            <Parallax amount={reversed ? -24 : 24} className="absolute -top-[8%] left-0 h-[116%] w-full">
-              <Image src={image.url} alt={data.name} fill className="object-cover" sizes="50vw" />
-            </Parallax>
-          </div>
+        <Reveal kind="image" className={`relative aspect-[4/5] overflow-hidden ${reversed ? "lg:order-2" : ""}`}>
+          <Image src={image.url} alt={data.name} fill className="object-cover" sizes="50vw" />
         </Reveal>
       ) : null}
       <Reveal delay={120} className={reversed ? "lg:order-1" : undefined}>

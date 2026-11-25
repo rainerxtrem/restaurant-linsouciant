@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useRef, type ElementType, type ReactNode } from "react";
+import { useEffect, useRef, type CSSProperties, type ElementType, type ReactNode } from "react";
 
 /**
- * Fait apparaître son contenu (fondu + léger décalage) quand il entre dans
- * le viewport — voir le CSS `[data-reveal]` dans globals.css.
+ * Fait apparaître son contenu quand il entre dans le viewport — voir le CSS
+ * `[data-reveal]` dans globals.css. Seule famille d'animation du site :
+ *  - `kind="fade"` (défaut) : fondu + léger décalage vertical ;
+ *  - `kind="image"` : dévoilement en rideau du bas vers le haut, l'image
+ *    se posant avec un léger recul (même courbe, même lenteur).
  * Volontairement minimal (IntersectionObserver natif) pour ne pas ajouter de
  * dépendance juste pour une animation de scroll.
  */
@@ -13,9 +16,11 @@ export function Reveal({
   delay = 0,
   as: Tag = "div",
   className,
+  kind = "fade",
 }: {
   children: ReactNode;
   delay?: number;
+  kind?: "fade" | "image";
   as?: ElementType;
   className?: string;
 }) {
@@ -39,7 +44,13 @@ export function Reveal({
   }, []);
 
   return (
-    <Tag ref={ref} data-reveal="" style={delay ? { transitionDelay: `${delay}ms` } : undefined} className={className}>
+    <Tag
+      ref={ref}
+      data-reveal=""
+      data-reveal-kind={kind === "image" ? "image" : undefined}
+      style={delay ? ({ "--reveal-delay": `${delay}ms` } as CSSProperties) : undefined}
+      className={className}
+    >
       {children}
     </Tag>
   );

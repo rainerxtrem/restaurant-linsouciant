@@ -129,8 +129,10 @@
     "rights": "Tous droits réservés"
   },
   "notFound": {
-    "title": "Page introuvable",
-    "body": "La page que vous cherchez n'existe pas ou a été déplacée."
+    "kicker": "Erreur 404",
+    "title": "Cette table n'est pas dressée",
+    "body": "La page que vous cherchez n'existe pas ou a été déplacée. Laissez-nous vous raccompagner.",
+    "elsewhere": "Ou poursuivre vers"
   },
   "themePage": {
     "menuTitle": "Le menu",

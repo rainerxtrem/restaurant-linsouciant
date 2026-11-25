@@ -129,8 +129,10 @@
     "rights": "All rights reserved"
   },
   "notFound": {
-    "title": "Page not found",
-    "body": "The page you're looking for doesn't exist or has moved."
+    "kicker": "Error 404",
+    "title": "This table isn't set",
+    "body": "The page you're looking for doesn't exist or has moved. Let us show you the way.",
+    "elsewhere": "Or continue to"
   },
   "themePage": {
     "menuTitle": "The menu",

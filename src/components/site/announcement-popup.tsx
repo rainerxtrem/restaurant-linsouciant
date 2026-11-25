@@ -78,7 +78,7 @@ export function AnnouncementPopup({
       <div
         className="relative w-full max-w-lg overflow-hidden bg-cream-50 shadow-elevated"
         onClick={(e) => e.stopPropagation()}
-        style={{ animation: "page-fade .4s ease both" }}
+        style={{ animation: "page-fade var(--motion-ui) var(--ease-editorial) both" }}
       >
         <button
           type="button"
