@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Gift } from "lucide-react";
+import { GiftVoucherNote } from "@/components/site/gift-voucher-note";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
 import { getSiteSettings } from "@/lib/services/settings.service";
@@ -113,10 +113,7 @@ export default async function ReservationPage({ params }: { params: Promise<{ lo
                 </a>
               ) : null}
             </div>
-            <p className="mx-auto mt-8 flex max-w-sm items-start gap-2.5 border-l border-gold-500/50 pl-4 text-left text-xs leading-relaxed text-ink-600">
-              <Gift className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-600" aria-hidden />
-              <span>{t("giftVoucherNote")}</span>
-            </p>
+            <GiftVoucherNote className="mx-auto mt-8" />
           </Reveal>
 
           {settings.phone ? (

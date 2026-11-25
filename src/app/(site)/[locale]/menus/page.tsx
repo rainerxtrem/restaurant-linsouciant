@@ -10,6 +10,7 @@ import { getSiteSettings } from "@/lib/services/settings.service";
 import { MenuSelector } from "@/components/site/menu-selector";
 import { toMenuView } from "@/lib/menu-view";
 import { Reveal } from "@/components/public/reveal";
+import { GiftVoucherNote } from "@/components/site/gift-voucher-note";
 
 export const dynamic = "force-dynamic";
 
@@ -79,6 +80,7 @@ export default async function MenusPage({ params }: { params: Promise<{ locale: 
         >
           {t("home.bookTable")}
         </Link>
+        <GiftVoucherNote className="mx-auto mt-8" />
       </section>
     </div>
   );

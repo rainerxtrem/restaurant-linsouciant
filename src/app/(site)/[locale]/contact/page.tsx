@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { GiftVoucherNote } from "@/components/site/gift-voucher-note";
 import { MapPin, Phone, Mail, Car, Sparkles, CreditCard } from "lucide-react";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
@@ -120,6 +121,8 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                     <OpeningHours hours={hours} />
                   </div>
                 </div>
+
+                <GiftVoucherNote className="mt-6" />
               </div>
             </Reveal>
 
