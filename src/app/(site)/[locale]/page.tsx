@@ -12,6 +12,7 @@ import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { Reveal } from "@/components/public/reveal";
 import { OpeningHours } from "@/components/site/opening-hours";
 import { HeroBackground } from "@/components/site/hero-background";
+import { getPageContent } from "@/lib/content/page-content";
 import { HeroLogo } from "@/components/site/hero-logo";
 
 export const dynamic = "force-dynamic";
@@ -39,11 +40,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
   setRequestLocale(locale);
   const t = await getTranslations();
 
-  const [settings, menus, albums, hidden] = await Promise.all([
+  const [settings, menus, albums, hidden, c] = await Promise.all([
     getSiteSettings(),
     listPublishedMenus(),
     listAlbumsWithImages(),
     getHiddenHrefs(),
+    getPageContent("home", locale),
   ]);
   const shown = (href: string) => !hidden.includes(href);
   const hours = parseOpeningHours(settings.openingHours);
@@ -59,7 +61,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
     albums.flatMap((a) => a.images)[1]?.media ??
     null;
   const siteName = locale === "en" && settings.siteNameEn ? settings.siteNameEn : settings.siteName;
-  const tagline = locale === "en" && settings.taglineEn ? settings.taglineEn : settings.tagline;
+  const tagline = c.text("tagline");
+  const intro = c.text("intro");
 
   return (
     <div className="bg-cream-50">
@@ -91,7 +94,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
               href="/reservation"
               className="mt-10 inline-block border-b border-cream-50/40 pb-1 text-sm tracking-wide text-cream-50 transition-colors hover:border-gold-300 hover:text-gold-300"
             >
-              {t("home.bookTable")}
+              {c.text("heroCta")}
             </Link>
           </Reveal>
           ) : null}
@@ -105,7 +108,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
       {/* ---------------------------------------------------------------- */}
       {/* Philosophie / chef                                              */}
       {/* ---------------------------------------------------------------- */}
-      {localized(settings, "intro", locale) ? (
+      {intro ? (
         <section className="py-28 sm:py-40">
           <div className="container grid items-center gap-14 lg:grid-cols-2 lg:gap-24">
             {settings.aboutImage ? (
@@ -121,12 +124,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
             ) : null}
             <Reveal delay={120}>
               <div className="max-w-lg">
-                <p className="kicker">{t("home.chefTitle")}</p>
+                <p className="kicker">{c.text("chefKicker")}</p>
                 <h2 className="mt-5 font-display text-3xl font-light leading-tight text-ink-900 sm:text-[2.6rem]">
                   {tagline}
                 </h2>
                 <div className="prose prose-sm mt-7 max-w-none text-ink-600 sm:prose-base">
-                  {localized(settings, "intro", locale)
+                  {intro
                     .split(/\n{2,}/)
                     .map((para, i) => (
                       <p key={i}>{para}</p>
@@ -146,9 +149,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
           <div className="container max-w-5xl">
             <Reveal>
               <div className="text-center">
-                <p className="kicker">{t("home.menusTitle")}</p>
+                <p className="kicker">{c.text("menusKicker")}</p>
                 <p className="mx-auto mt-5 max-w-xl font-display text-2xl font-light text-ink-900 sm:text-3xl">
-                  {t("home.menusIntro")}
+                  {c.text("menusIntro")}
                 </p>
               </div>
             </Reveal>
@@ -175,7 +178,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
                       ) : null}
                     </div>
                     <span className="mt-8 inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-wine-700">
-                      {t("common.readMore")}
+                      {c.text("readMore")}
                       <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
                     </span>
                   </Link>
@@ -222,16 +225,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
 
             <Reveal delay={140}>
               <div className="max-w-md lg:pl-6">
-                <p className="kicker">{t("home.photosTitle")}</p>
+                <p className="kicker">{c.text("photosKicker")}</p>
                 <p className="mt-5 font-display text-2xl font-light leading-snug text-ink-900 sm:text-[2rem]">
-                  {t("home.photosIntro")}
+                  {c.text("photosIntro")}
                 </p>
                 {shown("/photos") ? (
                 <Link
                   href="/photos"
                   className="mt-8 inline-block border-b border-ink-900/30 pb-1 text-xs uppercase tracking-[0.2em] text-ink-800 transition-colors hover:border-wine-700 hover:text-wine-700"
                 >
-                  {t("home.photosLink")}
+                  {c.text("photosLink")}
                 </Link>
                 ) : null}
               </div>
@@ -247,7 +250,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
         <div className="container grid gap-14 lg:grid-cols-2 lg:gap-20">
           <Reveal>
             <div>
-              <p className="kicker">{t("home.findUsTitle")}</p>
+              <p className="kicker">{c.text("findUsKicker")}</p>
               <h2 className="mt-5 font-display text-3xl font-light text-ink-900">{siteName}</h2>
               <address className="mt-6 space-y-2 not-italic text-ink-700">
                 <p className="flex items-start gap-3">
@@ -277,7 +280,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
                 ) : null}
                 {shown("/reservation") ? (
                   <Link href="/reservation" className="link-sweep text-wine-700">
-                    {t("home.bookTable")}
+                    {c.text("heroCta")}
                   </Link>
                 ) : null}
               </div>

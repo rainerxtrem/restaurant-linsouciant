@@ -11,28 +11,10 @@ import { getSiteSettings, isPageDisabled } from "@/lib/services/settings.service
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { listProducers } from "@/lib/services/house.service";
 import { Reveal } from "@/components/public/reveal";
+import { getPageContent } from "@/lib/content/page-content";
 import { ProducersSection } from "@/components/site/producers-section";
 
 export const dynamic = "force-dynamic";
-
-const PEOPLE = {
-  chef: {
-    kicker: { fr: "En cuisine", en: "In the kitchen" },
-    name: "Corentin Courtien",
-    text: {
-      fr: "Corentin Courtien compose une cuisine créative et instinctive, où les épices et les herbes tiennent le premier rôle. Près de 80 % des produits viennent de producteurs locaux, choisis en direct et au fil des saisons. Le midi, une bistronomie généreuse ; le soir, un menu dégustation plus ambitieux, ponctué de petits amuse-bouches entre les plats.",
-      en: "Corentin Courtien creates a spontaneous, creative cuisine in which spices and herbs take the lead. Nearly 80% of the produce comes from local growers, chosen directly and with the seasons. At lunch, generous bistronomy; in the evening, a more ambitious tasting menu punctuated with small amuse-bouches between courses.",
-    },
-  },
-  madeline: {
-    kicker: { fr: "En salle", en: "In the dining room" },
-    name: "Madeline Courtien",
-    text: {
-      fr: "Madeline Courtien orchestre un service précis et chaleureux, récompensé par le Trophée Gault&Millau du Jeune Talent Service en salle. Elle veille au rythme du repas, guide dans la carte des vins et compose les accords mets et vins qui prolongent chaque plat. Sa présence attentive, jamais pesante, fait de la salle un prolongement naturel de la cuisine — un lieu où l'on se sent reçu, pas simplement servi.",
-      en: "Madeline Courtien leads a precise, warm service, honoured with the Gault&Millau Young Talent Award for front-of-house service. She keeps the rhythm of the meal, guides guests through the wine list and builds the pairings that carry each dish further. Her attentive, unobtrusive presence makes the dining room a natural extension of the kitchen — a place where you feel welcomed, not merely served.",
-    },
-  },
-} as const;
 
 export async function generateMetadata({
   params,
@@ -60,13 +42,15 @@ export default async function LaMaisonPage({ params }: { params: Promise<{ local
     listAlbumsWithImages(),
     listProducers(),
   ]);
+  const c = await getPageContent("house", locale);
   if (!page) notFound();
 
   const restaurant = albums.find((a) => a.slug === "le-restaurant");
   const chefImg =
+    c.image("chefPhoto") ??
     settings.aboutImage ?? restaurant?.images.find((i) => /dcc1a1/.test(i.media.filename))?.media ?? null;
-  const madelineImg = restaurant?.images.find((i) => /68a950/.test(i.media.filename))?.media ?? null;
-  const band = restaurant?.images[0]?.media ?? settings.heroImage ?? null;
+  const madelineImg = c.image("madelinePhoto") ?? restaurant?.images.find((i) => /68a950/.test(i.media.filename))?.media ?? null;
+  const band = c.image("bandImage") ?? restaurant?.images[0]?.media ?? settings.heroImage ?? null;
   const introHtml = DOMPurify.sanitize(localized(page, "content", locale));
 
   const Person = ({
@@ -74,7 +58,7 @@ export default async function LaMaisonPage({ params }: { params: Promise<{ local
     image,
     reversed,
   }: {
-    data: (typeof PEOPLE)[keyof typeof PEOPLE];
+    data: { kicker: string; name: string; text: string };
     image: { url: string } | null;
     reversed?: boolean;
   }) => (
@@ -86,11 +70,11 @@ export default async function LaMaisonPage({ params }: { params: Promise<{ local
       ) : null}
       <Reveal delay={120} className={reversed ? "lg:order-1" : undefined}>
         <div className="max-w-md">
-          <p className="kicker">{data.kicker[locale]}</p>
+          <p className="kicker">{data.kicker}</p>
           <h2 className="mt-5 font-display text-3xl font-light tracking-tight text-ink-900 sm:text-4xl">
             {data.name}
           </h2>
-          <p className="mt-6 text-sm leading-relaxed text-ink-600">{data.text[locale]}</p>
+          <p className="mt-6 text-sm leading-relaxed text-ink-600">{data.text}</p>
         </div>
       </Reveal>
     </div>
@@ -106,7 +90,7 @@ export default async function LaMaisonPage({ params }: { params: Promise<{ local
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/30 to-ink-950/20" />
         <div className="container relative z-10 max-w-3xl pb-12">
           <p className="text-[11px] uppercase tracking-[0.35em] text-gold-300">
-            {locale === "en" ? "The House" : "La Maison"}
+            {c.text("kicker")}
           </p>
           <h1 className="mt-4 font-display text-4xl font-light tracking-tight sm:text-5xl">
             {localized(page, "title", locale)}
@@ -128,15 +112,27 @@ export default async function LaMaisonPage({ params }: { params: Promise<{ local
 
       {/* Corentin */}
       <section className="pb-24 sm:pb-32">
-        <Person data={PEOPLE.chef} image={chefImg} />
+        <Person
+          data={{ kicker: c.text("chefKicker"), name: c.text("chefName"), text: c.text("chefText") }}
+          image={chefImg}
+        />
       </section>
 
       {/* Madeline */}
       <section className="border-t border-ink-900/10 bg-cream-100 py-24 sm:py-32">
-        <Person data={PEOPLE.madeline} image={madelineImg} reversed />
+        <Person
+          data={{ kicker: c.text("madelineKicker"), name: c.text("madelineName"), text: c.text("madelineText") }}
+          image={madelineImg}
+          reversed
+        />
       </section>
 
-      <ProducersSection producers={producers} locale={locale} />
+      <ProducersSection
+        producers={producers}
+        locale={locale}
+        kicker={c.text("producersKicker")}
+        title={c.text("producersTitle")}
+      />
     </div>
   );
 }

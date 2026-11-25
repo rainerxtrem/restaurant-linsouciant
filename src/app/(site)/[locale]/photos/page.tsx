@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isPageDisabled } from "@/lib/services/settings.service";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
 import { localized } from "@/lib/i18n";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { EditorialGallery } from "@/components/site/editorial-gallery";
+import { getPageContent } from "@/lib/content/page-content";
 import { Reveal } from "@/components/public/reveal";
 
 export const dynamic = "force-dynamic";
@@ -17,15 +18,15 @@ export async function generateMetadata({
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "photos" });
-  return buildMetadata({ locale, path: "/photos", title: t("title"), description: t("intro") });
+  const c = await getPageContent("photos", locale);
+  return buildMetadata({ locale, path: "/photos", title: c.text("kicker"), description: c.text("title") });
 }
 
 export default async function PhotosPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   if (await isPageDisabled("photos")) notFound();
-  const t = await getTranslations("photos");
+  const c = await getPageContent("photos", locale);
   const albums = (await listAlbumsWithImages()).filter((a) => a.images.length > 0);
 
   return (
@@ -33,18 +34,18 @@ export default async function PhotosPage({ params }: { params: Promise<{ locale:
       <section className="py-28 text-center sm:py-36">
         <div className="container max-w-xl">
           <Reveal>
-            <p className="kicker">{t("title")}</p>
+            <p className="kicker">{c.text("kicker")}</p>
           </Reveal>
           <Reveal delay={80}>
             <h1 className="mt-5 font-display text-4xl font-light tracking-tight text-ink-900 sm:text-5xl">
-              {t("intro")}
+              {c.text("title")}
             </h1>
           </Reveal>
         </div>
       </section>
 
       {albums.length === 0 ? (
-        <p className="pb-32 text-center text-sm text-ink-500">{t("empty")}</p>
+        <p className="pb-32 text-center text-sm text-ink-500">{c.text("empty")}</p>
       ) : (
         <div className="space-y-24 pb-32 sm:space-y-36">
           {albums.map((album) => (

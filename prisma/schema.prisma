@@ -544,3 +544,17 @@ model Distinction {
   @@index([order])
   @@map("distinctions")
 }
+
+// ---------------------------------------------------------------------------
+// Contenu éditable des pages du site (Pages → page du site). Une ligne par
+// page ; `data` = { [champ]: { fr?, en? } | { mediaId } }. Les champs sont
+// définis dans src/lib/content/pages.ts ; un champ absent = texte par défaut.
+// ---------------------------------------------------------------------------
+
+model PageContent {
+  key       String   @id
+  data      Json     @default("{}")
+  updatedAt DateTime @updatedAt
+
+  @@map("page_contents")
+}

@@ -1,16 +1,17 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
 import { listPublishedMenus } from "@/lib/services/menu.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
-import { getSiteSettings, isPageDisabled } from "@/lib/services/settings.service";
+import { isPageDisabled } from "@/lib/services/settings.service";
 import { MenuSelector } from "@/components/site/menu-selector";
 import { toMenuView } from "@/lib/menu-view";
 import { Reveal } from "@/components/public/reveal";
+import { getPageContent } from "@/lib/content/page-content";
 import { GiftVoucherNote } from "@/components/site/gift-voucher-note";
 
 export const dynamic = "force-dynamic";
@@ -21,18 +22,18 @@ export async function generateMetadata({
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "menus" });
-  return buildMetadata({ locale, path: "/menus", title: t("title"), description: t("intro") });
+  const c = await getPageContent("menus", locale);
+  return buildMetadata({ locale, path: "/menus", title: c.text("title"), description: c.text("intro") });
 }
 
 export default async function MenusPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   if (await isPageDisabled("menus")) notFound();
-  const t = await getTranslations();
-  const [menus, albums, settings] = await Promise.all([listPublishedMenus(), listAlbumsWithImages(), getSiteSettings()]);
-  const seasonLabel = (locale === "en" && settings.menusSeasonLabelEn) || settings.menusSeasonLabel;
-  const backdrop = albums.find((a) => a.slug === "les-plats")?.images[0]?.media ?? null;
+  const [menus, albums] = await Promise.all([listPublishedMenus(), listAlbumsWithImages()]);
+  const c = await getPageContent("menus", locale);
+  const seasonLabel = c.text("seasonLabel");
+  const backdrop = c.image("bandImage") ?? albums.find((a) => a.slug === "les-plats")?.images[0]?.media ?? null;
 
   const views = menus.map(toMenuView);
 
@@ -46,11 +47,11 @@ export default async function MenusPage({ params }: { params: Promise<{ locale: 
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink-950/60 via-ink-950/30 to-ink-950/80" />
         <div className="relative z-10 px-6 text-center">
           <Reveal>
-            <p className="text-[11px] uppercase tracking-[0.4em] text-gold-300">{t("nav.menus")}</p>
+            <p className="text-[11px] uppercase tracking-[0.4em] text-gold-300">{c.text("kicker")}</p>
           </Reveal>
           <Reveal delay={100}>
             <h1 className="mt-6 font-display text-5xl font-light tracking-tight sm:text-6xl">
-              {t("menus.title")}
+              {c.text("title")}
             </h1>
           </Reveal>
           {seasonLabel ? (
@@ -63,14 +64,14 @@ export default async function MenusPage({ params }: { params: Promise<{ locale: 
           </Reveal>
           <Reveal delay={220}>
             <p className="mx-auto mt-7 max-w-md text-sm leading-relaxed text-cream-100/70">
-              {t("menus.intro")}
+              {c.text("intro")}
             </p>
           </Reveal>
         </div>
       </section>
 
       {views.length === 0 ? (
-        <p className="bg-cream-50 py-32 text-center text-sm text-ink-500">{t("menus.empty")}</p>
+        <p className="bg-cream-50 py-32 text-center text-sm text-ink-500">{c.text("empty")}</p>
       ) : (
         <MenuSelector menus={views} locale={locale} />
       )}
@@ -80,7 +81,7 @@ export default async function MenusPage({ params }: { params: Promise<{ locale: 
           href="/reservation"
           className="inline-block border-b border-ink-900/30 pb-1 text-xs uppercase tracking-[0.2em] text-ink-800 transition-colors hover:border-wine-700 hover:text-wine-700"
         >
-          {t("home.bookTable")}
+          {c.text("bookLink")}
         </Link>
         <GiftVoucherNote className="mx-auto mt-8" />
       </section>
