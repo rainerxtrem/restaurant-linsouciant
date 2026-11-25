@@ -1,16 +1,17 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import { getHiddenHrefs } from "@/lib/services/settings.service";
 import { Link } from "@/i18n/navigation";
 
 /** 404 du site public (dans le layout : en-tête et pied de page présents). */
-export default function NotFound() {
-  const t = useTranslations();
+export default async function NotFound() {
+  const [t, hidden] = await Promise.all([getTranslations(), getHiddenHrefs().catch(() => [] as string[])]);
 
   const links = [
     { href: "/menus", label: t("nav.menus") },
     { href: "/la-maison", label: t("nav.house") },
     { href: "/reservation", label: t("nav.book") },
     { href: "/contact", label: t("nav.contact") },
-  ] as const;
+  ].filter((l) => !hidden.includes(l.href));
 
   return (
     <section className="relative flex min-h-[78svh] items-center justify-center overflow-hidden bg-cream-50 px-6 py-28">

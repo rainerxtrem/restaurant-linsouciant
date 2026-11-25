@@ -27,7 +27,7 @@ export function SiteHeader({
   address,
   facebookUrl,
   instagramUrl,
-  giftVouchersEnabled = true,
+  hiddenHrefs = [],
   themeLinks = [],
 }: {
   siteName: string;
@@ -38,7 +38,8 @@ export function SiteHeader({
   address?: string | null;
   facebookUrl?: string | null;
   instagramUrl?: string | null;
-  giftVouchersEnabled?: boolean;
+  /** Pages masquées (désactivées dans l'admin). */
+  hiddenHrefs?: string[];
   /** Pages thématiques activées, insérées après « Cartes & Menus ». */
   themeLinks?: { href: string; label: string }[];
 }) {
@@ -72,7 +73,7 @@ export function SiteHeader({
   }, []);
 
   const navItems: { key: string; href: string; label: string; highlight?: boolean }[] = NAV.filter(
-    (item) => giftVouchersEnabled || item.href !== "/bons-cadeaux"
+    (item) => !hiddenHrefs.includes(item.href)
   ).flatMap((item) => {
     const own = { key: item.key, href: item.href, label: t(item.key), highlight: item.key === "book" };
     return item.key === "menus"

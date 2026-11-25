@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
 import { localized } from "@/lib/i18n";
-import { getSiteSettings, parseOpeningHours } from "@/lib/services/settings.service";
+import { getSiteSettings, parseOpeningHours, getHiddenHrefs } from "@/lib/services/settings.service";
 import { listPublishedMenus } from "@/lib/services/menu.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { Reveal } from "@/components/public/reveal";
@@ -39,17 +39,22 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
   setRequestLocale(locale);
   const t = await getTranslations();
 
-  const [settings, menus, albums] = await Promise.all([
+  const [settings, menus, albums, hidden] = await Promise.all([
     getSiteSettings(),
     listPublishedMenus(),
     listAlbumsWithImages(),
+    getHiddenHrefs(),
   ]);
+  const shown = (href: string) => !hidden.includes(href);
   const hours = parseOpeningHours(settings.openingHours);
+  // Photos « En images » : choisies dans Réglages, sinon repli sur les albums.
   const restaurantShot =
+    settings.homePhotoMain ??
     albums.find((a) => a.slug === "le-restaurant")?.images[0]?.media ??
     albums.flatMap((a) => a.images)[0]?.media ??
     null;
   const dishShot =
+    settings.homePhotoSecond ??
     albums.find((a) => a.slug === "les-plats")?.images[0]?.media ??
     albums.flatMap((a) => a.images)[1]?.media ??
     null;
@@ -80,6 +85,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
               {tagline}
             </p>
           </Reveal>
+          {shown("/reservation") ? (
           <Reveal delay={340}>
             <Link
               href="/reservation"
@@ -88,6 +94,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
               {t("home.bookTable")}
             </Link>
           </Reveal>
+          ) : null}
         </div>
 
         <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2">
@@ -134,7 +141,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
       {/* ---------------------------------------------------------------- */}
       {/* Menus                                                           */}
       {/* ---------------------------------------------------------------- */}
-      {menus.length > 0 ? (
+      {menus.length > 0 && shown("/menus") ? (
         <section className="border-y border-ink-900/10 bg-cream-100 py-28 sm:py-36">
           <div className="container max-w-5xl">
             <Reveal>
@@ -219,12 +226,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
                 <p className="mt-5 font-display text-2xl font-light leading-snug text-ink-900 sm:text-[2rem]">
                   {t("home.photosIntro")}
                 </p>
+                {shown("/photos") ? (
                 <Link
                   href="/photos"
                   className="mt-8 inline-block border-b border-ink-900/30 pb-1 text-xs uppercase tracking-[0.2em] text-ink-800 transition-colors hover:border-wine-700 hover:text-wine-700"
                 >
                   {t("home.photosLink")}
                 </Link>
+                ) : null}
               </div>
             </Reveal>
           </div>
@@ -261,12 +270,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: L
                 <OpeningHours hours={hours} />
               </div>
               <div className="mt-10 flex gap-6 text-xs uppercase tracking-[0.15em]">
-                <Link href="/contact" className="link-sweep text-wine-700">
-                  {t("nav.contact")}
-                </Link>
-                <Link href="/reservation" className="link-sweep text-wine-700">
-                  {t("home.bookTable")}
-                </Link>
+                {shown("/contact") ? (
+                  <Link href="/contact" className="link-sweep text-wine-700">
+                    {t("nav.contact")}
+                  </Link>
+                ) : null}
+                {shown("/reservation") ? (
+                  <Link href="/reservation" className="link-sweep text-wine-700">
+                    {t("home.bookTable")}
+                  </Link>
+                ) : null}
               </div>
             </div>
           </Reveal>

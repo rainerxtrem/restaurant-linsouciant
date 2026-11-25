@@ -5,7 +5,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { Fraunces, Inter } from "next/font/google";
 import { routing, type Locale } from "@/i18n/routing";
 import { restaurantJsonLd } from "@/lib/seo";
-import { getSiteSettings, parseOpeningHours } from "@/lib/services/settings.service";
+import { getSiteSettings, parseOpeningHours, getHiddenHrefs } from "@/lib/services/settings.service";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { CookieConsentBanner } from "@/components/public/cookie-consent-banner";
@@ -74,11 +74,12 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const messages = await getMessages();
-  const [settings, announcement, themePages, distinctions] = await Promise.all([
+  const [settings, announcement, themePages, distinctions, hiddenHrefs] = await Promise.all([
     getSiteSettings(),
     getActiveAnnouncement(),
     listEnabledThemePages(),
     listDistinctions(),
+    getHiddenHrefs(),
   ]);
   const hours = parseOpeningHours(settings.openingHours);
   const loc = locale as "fr" | "en";
@@ -123,11 +124,18 @@ export default async function LocaleLayout({
               }
               facebookUrl={settings.facebookUrl}
               instagramUrl={settings.instagramUrl}
-              giftVouchersEnabled={settings.giftVouchersEnabled}
+              hiddenHrefs={hiddenHrefs}
               themeLinks={themeLinks}
             />
             <main className="flex-1">{children}</main>
-            <SiteFooter settings={settings} hours={hours} locale={loc} themeLinks={themeLinks} distinctions={distinctions} />
+            <SiteFooter
+              settings={settings}
+              hours={hours}
+              locale={loc}
+              themeLinks={themeLinks}
+              distinctions={distinctions}
+              hiddenHrefs={hiddenHrefs}
+            />
           </div>
           <CookieConsentBanner />
           <AnalyticsLoader />

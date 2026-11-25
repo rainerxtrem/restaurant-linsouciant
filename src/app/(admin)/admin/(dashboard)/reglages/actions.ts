@@ -58,6 +58,8 @@ export async function saveSettingsAction(
       ogImageId: d.ogImageId ?? null,
       heroImageId: d.heroImageId ?? null,
       aboutImageId: d.aboutImageId ?? null,
+      homePhotoMainId: d.homePhotoMainId ?? null,
+      homePhotoSecondId: d.homePhotoSecondId ?? null,
       heroVideoUrl: orNull(d.heroVideoUrl),
       legalCompanyName: orNull(d.legalCompanyName),
       legalSiret: orNull(d.legalSiret),

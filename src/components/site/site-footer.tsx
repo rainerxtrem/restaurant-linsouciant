@@ -38,12 +38,14 @@ export function SiteFooter({
   locale,
   themeLinks = [],
   distinctions = [],
+  hiddenHrefs = [],
 }: {
   settings: SiteSettings;
   hours: OpeningDay[];
   locale: "fr" | "en";
   themeLinks?: { href: string; label: string }[];
   distinctions?: DistinctionWithImage[];
+  hiddenHrefs?: string[];
 }) {
   const t = useTranslations();
   const siteName = locale === "en" && settings.siteNameEn ? settings.siteNameEn : settings.siteName;
@@ -103,7 +105,7 @@ export function SiteFooter({
         <div>
           <p className="eyebrow text-cream-100/70">{t("footer.navTitle")}</p>
           <nav className="mt-4 flex flex-col gap-2 text-sm text-cream-100/80">
-            {NAV_LINKS.filter((l) => settings.giftVouchersEnabled || l.href !== "/bons-cadeaux")
+            {NAV_LINKS.filter((l) => !hiddenHrefs.includes(l.href))
               .flatMap((l) => [
                 { href: l.href, label: t(`nav.${l.key}`) },
                 ...(l.key === "menus" ? themeLinks : []),

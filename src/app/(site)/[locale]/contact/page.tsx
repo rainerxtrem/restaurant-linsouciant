@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { GiftVoucherNote } from "@/components/site/gift-voucher-note";
@@ -6,7 +7,7 @@ import { MapPin, Phone, Mail, Car, Sparkles, CreditCard } from "lucide-react";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
 import { localized } from "@/lib/i18n";
-import { getSiteSettings, parseOpeningHours } from "@/lib/services/settings.service";
+import { getSiteSettings, parseOpeningHours, isPageDisabled } from "@/lib/services/settings.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { OpeningHours } from "@/components/site/opening-hours";
 import { ContactForm } from "@/components/site/contact-form";
@@ -27,6 +28,7 @@ export async function generateMetadata({
 export default async function ContactPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  if (await isPageDisabled("contact")) notFound();
   const t = await getTranslations();
   const [settings, albums] = await Promise.all([getSiteSettings(), listAlbumsWithImages()]);
   const hours = parseOpeningHours(settings.openingHours);

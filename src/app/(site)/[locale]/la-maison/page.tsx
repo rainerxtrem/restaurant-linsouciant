@@ -7,7 +7,7 @@ import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
 import { localized } from "@/lib/i18n";
 import { getPublishedPage } from "@/lib/services/page.service";
-import { getSiteSettings } from "@/lib/services/settings.service";
+import { getSiteSettings, isPageDisabled } from "@/lib/services/settings.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { listProducers } from "@/lib/services/house.service";
 import { Reveal } from "@/components/public/reveal";
@@ -52,6 +52,7 @@ export async function generateMetadata({
 export default async function LaMaisonPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  if (await isPageDisabled("house")) notFound();
 
   const [page, settings, albums, producers] = await Promise.all([
     getPublishedPage("la-maison"),

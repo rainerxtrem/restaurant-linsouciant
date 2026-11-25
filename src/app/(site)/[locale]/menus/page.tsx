@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
@@ -6,7 +7,7 @@ import { buildMetadata } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
 import { listPublishedMenus } from "@/lib/services/menu.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
-import { getSiteSettings } from "@/lib/services/settings.service";
+import { getSiteSettings, isPageDisabled } from "@/lib/services/settings.service";
 import { MenuSelector } from "@/components/site/menu-selector";
 import { toMenuView } from "@/lib/menu-view";
 import { Reveal } from "@/components/public/reveal";
@@ -27,6 +28,7 @@ export async function generateMetadata({
 export default async function MenusPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  if (await isPageDisabled("menus")) notFound();
   const t = await getTranslations();
   const [menus, albums, settings] = await Promise.all([listPublishedMenus(), listAlbumsWithImages(), getSiteSettings()]);
   const seasonLabel = (locale === "en" && settings.menusSeasonLabelEn) || settings.menusSeasonLabel;

@@ -1,7 +1,16 @@
 import { prisma } from "@/lib/db/prisma";
 import { cache } from "react";
+import { PAGE_KEYS, hrefOf, type PageKey } from "@/lib/site-pages";
 
-const include = { logo: true, favicon: true, ogImage: true, heroImage: true, aboutImage: true } as const;
+const include = {
+  logo: true,
+  favicon: true,
+  ogImage: true,
+  heroImage: true,
+  aboutImage: true,
+  homePhotoMain: true,
+  homePhotoSecond: true,
+} as const;
 
 /**
  * Réglages du site (singleton). `cache()` déduplique les appels au sein d'un
@@ -28,4 +37,25 @@ export interface OpeningDay {
 export function parseOpeningHours(value: unknown): OpeningDay[] {
   if (!Array.isArray(value)) return [];
   return value as OpeningDay[];
+}
+
+/**
+ * Adresses masquées du site public : pages désactivées dans l'admin, « La
+ * maison » si sa page de contenu est en brouillon, bons cadeaux désactivés.
+ */
+export const getHiddenHrefs = cache(async (): Promise<string[]> => {
+  const [settings, house] = await Promise.all([
+    getSiteSettings(),
+    prisma.page.findUnique({ where: { slug: "la-maison" }, select: { status: true } }),
+  ]);
+  const disabled = new Set(settings.disabledPages.filter((k): k is PageKey => (PAGE_KEYS as string[]).includes(k)));
+  if (!house || house.status !== "PUBLISHED") disabled.add("house");
+  const hrefs = [...disabled].map(hrefOf);
+  if (!settings.giftVouchersEnabled) hrefs.push("/bons-cadeaux");
+  return hrefs;
+});
+
+/** true si la page est désactivée (à appeler en tête de page → notFound()). */
+export async function isPageDisabled(key: PageKey): Promise<boolean> {
+  return (await getHiddenHrefs()).includes(hrefOf(key));
 }

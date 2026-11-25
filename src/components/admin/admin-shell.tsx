@@ -18,6 +18,7 @@ import {
   Sprout,
   ScanLine,
   Library,
+  Compass,
   Award,
   LogOut,
   Menu as MenuIcon,
@@ -69,6 +70,7 @@ const NAV_GROUPS: { title: string | null; items: NavItem[] }[] = [
   {
     title: "Configuration",
     items: [
+      { href: "/admin/navigation", label: "Navigation", icon: Compass },
       { href: "/admin/reglages", label: "Réglages", icon: Settings },
       { href: "/admin/administrateurs", label: "Administrateurs", icon: Users, superAdminOnly: true },
     ],

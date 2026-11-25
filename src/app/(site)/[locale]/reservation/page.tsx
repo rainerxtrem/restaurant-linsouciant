@@ -1,10 +1,11 @@
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { GiftVoucherNote } from "@/components/site/gift-voucher-note";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
-import { getSiteSettings } from "@/lib/services/settings.service";
+import { getSiteSettings, isPageDisabled } from "@/lib/services/settings.service";
 import { listAlbumsWithImages } from "@/lib/services/gallery.service";
 import { getNextAvailability } from "@/lib/zenchef";
 import { Reveal } from "@/components/public/reveal";
@@ -24,6 +25,7 @@ export async function generateMetadata({
 export default async function ReservationPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  if (await isPageDisabled("book")) notFound();
   const t = await getTranslations("reservation");
   const [settings, albums] = await Promise.all([getSiteSettings(), listAlbumsWithImages()]);
   const shot =

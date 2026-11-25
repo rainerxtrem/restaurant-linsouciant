@@ -129,12 +129,22 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
 
   type ImgRef = { id: string; url: string } | null;
   const toRef = (m: { id: string; url: string } | null): ImgRef => (m ? { id: m.id, url: m.url } : null);
-  const [images, setImages] = useState<{ logo: ImgRef; favicon: ImgRef; ogImage: ImgRef; heroImage: ImgRef; aboutImage: ImgRef }>({
+  const [images, setImages] = useState<{
+    logo: ImgRef;
+    favicon: ImgRef;
+    ogImage: ImgRef;
+    heroImage: ImgRef;
+    aboutImage: ImgRef;
+    homePhotoMain: ImgRef;
+    homePhotoSecond: ImgRef;
+  }>({
     logo: toRef(s.logo),
     favicon: toRef(s.favicon),
     ogImage: toRef(s.ogImage),
     heroImage: toRef(s.heroImage),
     aboutImage: toRef(s.aboutImage),
+    homePhotoMain: toRef(s.homePhotoMain),
+    homePhotoSecond: toRef(s.homePhotoSecond),
   });
   const [picker, setPicker] = useState<null | keyof typeof images>(null);
 
@@ -154,6 +164,8 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
       ogImageId: images.ogImage?.id ?? null,
       heroImageId: images.heroImage?.id ?? null,
       aboutImageId: images.aboutImage?.id ?? null,
+      homePhotoMainId: images.homePhotoMain?.id ?? null,
+      homePhotoSecondId: images.homePhotoSecond?.id ?? null,
     });
   }
 
@@ -213,6 +225,8 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           <ImageField label="Image de partage (Open Graph)" media={images.ogImage} onPick={() => setPicker("ogImage")} onClear={() => setImages((p) => ({ ...p, ogImage: null }))} />
           <ImageField label="Image du bandeau d'accueil (poster vidéo / repli)" media={images.heroImage} onPick={() => setPicker("heroImage")} onClear={() => setImages((p) => ({ ...p, heroImage: null }))} />
           <ImageField label="Image « En cuisine » (accueil)" media={images.aboutImage} onPick={() => setPicker("aboutImage")} onClear={() => setImages((p) => ({ ...p, aboutImage: null }))} />
+          <ImageField label="Accueil « En images » : grande photo" media={images.homePhotoMain} onPick={() => setPicker("homePhotoMain")} onClear={() => setImages((p) => ({ ...p, homePhotoMain: null }))} />
+          <ImageField label="Accueil « En images » : petite photo superposée" media={images.homePhotoSecond} onPick={() => setPicker("homePhotoSecond")} onClear={() => setImages((p) => ({ ...p, homePhotoSecond: null }))} />
         </div>
         <div className="mt-4">
           <Field

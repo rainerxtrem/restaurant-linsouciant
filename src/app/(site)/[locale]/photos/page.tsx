@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { isPageDisabled } from "@/lib/services/settings.service";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 import { buildMetadata } from "@/lib/seo";
@@ -22,6 +24,7 @@ export async function generateMetadata({
 export default async function PhotosPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  if (await isPageDisabled("photos")) notFound();
   const t = await getTranslations("photos");
   const albums = (await listAlbumsWithImages()).filter((a) => a.images.length > 0);
 

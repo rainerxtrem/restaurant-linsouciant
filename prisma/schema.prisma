@@ -115,6 +115,8 @@ model Media {
   themeProductFor   ThemeProduct[] @relation("ThemeProductImage")
   producerFor       Producer[]     @relation("ProducerImage")
   distinctionFor    Distinction[]  @relation("DistinctionImage")
+  settingsHomeMainFor   SiteSetting[] @relation("SettingsHomePhotoMain")
+  settingsHomeSecondFor SiteSetting[] @relation("SettingsHomePhotoSecond")
 
   @@index([type])
   @@map("media")
@@ -379,6 +381,16 @@ model SiteSetting {
   heroVideoUrl String? @db.Text
   aboutImageId String?
   aboutImage   Media? @relation("SettingsAboutImage", fields: [aboutImageId], references: [id], onDelete: SetNull)
+  // Section « En images » de l'accueil : grande photo + petite superposée.
+  // Vides = repli sur les albums « Le restaurant » / « Les plats ».
+  homePhotoMainId   String?
+  homePhotoMain     Media?  @relation("SettingsHomePhotoMain", fields: [homePhotoMainId], references: [id], onDelete: SetNull)
+  homePhotoSecondId String?
+  homePhotoSecond   Media?  @relation("SettingsHomePhotoSecond", fields: [homePhotoSecondId], references: [id], onDelete: SetNull)
+
+  // Pages désactivées (retirées de la navigation, 404, hors sitemap) :
+  // clés de src/lib/site-pages.ts (house, menus, photos, contact, book).
+  disabledPages String[] @default([])
 
   legalCompanyName         String?
   legalSiret               String?

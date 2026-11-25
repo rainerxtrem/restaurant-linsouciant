@@ -30,6 +30,8 @@ const COUNT_LABELS: Record<string, string> = {
   themeProductFor: "Page thématique (produit)",
   producerFor: "Producteur",
   distinctionFor: "Distinction",
+  settingsHomeMainFor: "Accueil : grande photo « En images »",
+  settingsHomeSecondFor: "Accueil : petite photo « En images »",
 };
 
 export async function listMediaLibrary(): Promise<MediaLibraryItem[]> {
@@ -51,6 +53,8 @@ export async function listMediaLibrary(): Promise<MediaLibraryItem[]> {
             themeProductFor: true,
             producerFor: true,
             distinctionFor: true,
+            settingsHomeMainFor: true,
+            settingsHomeSecondFor: true,
           },
         },
       },

@@ -57,6 +57,8 @@ export const siteSettingSchema = z.object({
   ogImageId: z.string().cuid().optional().nullable(),
   heroImageId: z.string().cuid().optional().nullable(),
   aboutImageId: z.string().cuid().optional().nullable(),
+  homePhotoMainId: z.string().cuid().optional().nullable(),
+  homePhotoSecondId: z.string().cuid().optional().nullable(),
   heroVideoUrl: optionalUrlOrPath,
 
   legalCompanyName: optionalText(200),
