@@ -73,7 +73,11 @@ export default async function GiftVouchersPage({ params }: { params: Promise<{ l
             </div>
           </Reveal>
 
-          <p className="mt-10 text-[11px] uppercase tracking-[0.15em] text-ink-400">
+          <p className="mt-10 border-l border-gold-500/50 pl-4 text-xs leading-relaxed text-ink-600">
+            {t("giftVouchers.bookingNote")}
+          </p>
+
+          <p className="mt-8 text-[11px] uppercase tracking-[0.15em] text-ink-400">
             <Link href="/cgv" className="link-sweep">
               {locale === "en" ? "Gift voucher terms" : "Conditions générales de vente"}
             </Link>

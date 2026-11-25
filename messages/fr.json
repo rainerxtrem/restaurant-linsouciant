@@ -79,7 +79,8 @@
     "title": "Réserver une table",
     "intro": "Réservez en ligne en quelques secondes. Pour un groupe ou une privatisation, contactez-nous directement.",
     "fallback": "Le module de réservation ne s'affiche pas ? Réservez sur cette page :",
-    "openBooking": "Ouvrir la réservation"
+    "openBooking": "Ouvrir la réservation",
+    "giftVoucherNote": "Merci de préciser à la réservation si vous venez dans le cadre d'un bon cadeau, sans quoi il ne sera pas pris en compte au paiement."
   },
   "giftVouchers": {
     "title": "Bons cadeaux",
@@ -101,7 +102,8 @@
     "error": "Le paiement est momentanément indisponible. Merci de réessayer plus tard.",
     "successTitle": "Merci pour votre achat",
     "successBody": "Votre bon cadeau a été envoyé par email. Pensez à vérifier vos courriers indésirables.",
-    "validity": "Valable 12 mois à compter de l'achat. Non remboursable, non fractionnable."
+    "validity": "Valable 12 mois à compter de l'achat. Non remboursable, non fractionnable.",
+    "bookingNote": "Merci de préciser à la réservation si vous venez dans le cadre d'un bon cadeau, sans quoi il ne sera pas pris en compte au paiement."
   },
   "newsletter": {
     "placeholder": "Votre adresse email",

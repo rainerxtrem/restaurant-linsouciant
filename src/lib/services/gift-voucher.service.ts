@@ -180,7 +180,7 @@ async function sendVoucherEmail(voucher: GiftVoucher) {
       <p style="margin:0; font-family:'Courier New', monospace; font-size:24px; letter-spacing:2px; color:#231e1a; font-weight:bold;">${voucher.code}</p>
     </div>
     <p style="margin:0 0 8px; font-size:13px; color:#6f6455;">
-      Votre bon cadeau, prêt à imprimer, se trouve en pièce jointe (PDF). Présentez-le lors de votre venue, de préférence sur réservation.
+      Votre bon cadeau, prêt à imprimer, se trouve en pièce jointe (PDF). Présentez-le lors de votre venue, de préférence sur réservation. Merci de préciser à la réservation que vous venez dans le cadre d'un bon cadeau, sans quoi il ne sera pas pris en compte au paiement.
       ${expiryLabel ? `Valable jusqu'au ${expiryLabel}.` : ""}
     </p>
     ${emailButton("Réserver une table", absoluteUrl("/reservation"))}

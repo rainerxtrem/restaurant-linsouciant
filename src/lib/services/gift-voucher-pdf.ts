@@ -375,7 +375,7 @@ export async function generateVoucherPdf(params: {
       ],
       [
         "Utilisation",
-        `Il est utilisable au restaurant ${siteName}, sur présentation du code ou du QR code figurant en page 1, de préférence sur réservation préalable.`,
+        `Il est utilisable au restaurant ${siteName}, sur présentation du code ou du QR code figurant en page 1, de préférence sur réservation préalable. Merci de préciser à la réservation que vous venez dans le cadre d'un bon cadeau, sans quoi il ne sera pas pris en compte au paiement.`,
       ],
       [
         "Montant et fractionnement",

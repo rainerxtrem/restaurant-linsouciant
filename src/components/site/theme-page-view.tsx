@@ -177,8 +177,7 @@ export async function ThemePageView({
       {/* Commander */}
       <section className="border-t border-ink-900/10 bg-cream-100 py-20 text-center">
         <div className="container max-w-2xl">
-          <p className="kicker">{t("orderKicker")}</p>
-          <h2 className="mt-5 font-display text-3xl font-light text-ink-900">{t("orderTitle")}</h2>
+          <h2 className="font-display text-3xl font-light text-ink-900">{t("orderTitle")}</h2>
           {orderInfo ? (
             <div className="mt-6 space-y-3 text-sm leading-relaxed text-ink-600">
               <Paragraphs text={orderInfo} />

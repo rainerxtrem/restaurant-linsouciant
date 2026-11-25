@@ -58,7 +58,6 @@ interface Festive {
     extraPrice: string;
     order: string;
     orderBox: string;
-    orderKicker: string;
     orderTitle: string;
     orderText: string;
     btnPrimary: string;
@@ -157,7 +156,6 @@ const FESTIVE: Record<FestiveStyle, Festive> = {
       extraPrice: "text-gold-200",
       order: "bg-noel-pine-dark",
       orderBox: "border-gold-400/50",
-      orderKicker: "text-gold-300",
       orderTitle: "text-gold-200",
       orderText: "text-cream-100/85",
       btnPrimary: "bg-gold-400 text-noel-night hover:bg-gold-300",
@@ -203,7 +201,6 @@ const FESTIVE: Record<FestiveStyle, Festive> = {
       extraPrice: "text-[#4d6b3a]",
       order: "bg-[#eef2e4]",
       orderBox: "border-[#8fae6b]/60",
-      orderKicker: "text-[#6f8f52]",
       orderTitle: "text-[#3f5a30]",
       orderText: "text-ink-700",
       btnPrimary: "bg-[#6f8f52] text-white hover:bg-[#5d7a43]",
@@ -249,7 +246,6 @@ const FESTIVE: Record<FestiveStyle, Festive> = {
       extraPrice: "text-[#f3cbbd]",
       order: "bg-[#1d0910]",
       orderBox: "border-[#f1c4b5]/45",
-      orderKicker: "text-[#f1c4b5]",
       orderTitle: "text-[#f3cbbd]",
       orderText: "text-cream-100/85",
       btnPrimary: "bg-[#c0254f] text-cream-50 hover:bg-[#d62f5c]",
@@ -516,8 +512,7 @@ export async function FestiveThemeView({
         <div className="container max-w-2xl">
           <Ornament className="mx-auto w-20" />
           <div className={`mt-8 rounded-[2rem] border-4 border-double px-6 py-12 sm:px-12 ${c.orderBox}`}>
-            <p className={`text-[11px] uppercase tracking-[0.35em] ${c.orderKicker}`}>{t("orderKicker")}</p>
-            <h2 className={`mt-4 font-display text-3xl font-light italic sm:text-4xl ${c.orderTitle}`}>{t(f.ctaTitleKey)}</h2>
+            <h2 className={`font-display text-3xl font-light italic sm:text-4xl ${c.orderTitle}`}>{t(f.ctaTitleKey)}</h2>
             {orderInfo ? (
               <div className={`mt-7 space-y-4 text-base leading-relaxed ${c.orderText}`}>
                 <Paragraphs text={orderInfo} />

@@ -168,7 +168,7 @@ export function MenuSelector({ menus, locale }: { menus: MenuView[]; locale: "fr
               </h2>
               <span className="mx-auto mt-6 block h-px w-12 bg-gold-400" />
               {L(menu.description, menu.descriptionEn) ? (
-                <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-ink-600">
+                <p className="mx-auto mt-6 max-w-md whitespace-pre-line text-sm leading-relaxed text-ink-600">
                   {L(menu.description, menu.descriptionEn)}
                 </p>
               ) : null}

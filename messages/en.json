@@ -79,7 +79,8 @@
     "title": "Book a table",
     "intro": "Book online in seconds. For groups or private events, please contact us directly.",
     "fallback": "Booking widget not showing? Book on this page:",
-    "openBooking": "Open booking"
+    "openBooking": "Open booking",
+    "giftVoucherNote": "If you are coming with a gift voucher, please mention it when booking; otherwise it cannot be applied at payment."
   },
   "giftVouchers": {
     "title": "Gift vouchers",
@@ -101,7 +102,8 @@
     "error": "Payment is temporarily unavailable. Please try again later.",
     "successTitle": "Thank you for your purchase",
     "successBody": "Your gift voucher has been sent by email. Please check your spam folder too.",
-    "validity": "Valid for 12 months from purchase. Non-refundable, non-divisible."
+    "validity": "Valid for 12 months from purchase. Non-refundable, non-divisible.",
+    "bookingNote": "If you are coming with a gift voucher, please mention it when booking; otherwise it cannot be applied at payment."
   },
   "newsletter": {
     "placeholder": "Your email address",
