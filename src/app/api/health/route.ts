@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 
 export const dynamic = "force-dynamic";
 
-// Sonde de santé Railway (voir railway/railway.json). Vérifie que l'app
+// Sonde de santé Railway (healthcheck du service, voir railway/README.md). Vérifie que l'app
 // répond ET que la base est joignable.
 export async function GET() {
   try {

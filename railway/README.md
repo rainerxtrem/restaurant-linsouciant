@@ -2,9 +2,24 @@
 
 Le site tourne sur [Railway](https://railway.com) : un service **web** (image
 Docker construite à partir du `Dockerfile` à la racine) + un plugin
-**PostgreSQL**. La configuration de déploiement est dans `railway.json`
-(racine) ; ce dossier ne contient que la documentation et le gabarit de
-variables (`.env.railway.example`).
+**PostgreSQL**. La configuration de déploiement est enregistrée directement
+dans les réglages du service Railway (`railway.json` / « Config as Code »
+n'est plus pris en charge par Railway depuis le 1er décembre 2026) :
+
+| Réglage | Valeur |
+|---|---|
+| Builder | Dockerfile (`Dockerfile`) |
+| Start command | `./docker-entrypoint.sh npm start` (migrations Prisma puis `next start`) |
+| Healthcheck | `/api/health`, timeout 120 s |
+| Restart policy | `ON_FAILURE`, 5 tentatives max |
+| Volume | monté sur `/app/storage` (médias : `LOCAL_STORAGE_DIR=/app/storage/uploads`) |
+
+Ce dossier ne contient que la documentation et le gabarit de variables
+(`.env.railway.example`).
+
+> Sous Windows / Git Bash, préfixer les commandes `railway` qui contiennent
+> un chemin POSIX par `MSYS_NO_PATHCONV=1`, sinon `/app/...` est converti en
+> chemin Windows (ex. `railway variables --set LOCAL_STORAGE_DIR=...`).
 
 ## 1. Créer le projet
 
@@ -82,4 +97,4 @@ secret GitHub `CRON_SECRET` (identique à la variable Railway) et
 ## Santé
 
 `GET /api/health` renvoie `200` si l'app répond et que la base est joignable
-(`healthcheckPath` dans `railway.json`).
+(healthcheck configuré dans les réglages du service Railway).
