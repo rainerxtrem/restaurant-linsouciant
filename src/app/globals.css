@@ -299,3 +299,27 @@
     animation: none;
   }
 }
+
+/* Pop-up d'annonce : fondu du voile + carte qui se pose (léger zoom). */
+.announcement-backdrop {
+  animation: page-fade var(--motion-ui) var(--ease-editorial) both;
+}
+.announcement-card {
+  animation: announcement-in var(--motion-reveal) var(--ease-editorial) both;
+}
+@keyframes announcement-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .announcement-backdrop,
+  .announcement-card {
+    animation: none;
+  }
+}
