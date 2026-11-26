@@ -40,3 +40,22 @@ describe("registre du contenu des pages", () => {
     expect(orphans).toEqual([]);
   });
 });
+
+import { resolveNavOrder, NAV_ORDER_KEYS } from "@/lib/site-pages";
+
+describe("resolveNavOrder", () => {
+  it("ordre par défaut quand rien n'est enregistré", () => {
+    expect(resolveNavOrder([])).toEqual([...NAV_ORDER_KEYS]);
+  });
+  it("garde l'ordre choisi, retire l'inconnu et les doublons, complète le manquant", () => {
+    expect(resolveNavOrder(["book", "intrus", "house", "book"])).toEqual([
+      "book",
+      "house",
+      "menus",
+      "themes",
+      "photos",
+      "giftVouchers",
+      "contact",
+    ]);
+  });
+});

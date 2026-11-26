@@ -6,6 +6,7 @@ import type { SiteSettings, OpeningDay } from "@/lib/services/settings.service";
 import { OpeningHours } from "@/components/site/opening-hours";
 import { NewsletterForm } from "@/components/site/newsletter-form";
 import type { DistinctionWithImage } from "@/lib/services/house.service";
+import { NAV_HREFS, NAV_ORDER_KEYS, type NavKey } from "@/lib/site-pages";
 
 const LEGAL_LINKS = [
   { href: "/mentions-legales", key: "mentions-legales" },
@@ -23,15 +24,6 @@ const LEGAL_LABELS: Record<string, { fr: string; en: string }> = {
   cgv: { fr: "CGV bons cadeaux", en: "Gift voucher terms" },
 };
 
-const NAV_LINKS = [
-  { href: "/la-maison", key: "house" },
-  { href: "/menus", key: "menus" },
-  { href: "/photos", key: "photos" },
-  { href: "/bons-cadeaux", key: "giftVouchers" },
-  { href: "/reservation", key: "book" },
-  { href: "/contact", key: "contact" },
-] as const;
-
 export function SiteFooter({
   settings,
   hours,
@@ -39,6 +31,7 @@ export function SiteFooter({
   themeLinks = [],
   distinctions = [],
   hiddenHrefs = [],
+  navOrder = [...NAV_ORDER_KEYS],
 }: {
   settings: SiteSettings;
   hours: OpeningDay[];
@@ -46,6 +39,7 @@ export function SiteFooter({
   themeLinks?: { href: string; label: string }[];
   distinctions?: DistinctionWithImage[];
   hiddenHrefs?: string[];
+  navOrder?: NavKey[];
 }) {
   const t = useTranslations();
   const siteName = locale === "en" && settings.siteNameEn ? settings.siteNameEn : settings.siteName;
@@ -105,11 +99,11 @@ export function SiteFooter({
         <div>
           <p className="eyebrow text-cream-100/70">{t("footer.navTitle")}</p>
           <nav className="mt-4 flex flex-col gap-2 text-sm text-cream-100/80">
-            {NAV_LINKS.filter((l) => !hiddenHrefs.includes(l.href))
-              .flatMap((l) => [
-                { href: l.href, label: t(`nav.${l.key}`) },
-                ...(l.key === "menus" ? themeLinks : []),
-              ])
+            {navOrder
+              .flatMap((key) =>
+                key === "themes" ? themeLinks : [{ href: NAV_HREFS[key], label: t(`nav.${key}`) }]
+              )
+              .filter((l) => !hiddenHrefs.includes(l.href))
               .map((l) => (
                 <Link key={l.href} href={l.href} className="w-fit hover:text-gold-300">
                   {l.label}

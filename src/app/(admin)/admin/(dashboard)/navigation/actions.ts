@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { requireAdmin } from "@/lib/auth/permissions";
-import { PAGE_KEYS, type PageKey } from "@/lib/site-pages";
+import { PAGE_KEYS, resolveNavOrder, type PageKey } from "@/lib/site-pages";
 
 /** Affiche / masque une page du site (navigation, accès, sitemap). */
 export async function togglePageAction(formData: FormData) {
@@ -23,4 +23,14 @@ export async function togglePageAction(formData: FormData) {
   }
   revalidatePath("/", "layout");
   revalidatePath("/admin/navigation");
+}
+
+/** Enregistre l'ordre des liens du menu (glisser-déposer). */
+export async function saveNavOrderAction(order: string[]) {
+  await requireAdmin();
+  if (!Array.isArray(order) || order.length > 20) return { error: "Ordre invalide." };
+  await prisma.siteSetting.update({ where: { id: "singleton" }, data: { navOrder: resolveNavOrder(order) } });
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/navigation");
+  return { ok: true as const };
 }

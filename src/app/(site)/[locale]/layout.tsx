@@ -15,6 +15,7 @@ import { AnnouncementPopup } from "@/components/site/announcement-popup";
 import { getActiveAnnouncement } from "@/lib/services/announcement.service";
 import { listEnabledThemePages } from "@/lib/services/theme-page.service";
 import { listDistinctions } from "@/lib/services/house.service";
+import { resolveNavOrder } from "@/lib/site-pages";
 import { localized } from "@/lib/i18n";
 import DOMPurify from "isomorphic-dompurify";
 import "../../globals.css";
@@ -126,6 +127,7 @@ export default async function LocaleLayout({
               instagramUrl={settings.instagramUrl}
               hiddenHrefs={hiddenHrefs}
               themeLinks={themeLinks}
+              navOrder={resolveNavOrder(settings.navOrder)}
             />
             <main className="flex-1">{children}</main>
             <SiteFooter
@@ -135,6 +137,7 @@ export default async function LocaleLayout({
               themeLinks={themeLinks}
               distinctions={distinctions}
               hiddenHrefs={hiddenHrefs}
+              navOrder={resolveNavOrder(settings.navOrder)}
             />
           </div>
           <CookieConsentBanner />

@@ -391,6 +391,9 @@ model SiteSetting {
   // Pages désactivées (retirées de la navigation, 404, hors sitemap) :
   // clés de src/lib/site-pages.ts (house, menus, photos, contact, book).
   disabledPages String[] @default([])
+  // Ordre des liens du menu et du pied de page (clés de NAV_ORDER_KEYS,
+  // src/lib/site-pages.ts). Vide = ordre par défaut.
+  navOrder      String[] @default([])
 
   legalCompanyName         String?
   legalSiret               String?

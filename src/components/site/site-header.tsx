@@ -7,16 +7,7 @@ import { Facebook, Instagram, X } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { LanguageSwitcher } from "@/components/site/language-switcher";
 import { cn } from "@/lib/utils/cn";
-
-const NAV = [
-  { key: "home", href: "/" },
-  { key: "house", href: "/la-maison" },
-  { key: "menus", href: "/menus" },
-  { key: "photos", href: "/photos" },
-  { key: "giftVouchers", href: "/bons-cadeaux" },
-  { key: "contact", href: "/contact" },
-  { key: "book", href: "/reservation" },
-] as const;
+import { NAV_HREFS, NAV_ORDER_KEYS, type NavKey } from "@/lib/site-pages";
 
 export function SiteHeader({
   siteName,
@@ -29,6 +20,7 @@ export function SiteHeader({
   instagramUrl,
   hiddenHrefs = [],
   themeLinks = [],
+  navOrder = [...NAV_ORDER_KEYS],
 }: {
   siteName: string;
   logoUrl?: string | null;
@@ -42,6 +34,8 @@ export function SiteHeader({
   hiddenHrefs?: string[];
   /** Pages thématiques activées, insérées après « Cartes & Menus ». */
   themeLinks?: { href: string; label: string }[];
+  /** Ordre des liens (Admin → Navigation). */
+  navOrder?: NavKey[];
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -72,14 +66,16 @@ export function SiteHeader({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navItems: { key: string; href: string; label: string; highlight?: boolean }[] = NAV.filter(
-    (item) => !hiddenHrefs.includes(item.href)
-  ).flatMap((item) => {
-    const own = { key: item.key, href: item.href, label: t(item.key), highlight: item.key === "book" };
-    return item.key === "menus"
-      ? [own, ...themeLinks.map((l) => ({ key: l.href, href: l.href, label: l.label }))]
-      : [own];
-  });
+  // Accueil toujours en tête, puis l'ordre choisi dans l'admin ; le bloc
+  // « themes » se déplie en pages thématiques activées.
+  const navItems: { key: string; href: string; label: string; highlight?: boolean }[] = [
+    { key: "home", href: "/", label: t("home") },
+    ...navOrder.flatMap((key) =>
+      key === "themes"
+        ? themeLinks.map((l) => ({ key: l.href, href: l.href, label: l.label }))
+        : [{ key, href: NAV_HREFS[key], label: t(key), highlight: key === "book" }]
+    ),
+  ].filter((item) => !hiddenHrefs.includes(item.href));
 
   const transparent = isHome && !scrolled && !open;
   const darkText = !transparent;
